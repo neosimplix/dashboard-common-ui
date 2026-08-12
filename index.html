@@ -69,6 +69,56 @@
 
   <!-- 컴포넌트 섹션은 Task 5~8 에서, 설치·연동·토큰 섹션은 Task 9 에서 추가한다. -->
 
+  <h2 id="ns-nav-group">ns-nav-group</h2>
+  <p>제목이 붙은 네비게이션 그룹. 하위에 <code>ns-nav-item</code> 을 넣는다.</p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-nav-group heading="프로젝트">
+      <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
+      <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="관리">
+      <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
+    </ns-nav-group>
+  </template>
+  <div class="demo block" style="width: var(--sidebar-width)"></div>
+  <pre></pre>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td>그룹 제목. 접히면 시각적으로 숨지만 <code>aria-label</code> 로 남는다</td></tr>
+  </table>
+
+  <h3>slot</h3>
+  <table>
+    <tr><th>이름</th><th>위치</th><th>용도</th></tr>
+    <tr><td>(기본)</td><td>제목 아래</td><td><code>ns-nav-item</code> 목록. 로딩·에러 UI 를 넣어도 된다</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <p>자체 이벤트가 없다. 하위 <code>ns-nav-item</code> 의 <code>ns-navigate</code> 가 통과해 올라간다.</p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-nav-group heading="프로젝트">
+      <ns-nav-item href="/a" label="프로젝트 A" badge="PA"></ns-nav-item>
+    </ns-nav-group>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
+
+    <NsNavGroup heading="프로젝트">
+      {projects.map((p) => (
+        <NsNavItem key={p.href} href={p.href} label={p.label} badge={p.badge}
+                   active={pathname === p.href} />
+      ))}
+    </NsNavGroup>
+  </script>
+
   <h2 id="ns-nav-item">ns-nav-item</h2>
   <p>
     네비게이션 그룹 하위의 항목 하나. 클릭하면 <code>ns-navigate</code> 이벤트를 올리고,
