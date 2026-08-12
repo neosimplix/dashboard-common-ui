@@ -42,8 +42,12 @@ common-ui/
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
+│   ├── gotchas.md                     함정과 그 이유. 규칙이 왜 그런지는 전부 여기
 │   ├── consumer-example.tsx           소비자 관점 타입 검사 대상 (npm run check 가 실행)
 │   └── superpowers/{specs,plans}/     설계 문서와 구현 계획
+├── .claude/
+│   ├── rules/                         항상 지켜야 하는 제약 (commit, library-invariants, verification)
+│   └── skills/                        작업별 절차 (releasing, adding-a-component)
 ├── index.html                         문서 겸 플레이그라운드. 셸 자체가 우리 컴포넌트
 ├── vite.config.ts                     --mode 로 세 벌 빌드
 ├── tsconfig.json                      타입 검사용(noEmit)
@@ -93,6 +97,7 @@ grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
 
 ## 관련 문서
 
+- 함정과 그 이유: `docs/gotchas.md`
 - 설계 배경과 수용된 한계: `docs/superpowers/specs/2026-08-12-common-ui-web-components-design.md`
 - 구현 계획(Task 단위 코드 포함): `docs/superpowers/plans/2026-08-12-common-ui-web-components.md`
 - 사용법·프로퍼티·이벤트·라이브 데모: `index.html` (`npm run demo`)
