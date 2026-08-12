@@ -23,7 +23,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```sh
 git clone https://github.com/neosimplix/dashboard-common-ui.git
-cd common-ui
+cd dashboard-common-ui
 npm install
 npm run demo
 ```
