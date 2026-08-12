@@ -140,18 +140,34 @@ ns-sidebar:not([open]) { width: var(--sidebar-width-collapsed); }
 
 ```ts
 // src/internal/warn-missing-tokens.ts — 페이지당 1회
-let warned = false;
+let settled = false;
+const tokensPresent = () =>
+  getComputedStyle(document.documentElement).getPropertyValue("--color-line").trim() !== "";
+
 export function warnIfTokensMissing() {
-  if (warned || typeof getComputedStyle === "undefined") return;
-  warned = true;
-  if (getComputedStyle(document.documentElement).getPropertyValue("--color-line").trim()) return;
-  console.warn(
-    '[@neosimplix/common-ui] tokens.css 가 로드되지 않아 레이아웃이 깨집니다.\n' +
-    '  Next/React:  import "@neosimplix/common-ui/tokens.css";\n' +
-    '  HTML:        <link rel="stylesheet" href="…/dist/tokens.css">'
-  );
+  if (settled) return;
+  if (typeof document === "undefined" || typeof getComputedStyle === "undefined") return;
+
+  if (tokensPresent()) { settled = true; return; }   // 정상 경로는 여기서 끝난다
+
+  // 안 보인다고 없는 것은 아니다. tokens.css 는 JS 와 별도로 로드되므로
+  // 첫 컴포넌트 연결 시점에 아직 적용 전일 수 있다. 여기서 바로 경고하면
+  // 정상 페이지에 취소할 수 없는 거짓 경고가 남는다.
+  settled = true;
+  const confirm = () => {
+    if (tokensPresent()) return;
+    console.warn(
+      '[@neosimplix/common-ui] tokens.css 가 로드되지 않아 레이아웃이 깨집니다.\n' +
+      '  Next/React:  import "@neosimplix/common-ui/tokens.css";\n' +
+      '  HTML:        <link rel="stylesheet" href="…/dist/tokens.css">'
+    );
+  };
+  if (document.readyState === "complete") confirm();
+  else window.addEventListener("load", confirm, { once: true });
 }
 ```
+
+플래그를 프로브 전에 세우면 안 된다. 가장 먼저 연결되는 컴포넌트 하나의 판정이 영구 확정되어, 스타일시트가 늦게 적용된 정상 페이지에 되돌릴 수 없는 거짓 경고가 남는다. 반대로 매번 검사하면 nav item 수십 개마다 강제 리플로가 일어난다.
 
 ### 4.5 `dashboard-shell`의 토큰 이관
 
