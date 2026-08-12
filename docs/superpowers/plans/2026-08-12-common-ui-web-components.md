@@ -718,7 +718,12 @@ Expected: 오류 없이 끝나고 `dist/bundle.umd.js`가 존재한다.
 
 ```bash
 # ① text/plain 블록 안에 script 태그가 없는가 (있으면 HTML 파서가 페이지를 끊는다)
+#    두 검사가 서로 다른 경우를 잡으므로 둘 다 필요하다.
 grep -c '<script>' index.html          # 1 이어야 한다 (헬퍼 스크립트 하나)
+
+#    여는 태그와 닫는 태그 수가 같아야 한다. 예시 안에 </script> 만 들어간
+#    경우는 위 검사로는 안 잡히고 이 검사로 잡힌다.
+echo "여는:$(grep -o '<script' index.html | wc -l) 닫는:$(grep -o '</script>' index.html | wc -l)"
 
 # ② 데모 헬퍼의 세 요소가 다 있는가
 grep -c 'template.ex\|class="demo"\|dedent' index.html
