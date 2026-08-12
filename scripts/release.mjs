@@ -42,7 +42,29 @@ run("npm", "run", "build");
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 pkg.version = version;
 writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
-git("add", "package.json");
+
+/*
+  README.md / index.html 에 적힌 설치 라인의 태그도 같은 커밋에서 갱신한다.
+  이걸 릴리스 이후로 미루면, npm pack 이 태그 커밋 시점의 README 를 그대로
+  패키지에 넣기 때문에 태그의 README 는 항상 이전 버전을 가리키게 된다.
+  패턴에 매치되는 게 없으면 조용히 넘어가지 않고 바로 실패한다 — 그게
+  바로 이 버그를 다시 만드는 길이다.
+*/
+const installPattern = /common-ui\.git#v\d+\.\d+\.\d+/g;
+const docFiles = ["README.md", "index.html"];
+for (const file of docFiles) {
+  const content = readFileSync(file, "utf8");
+  if (!content.match(installPattern)) {
+    console.error(
+      `${file} 에서 설치 버전 패턴을 찾지 못했습니다. 기대한 패턴: common-ui.git#v<semver>`
+    );
+    process.exit(1);
+  }
+  const updated = content.replace(installPattern, `common-ui.git#v${version}`);
+  writeFileSync(file, updated);
+}
+
+git("add", "package.json", ...docFiles);
 git("commit", "-m", `chore(release): v${version}`);
 
 const hasOrigin = gitOut("remote").split("\n").includes("origin");
