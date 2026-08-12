@@ -12,9 +12,11 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0"
+  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.1"
 }
 ```
+
+**태그를 반드시 지정한다.** `main` 에는 `dist/` 가 없어서 브랜치를 가리키면 설치는 되지만 import 가 실패한다. 사용할 수 있는 태그는 `git tag -l` 로 확인한다.
 
 사용법·프로퍼티·이벤트는 `index.html` 에 있다. 빌드 후 파일을 그대로 열면 된다.
 

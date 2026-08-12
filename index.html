@@ -104,16 +104,17 @@
   <script type="text/plain">
     {
       "dependencies": {
-        "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0"
+        "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.1"
       }
     }
   </script>
   <p>
-    업그레이드는 태그 번호만 바꾸면 된다. <code>#v0.1.0</code> → <code>#v0.2.0</code>.
+    <strong>태그를 반드시 지정한다.</strong> <code>main</code> 에는 <code>dist/</code> 가 없어서
+    브랜치를 가리키면 설치는 되지만 import 가 실패한다. 사용할 수 있는 태그는
+    <code>git tag -l</code> 로 확인한다.
   </p>
   <p>
-    <code>main</code> 브랜치에는 <code>dist</code> 가 없다. 빌드 산출물은 릴리스 태그가 가리키는
-    커밋에만 들어 있으므로, 반드시 태그를 지정해 설치한다.
+    업그레이드는 태그 번호만 바꾸면 된다. <code>#v0.1.0</code> → <code>#v0.2.0</code>.
   </p>
 
   <h2 id="usage">환경별 연동</h2>

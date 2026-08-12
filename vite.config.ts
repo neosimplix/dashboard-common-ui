@@ -29,7 +29,12 @@ const r = (p: string) => path.resolve(here, p);
   정규식으로 lit 계열 전체를 외부로 둔다. lit 은 dependencies 에 있으므로
   소비자에게 함께 설치된다.
 */
-const litExternal = [/^lit(\/.*)?$/, /^@lit\/.*/, /^@lit-labs\/.*/];
+const litExternal = [
+  /^lit(\/.*)?$/,
+  /^lit-(html|element)(\/.*)?$/, // lit 이 재수출하는 별개 패키지들
+  /^@lit\/.*/,
+  /^@lit-labs\/.*/,
+];
 
 const es: UserConfig = {
   // 1. ES — 번들러(Next/Vite)가 소비하는 웹 컴포넌트
