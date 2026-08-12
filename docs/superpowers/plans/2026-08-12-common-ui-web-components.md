@@ -721,9 +721,14 @@ Expected: 오류 없이 끝나고 `dist/bundle.umd.js`가 존재한다.
 #    두 검사가 서로 다른 경우를 잡으므로 둘 다 필요하다.
 grep -c '<script>' index.html          # 1 이어야 한다 (헬퍼 스크립트 하나)
 
-#    여는 태그와 닫는 태그 수가 같아야 한다. 예시 안에 </script> 만 들어간
-#    경우는 위 검사로는 안 잡히고 이 검사로 잡힌다.
-echo "여는:$(grep -o '<script' index.html | wc -l) 닫는:$(grep -o '</script>' index.html | wc -l)"
+#    진짜 위험은 </script> 가 예시 블록 안에 들어가는 것이다. 정당한 닫는
+#    태그는 자기 줄에 혼자 있거나 <script src=...></script> 한 줄뿐이므로,
+#    그 외의 위치에 나타나면 예시 안에 섞여 들어간 것이다.
+grep -n '</script>' index.html | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='
+# 출력이 없어야 정상.
+
+#    요소 수와 닫는 태그 수도 맞아야 한다.
+echo "요소:$(grep -cE '^\s*<script' index.html) 닫는:$(grep -o '</script>' index.html | wc -l)"
 
 # ② 데모 헬퍼의 세 요소가 다 있는가
 grep -c 'template.ex\|class="demo"\|dedent' index.html
