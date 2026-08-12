@@ -479,7 +479,7 @@ npm run release -- 0.1.0
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.1.0"
 }
 ```
 
@@ -676,7 +676,7 @@ React·Next 예시는 실행하지 않으므로 `<script type="text/plain">`에 
 3. **콜드 설치 검증** — 릴리스 후 빈 디렉터리에서 실제로 태그를 설치하고 확인한다. `files: ["dist"]`와 gitignore된 `dist`가 얽히는 지점이라 실측이 필요하다
 
    ```sh
-   npm i git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0
+   npm i git+https://github.com/neosimplix/dashboard-common-ui.git#v0.1.0
    ls node_modules/@neosimplix/common-ui/dist   # index.js react.js bundle.umd.js tokens.css *.d.ts
    node -e "import('@neosimplix/common-ui').then(() => console.log('ok'))"
    ```
@@ -690,7 +690,7 @@ React·Next 예시는 실행하지 않으므로 `<script type="text/plain">`에 
 
 ## 13. 확인이 필요한 항목
 
-- **저장소 URL** — 이 문서는 `git+ssh://git@github.com/neosimplix/common-ui.git`을 가정한다. 실제 호스트와 조직명 확인 필요. **`README.md`와 `index.html`이 이 주소를 설치 안내로 발행하고 있으므로, 저장소가 만들어지기 전까지 문서를 그대로 따라하면 clone에 실패한다.** remote 연결과 태그 푸시가 남아 있다
+- ~~**저장소 URL**~~ — 확정. `https://github.com/neosimplix/dashboard-common-ui.git`
 - ~~**토큰 실제 값**~~ — 완료. Tailwind v4 팔레트의 oklch 값을 그대로 옮겼다
 
 ## 14. 알려진 한계

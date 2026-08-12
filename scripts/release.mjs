@@ -50,17 +50,17 @@ writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
   패턴에 매치되는 게 없으면 조용히 넘어가지 않고 바로 실패한다 — 그게
   바로 이 버그를 다시 만드는 길이다.
 */
-const installPattern = /common-ui\.git#v\d+\.\d+\.\d+/g;
+const installPattern = /dashboard-common-ui\.git#v\d+\.\d+\.\d+/g;
 const docFiles = ["README.md", "index.html"];
 for (const file of docFiles) {
   const content = readFileSync(file, "utf8");
   if (!content.match(installPattern)) {
     console.error(
-      `${file} 에서 설치 버전 패턴을 찾지 못했습니다. 기대한 패턴: common-ui.git#v<semver>`
+      `${file} 에서 설치 버전 패턴을 찾지 못했습니다. 기대한 패턴: dashboard-common-ui.git#v<semver>`
     );
     process.exit(1);
   }
-  const updated = content.replace(installPattern, `common-ui.git#v${version}`);
+  const updated = content.replace(installPattern, `dashboard-common-ui.git#v${version}`);
   writeFileSync(file, updated);
 }
 
@@ -106,5 +106,5 @@ ${branch} 브랜치의 버전 커밋은 아직 푸시되지 않았습니다:
   git push origin ${branch}
 
 소비자 설치:
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#${tag}"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#${tag}"
 `);

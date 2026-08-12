@@ -12,7 +12,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.3"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.1.3"
 }
 ```
 
@@ -22,7 +22,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 받는 패키지에는 포함되지 않으므로, 보려면 저장소를 clone 하고 빌드해야 한다.
 
 ```sh
-git clone git@github.com:neosimplix/common-ui.git
+git clone https://github.com/neosimplix/dashboard-common-ui.git
 cd common-ui
 npm install
 npm run demo

@@ -105,5 +105,4 @@ grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
 
 ## 남은 일
 
-- **원격 저장소 연결.** 아직 remote 가 없어 태그가 로컬에만 있다. `README.md` 와 `index.html` 이 `git+ssh://git@github.com/neosimplix/common-ui.git` 을 설치 주소로 발행하고 있으므로, 저장소가 만들어지기 전까지 문서를 그대로 따라하면 clone 에 실패한다.
 - **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 삭제, Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.

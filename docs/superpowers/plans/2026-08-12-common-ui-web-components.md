@@ -2038,7 +2038,7 @@ createComponent 는 프로퍼티 타입만 자동으로 끌어오고 이벤트 �
   <script type="text/plain">
     {
       "dependencies": {
-        "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0"
+        "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.1.0"
       }
     }
   </script>
@@ -2385,7 +2385,7 @@ ${branch} 브랜치의 버전 커밋은 아직 푸시되지 않았습니다:
   git push origin ${branch}
 
 소비자 설치:
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#${tag}"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#${tag}"
 `);
 ```
 
@@ -2406,7 +2406,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.1"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.1.1"
 }
 ```
 
