@@ -26,6 +26,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  // ns-navigate 는 composed 라 그룹에서도, 항목에서도 들을 수 있다 — 아래는
+  // 그 두 지점 모두에서 detail 을 실제로 읽어, 네 래퍼 전부의 이벤트 타입이
+  // 이 파일에서 검사되게 한다(사이드바에서 한 번만 듣는 것도 여전히 유효한
+  // 패턴이다. index.html 의 각 컴포넌트 절 참고).
+  const log = (msg: string) => console.log(msg);
+
   return (
     <>
       <NsHeader
@@ -39,12 +45,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </NsHeader>
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NsSidebar open={open} onNsNavigate={(e) => router.push(e.detail.href)}>
-          <NsNavGroup heading="프로젝트">
+          <NsNavGroup heading="프로젝트" onNsNavigate={(e) => log(e.detail.label)}>
             <NsNavItem
               href="/a"
               label="프로젝트 A"
               badge="PA"
               active={pathname === "/a"}
+              onNsNavigate={(e) => log(e.detail.href)}
             />
           </NsNavGroup>
         </NsSidebar>
