@@ -249,6 +249,7 @@ dist
     "react-dom": { "optional": true }
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "@types/react": "^18.3.0",
     "react": "^18.3.1",
     "typescript": "^5.9.0",
@@ -280,9 +281,13 @@ dist
     "useDefineForClassFields": false,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts", "scripts"]
+  "include": ["src", "vite.config.ts"]
 }
 ```
+
+`scripts/*.mjs`는 `include`에 넣지 않는다. `allowJs`가 없어 어차피 검사되지 않으므로 넣어 두면 검사되는 것처럼 오해만 부른다.
+
+`vite.config.ts`가 `node:path`와 `node:url`을 import하므로 `@types/node`가 devDependencies에 있어야 한다. 없으면 `npm run check`가 모듈을 찾지 못해 실패한다.
 
 `experimentalDecorators`와 `useDefineForClassFields: false`가 둘 다 필요하다. 하나라도 빠지면 클래스 필드 초기화가 `@property`가 만든 접근자를 덮어써서, 속성이 바뀌어도 리렌더가 일어나지 않는다. 에러가 나지 않고 화면만 갱신되지 않는 함정이다.
 
