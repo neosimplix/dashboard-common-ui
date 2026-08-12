@@ -1,17 +1,27 @@
 {
   "name": "@neosimplix/common-ui",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".":            { "types": "./dist/index.d.ts",       "import": "./dist/index.js" },
-    "./react":      { "types": "./dist/react/index.d.ts", "import": "./dist/react.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react.js"
+    },
     "./tokens.css": "./dist/tokens.css",
-    "./umd":        "./dist/bundle.umd.js"
+    "./umd": "./dist/bundle.umd.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-tokens.mjs",
     "check": "tsc -p tsconfig.json && node scripts/check-events.mjs",
@@ -27,8 +37,12 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true },
-    "react-dom": { "optional": true }
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
