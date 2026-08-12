@@ -1,0 +1,95 @@
+/*
+  common-ui 디자인 토큰.
+
+  이름은 dashboard-shell/app/globals.css 와 동일하다. 접두사를 붙이지 않는
+  이유는 그 프로젝트의 25개 파일이 이미 var(--space-3) 형태로 이 이름들을
+  직접 참조하고 있기 때문이다.
+
+  색 값은 Tailwind v4 기본 팔레트(oklch)에서 그대로 가져왔다. 이 파일은
+  Tailwind 에 의존하지 않으므로 순수 HTML 에서도 동작한다.
+*/
+:root {
+  /* 표면 · 전경 · 경계 */
+  --color-surface: #fff;
+  --color-surface-sunken: oklch(98.5% 0 0);            /* zinc-50 */
+  --color-surface-hover: oklch(96.7% 0.001 286.375);   /* zinc-100 */
+  --color-line: oklch(92% 0.004 286.32);               /* zinc-200 */
+  --color-line-strong: oklch(87.1% 0.006 286.286);     /* zinc-300 */
+  --color-overlay: rgb(0 0 0 / .4);
+
+  --color-fg: oklch(21% 0.006 285.885);                /* zinc-900 */
+  --color-fg-body: oklch(37% 0.013 285.805);           /* zinc-700 */
+  --color-fg-muted: oklch(55.2% 0.016 285.938);        /* zinc-500 */
+  --color-fg-subtle: oklch(70.5% 0.015 286.067);       /* zinc-400 */
+
+  /* 액센트 — 브랜드 컬러가 정해지면 이 네 줄만 교체한다 */
+  --color-accent: oklch(21% 0.006 285.885);            /* zinc-900 */
+  --color-accent-hover: oklch(27.4% 0.006 286.033);    /* zinc-800 */
+  --color-accent-fg: #fff;
+  --color-disabled: oklch(87.1% 0.006 286.286);        /* zinc-300 */
+
+  /* 상태 */
+  --color-danger: oklch(57.7% 0.245 27.325);           /* red-600 */
+  --color-danger-surface: oklch(97.1% 0.013 17.38);    /* red-50 */
+  --color-warn: oklch(55.5% 0.163 48.998);             /* amber-700 */
+  --color-warn-surface: oklch(98.7% 0.022 95.277);     /* amber-50 */
+  --color-success: oklch(59.6% 0.145 163.225);         /* emerald-600 */
+  --color-success-surface: oklch(97.9% 0.021 166.113); /* emerald-50 */
+
+  /* 간격 — 4px 스케일 */
+  --space-1: .25rem;
+  --space-1-5: .375rem;
+  --space-2: .5rem;
+  --space-2-5: .625rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* 반경 — 용도 이름 */
+  --radius-badge: .25rem;
+  --radius-control: .375rem;
+  --radius-panel: .5rem;
+  --radius-card: .75rem;
+  --radius-pill: 9999px;
+
+  /* 타이포 — 크기와 줄간격은 반드시 짝으로 쓴다 */
+  --font-size-2xs: .6875rem; --line-height-2xs: 1rem;
+  --font-size-xs: .75rem;    --line-height-xs: 1rem;
+  --font-size-sm: .875rem;   --line-height-sm: 1.25rem;
+  --font-size-base: 1rem;    --line-height-base: 1.5rem;
+  --font-size-lg: 1.125rem;  --line-height-lg: 1.75rem;
+  --font-size-xl: 1.25rem;   --line-height-xl: 1.75rem;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* 레이아웃 상수 */
+  --header-height: 3.5rem;
+  --sidebar-width: 15rem;
+  --sidebar-width-collapsed: 4rem;
+  --page-padding-x: var(--space-6);
+  --page-padding-y: var(--space-6);
+  --card-padding: var(--space-8);
+  --control-height-sm: 1.75rem;
+  --control-height-md: 2.5rem;
+
+  /* 기타 */
+  --elevation-card: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+  --transition-fast: 150ms;
+  --transition-ease: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* 다크모드는 이번 범위 밖. 나중에 이 블록만 채우면 된다. */
+[data-theme="dark"] { }
+
+/*
+  정의 전 레이아웃 예약.
+
+  커스텀 엘리먼트는 customElements.define 이전까지 display: inline 이고
+  크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
+  light DOM 선택자라 upgrade 전에도 적용된다.
+*/
+ns-header  { display: block; height: var(--header-height); }
+ns-sidebar { display: block; width: var(--sidebar-width); }
+ns-sidebar:not([open]) { width: var(--sidebar-width-collapsed); }
