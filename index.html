@@ -69,6 +69,82 @@
 
   <!-- 컴포넌트 섹션은 Task 5~8 에서, 설치·연동·토큰 섹션은 Task 9 에서 추가한다. -->
 
+  <h2 id="ns-header">ns-header</h2>
+  <p>
+    좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
+    각 프로젝트가 원하는 것을 넣는다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-header project-name="대시보드" sidebar-open id="demo-header">
+      <div slot="actions">
+        <span style="font-size: var(--font-size-sm)">홍길동</span>
+        <button>로그아웃</button>
+      </div>
+    </ns-header>
+  </template>
+  <div class="demo block"></div>
+  <pre></pre>
+  <p id="header-log">토글 버튼을 누르면 여기에 이벤트가 찍힌다.</p>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>projectName</code></td><td><code>project-name</code></td><td>string</td><td><code>""</code></td><td>토글 버튼 옆에 표시할 제목</td></tr>
+    <tr><td><code>sidebarOpen</code></td><td><code>sidebar-open</code></td><td>boolean</td><td><code>false</code></td><td>토글 버튼의 <code>aria-expanded</code> 와 <code>aria-label</code> 을 결정한다</td></tr>
+  </table>
+
+  <h3>slot</h3>
+  <table>
+    <tr><th>이름</th><th>위치</th><th>용도</th></tr>
+    <tr><td><code>actions</code></td><td>우측 끝</td><td>사용자 정보, 로그아웃, 알림 등 프로젝트마다 다른 것 전부</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-toggle</code></td><td><code>{ open: boolean }</code></td><td>토글 버튼 클릭. <code>open</code> 은 현재 상태가 아니라 <strong>요청되는 다음 상태</strong>다</td></tr>
+  </table>
+
+  <h3>주의</h3>
+  <p>
+    토글을 눌러도 <code>sidebarOpen</code> 은 저절로 바뀌지 않는다. 컴포넌트가 자기 상태를
+    바꾸면 React 의 state 와 어긋나 화면이 튀기 때문이다. 이벤트를 받아 되돌려줘야 한다.
+  </p>
+
+  <h3>HTML — 마크업</h3>
+  <script type="text/plain">
+    <ns-header project-name="대시보드" sidebar-open>
+      <button slot="actions">로그아웃</button>
+    </ns-header>
+  </script>
+
+  <h3>HTML — 배선</h3>
+  <script type="text/plain">
+    const header = document.querySelector("ns-header");
+    const sidebar = document.querySelector("ns-sidebar");
+
+    header.addEventListener("ns-toggle", (e) => {
+      header.sidebarOpen = e.detail.open;   // 상태는 우리가 되돌려준다
+      sidebar.open = e.detail.open;
+    });
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsHeader } from "@neosimplix/common-ui/react";
+
+    const [open, setOpen] = useState(true);
+
+    <NsHeader projectName="대시보드" sidebarOpen={open} onNsToggle={(e) => setOpen(e.detail.open)}>
+      <div slot="actions">
+        <UserMenu />
+        <SignOutButton />
+      </div>
+    </NsHeader>
+  </script>
+
   <h2 id="ns-sidebar">ns-sidebar</h2>
   <p>
     네비게이션 그룹을 담는 사이드바. 접어도 완전히 사라지지 않고 좌측에 레일이 남아
@@ -325,6 +401,15 @@
     // 이 데모 컨테이너에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
     navItemDemo.addEventListener("ns-navigate", (e) => {
       navItemLog.textContent = `ns-navigate  href=${e.detail.href}  label=${e.detail.label}`;
+    });
+  }
+
+  const demoHeader = document.getElementById("demo-header");
+  const headerLog = document.getElementById("header-log");
+  if (demoHeader && headerLog) {
+    demoHeader.addEventListener("ns-toggle", (e) => {
+      demoHeader.sidebarOpen = e.detail.open;   // 소비자가 되돌려준다
+      headerLog.textContent = `ns-toggle  open=${e.detail.open}`;
     });
   }
 
