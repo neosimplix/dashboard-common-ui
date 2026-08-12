@@ -322,11 +322,28 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const r = (p: string) => path.resolve(here, p);
 
+/*
+  Rollup 의 문자열 external 은 모듈 지정자와 정확히 일치해야 한다.
+  "lit" 만 적으면 컴포넌트가 쓰는 "lit/decorators.js" 가 걸리지 않아
+  @lit/reactive-element 가 번들에 통째로 들어간다. 그 안의
+  `class ReactiveElement extends HTMLElement` 가 모듈 평가 시점에
+  실행되므로 Node 에서 import 하면 ReferenceError 로 죽는다 — Next 의
+  서버 렌더링이 정확히 그 경로다.
+
+  게다가 소비자 앱에 ReactiveElement 가 두 벌 생긴다. LitElement 는
+  external "lit" 에서, 데코레이터는 번들된 사본에서 오기 때문에 Lit 이
+  "Multiple versions of Lit loaded" 를 경고하고 반응성이 깨질 수 있다.
+
+  정규식으로 lit 계열 전체를 외부로 둔다. lit 은 dependencies 에 있으므로
+  소비자에게 함께 설치된다.
+*/
+const litExternal = [/^lit(\/.*)?$/, /^@lit\/.*/, /^@lit-labs\/.*/];
+
 // 1. ES — 번들러(Next/Vite)가 소비하는 웹 컴포넌트
 const es: UserConfig = {
   build: {
     lib: { entry: r("src/index.ts"), formats: ["es"], fileName: () => "index.js" },
-    rollupOptions: { external: ["lit"] },
+    rollupOptions: { external: litExternal },
   },
 };
 
@@ -336,7 +353,7 @@ const react: UserConfig = {
     emptyOutDir: false,
     lib: { entry: r("src/react/index.ts"), formats: ["es"], fileName: () => "react.js" },
     rollupOptions: {
-      external: ["react", "react-dom", "lit", "@lit/react"],
+      external: ["react", "react-dom", ...litExternal],
       // Rollup 은 모듈 최상단 디렉티브를 제거한다. 소스에 써도 남지 않으므로
       // 여기서 다시 주입한다. 없으면 Next 의 Server Component 가 import 할 때 터진다.
       output: { banner: "'use client';" },
@@ -2441,6 +2458,23 @@ cd /tmp/ns-cold && node --input-type=module \
 Expected: `NsHeader, NsNavGroup, NsNavItem, NsSidebar`
 
 Node 에는 `window` 가 없으므로 `register()` 가 등록을 건너뛴다. 예외 없이 이 목록이 출력되면 SSR 안전성이 실증된 것이다.
+
+**이 검사가 `ReferenceError: HTMLElement is not defined` 로 실패하면 `register()` 를 고치지 말 것.** 가드는 정상이고, 원인은 빌드 설정이다. `external` 이 `lit` 하위 경로를 덮지 못해 `@lit/reactive-element` 가 번들에 들어갔고, 그 안의 클래스 선언이 가드보다 먼저 평가된다. `vite.config.ts` 의 `litExternal` 정규식을 확인한다.
+
+- [ ] **Step 7-1: 번들이 실제로 lit 을 외부로 두었는지 확인**
+
+Run:
+```bash
+cd /Users/neosimplix/coding/dashboard/common-ui
+grep -c 'extends HTMLElement' dist/index.js || true
+grep -oE 'from ?"[^"]+"' dist/index.js | sort -u
+wc -c dist/index.js dist/bundle.umd.js
+```
+
+Expected:
+- `extends HTMLElement` 가 `dist/index.js` 에 **0개**. 있으면 lit 이 인라인된 것이다
+- import 목록에 `"lit"` 과 `"lit/decorators.js"` 가 보인다
+- `dist/index.js` 는 수 KB 수준. `dist/bundle.umd.js` 만 lit 을 인라인해 20KB 를 넘는다
 
 - [ ] **Step 8: 정리**
 
