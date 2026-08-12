@@ -18,8 +18,18 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 **태그를 반드시 지정한다.** `main` 에는 `dist/` 가 없어서 브랜치를 가리키면 설치는 되지만 import 가 실패한다. 사용할 수 있는 태그는 `git tag -l` 로 확인한다.
 
-사용법·프로퍼티·이벤트는 저장소의 `index.html` 에 있다. 이 문서는 `npm install` 로만
-받는 패키지에는 포함되지 않으므로, 보려면 저장소를 clone 하고 빌드해야 한다.
+## 문서 보기
+
+사용법·프로퍼티·이벤트·라이브 데모는 저장소의 `index.html` 에 있다. `files` 가 `dist` 만 고르므로 이 파일은 설치된 패키지에 포함되지 않는다. 저장소에서 봐야 한다.
+
+**태그를 clone 하면 빌드가 필요 없다.** 태그 커밋에는 `dist/` 가 들어 있어서 `index.html` 이 참조하는 것이 이미 다 있다.
+
+```sh
+git clone --branch v0.1.4 --depth 1 https://github.com/neosimplix/dashboard-common-ui.git
+open dashboard-common-ui/index.html
+```
+
+`main` 을 clone 했다면 `dist/` 가 없으므로 빌드가 필요하다.
 
 ```sh
 git clone https://github.com/neosimplix/dashboard-common-ui.git
