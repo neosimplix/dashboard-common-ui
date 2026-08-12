@@ -525,23 +525,115 @@ UMD는 **`type` 없는 클래식 script 태그**로 불러야 한다. `file://`�
 
 ## 11. 문서 페이지 (`index.html`)
 
-저장소 루트의 단일 HTML 파일이다. 빌드 도구도 로컬 서버도 없이 더블 클릭으로 열린다. `dist/bundle.umd.js`를 클래식 script로 로드한다.
+저장소 루트의 단일 HTML 파일이다. 빌드 도구도 로컬 서버도 없이 더블 클릭으로 열린다. `dist/bundle.umd.js`를 클래식 script로, `dist/tokens.css`를 `<link>`로 로드한다.
 
 Storybook 라이브러리를 쓰지 않는다. 이 파일은 사람이 읽고, 나중에 AI가 읽고 개발하는 데 쓴다.
 
-구성 순서:
+### 11.1 문서 셸이 곧 데모다
 
-1. **설치** — git 의존성 한 줄, 그리고 Next / React 18 / 순수 HTML 각각의 최소 연동 코드
-2. **디자인 토큰** — 전체 목록과 오버라이드 방법
-3. **컴포넌트별 섹션** — 컴포넌트마다
-   - 라이브 데모 (실제로 동작하는 것)
-   - 프로퍼티 표 (이름 / 속성명 / 타입 / 기본값 / 설명)
-   - slot 표
-   - 이벤트 표 (이름 / detail 형태 / 발생 시점)
-   - 사용 예시 코드 (HTML과 React 양쪽)
-4. **조합 예시** — 헤더 + 사이드바 전체 셸이 실제로 접히고 펴지는 데모
+**문서 페이지의 헤더와 좌측 네비게이션을 우리 컴포넌트로 만든다.** 별도 CSS 프레임워크를 쓰지 않는다.
 
-`dist`가 없으면 빈 화면이 된다. `shared-ui`에서 겪은 함정이므로 원인을 화면에 띄운다.
+```html
+<ns-header project-name="common-ui" sidebar-open></ns-header>
+<div class="body">
+  <ns-sidebar open id="docs-nav">
+    <ns-nav-group heading="시작하기">
+      <ns-nav-item href="#install" label="설치" badge="설치" active></ns-nav-item>
+      <ns-nav-item href="#usage"   label="환경별 연동" badge="연동"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="기초">
+      <ns-nav-item href="#tokens" label="디자인 토큰" badge="토큰"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="컴포넌트">
+      <ns-nav-item href="#ns-header"    label="ns-header"    badge="HD"></ns-nav-item>
+      <ns-nav-item href="#ns-sidebar"   label="ns-sidebar"   badge="SB"></ns-nav-item>
+      <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
+      <ns-nav-item href="#ns-nav-item"  label="ns-nav-item"  badge="NI"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="예시">
+      <ns-nav-item href="#full" label="전체 셸 조합" badge="셸"></ns-nav-item>
+    </ns-nav-group>
+  </ns-sidebar>
+  <main>…</main>
+</div>
+```
+
+이 구조 자체가 회귀 확인 수단이다. 접힘·이벤트·slot·`active`가 깨지면 문서가 즉시 못 쓰게 되어 바로 드러난다.
+
+동작 배선은 소비자가 쓰는 방식과 동일하다 — 컴포넌트는 상태를 바꾸지 않고 문서 페이지가 내려준다.
+
+```js
+const header = document.querySelector("ns-header");
+const nav = document.getElementById("docs-nav");
+
+header.addEventListener("ns-toggle", (e) => {
+  header.sidebarOpen = e.detail.open;
+  nav.open = e.detail.open;
+});
+
+// ★ document 가 아니라 셸 사이드바에 붙인다 (11.2 참고)
+nav.addEventListener("ns-navigate", (e) => {
+  document.querySelector(e.detail.href)?.scrollIntoView({ behavior: "smooth" });
+  history.replaceState(null, "", e.detail.href);
+});
+```
+
+스크롤에 따라 `active`를 옮기는 것은 `IntersectionObserver` 한 개로 처리한다. 이것도 `active` 프로퍼티의 데모가 된다.
+
+### 11.2 자기 참조 구조에서 걸리는 세 가지
+
+**① 데모 안의 이벤트가 문서 셸을 움직인다**
+
+`ns-navigate`는 `bubbles: true, composed: true`라 데모 사이드바에서 발생한 이벤트도 `document`까지 올라온다. 셸 리스너를 `document`에 붙이면 데모를 클릭할 때마다 문서가 스크롤된다.
+
+→ 셸 리스너는 **셸의 `ns-sidebar` 엘리먼트에** 붙인다. 각 데모도 자기 컨테이너에 붙인다. 이벤트가 버블링된다는 성질 자체가 이 격리를 만들어준다.
+
+**② 데모 사이드바가 페이지 높이를 다 먹는다**
+
+`tokens.css`의 `ns-sidebar { width: var(--sidebar-width) }`는 전역 element 선택자라 데모에도 적용된다. 이건 의도한 것이다. 다만 높이는 제한해야 한다.
+
+→ 데모는 고정 높이 프레임(`.demo { height: 320px; overflow: hidden; border: 1px solid var(--color-line) }`) 안에 넣는다.
+
+**③ 예시 코드와 실제 데모가 어긋난다**
+
+코드 블록을 손으로 적으면 데모를 고칠 때 코드가 따라오지 않는다. `shared-ui`에서 문서가 신뢰를 잃은 방식이다.
+
+→ HTML 예시는 **`<template>` 하나를 원본으로 삼는다.** 작은 헬퍼가 그것을 복제해 데모를 만들고, 같은 `innerHTML`을 들여쓰기만 정리해 `<pre>`에 넣는다. 이스케이프를 손으로 할 필요도 없어진다.
+
+```js
+// 한 곳에서 정의하고 두 곳에 쓴다
+for (const tpl of document.querySelectorAll("template.ex")) {
+  const frame = tpl.nextElementSibling;              // <div class="demo">
+  frame.append(tpl.content.cloneNode(true));
+  frame.nextElementSibling.textContent =             // <pre>
+    dedent(tpl.innerHTML);
+}
+```
+
+React·Next 예시는 실행하지 않으므로 `<script type="text/plain">`에 원문 그대로 담고 `<pre>`로 옮긴다. 브라우저가 파싱하지 않아 이스케이프가 필요 없다.
+
+### 11.3 섹션 구성
+
+| # | 섹션 | 내용 |
+|---|---|---|
+| 1 | 설치 | git 의존성 한 줄, 태그로 버전 올리는 법, `dist`가 태그에만 있다는 설명 |
+| 2 | 환경별 연동 | Next(App Router) / React 18 / 순수 HTML 각각의 최소 동작 코드. `tokens.css` import가 필수라는 점 명시 |
+| 3 | 디자인 토큰 | 전체 목록을 그룹별 표로. 각 색은 실제 색 견본을 함께 표시. `:root` 재정의로 덮는 방법 |
+| 4~7 | 컴포넌트별 | `ns-header` → `ns-sidebar` → `ns-nav-group` → `ns-nav-item` |
+| 8 | 전체 셸 조합 | 헤더 + 사이드바 + 그룹 + 아이템이 실제로 접히고 펴지고 라우팅 이벤트를 올리는 데모 |
+
+컴포넌트 섹션은 넷 다 동일한 순서를 따른다.
+
+1. 한 줄 설명과 라이브 데모
+2. **프로퍼티** 표 — 프로퍼티명 / 속성명 / 타입 / 기본값 / 설명
+3. **slot** 표 — 이름 / 위치 / 용도
+4. **이벤트** 표 — 이름 / `detail` 형태 / 발생 시점
+5. **사용 예시** — HTML과 React를 위아래로 나란히. 탭을 만들지 않는다(JS와 상태가 늘어난다)
+6. 주의사항 — 해당되는 경우만. 예: `ns-header`의 `sidebarOpen`은 컴포넌트가 스스로 바꾸지 않으므로 소비자가 이벤트를 받아 되돌려줘야 한다
+
+### 11.4 dist 누락 감지
+
+`dist`가 없으면 셸부터 그려지지 않아 빈 화면이 된다. `shared-ui`에서 겪은 함정이므로 원인을 화면에 띄운다.
 
 ```html
 <script>
@@ -558,7 +650,7 @@ Storybook 라이브러리를 쓰지 않는다. 이 파일은 사람이 읽고, �
 무거운 검증 하네스를 만들지 않는다. `shared-ui`의 실패 원인이었다. 다음 넷만 유지한다.
 
 1. **`npm run check`** — `tsc` 타입 검사 + 이벤트 매핑 검사(§8)
-2. **`index.html` 육안 확인** — 라이브 데모가 회귀 확인 수단이다. 컴포넌트를 추가하면 여기에도 추가한다
+2. **`index.html` 육안 확인** — 라이브 데모가 회귀 확인 수단이다. 문서 셸 자체가 우리 컴포넌트로 만들어져 있어서(§11.1) 헤더·사이드바·접힘·이벤트가 깨지면 문서가 열리지 않는 것으로 즉시 드러난다. 컴포넌트를 추가하면 여기에도 추가한다
 3. **콜드 설치 검증** — 릴리스 후 빈 디렉터리에서 실제로 태그를 설치하고 확인한다. `files: ["dist"]`와 gitignore된 `dist`가 얽히는 지점이라 실측이 필요하다
 
    ```sh
