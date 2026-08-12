@@ -59,15 +59,159 @@
     font-size: var(--font-size-xs);
     line-height: 1.6;
   }
+
+  /* 사이드바의 overflow-y 가 동작하려면 높이 체인이 끊기지 않아야 한다. */
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; }
+  .shell { display: flex; flex: 1; min-height: 0; }
+  main { flex: 1; overflow-y: auto; max-width: none; }
+  main > * { max-width: 56rem; }
 </style>
 </head>
 <body>
 
-<main>
+<ns-header project-name="common-ui" sidebar-open id="docs-header"></ns-header>
+
+<div class="shell">
+  <ns-sidebar open id="docs-nav">
+    <ns-nav-group heading="시작하기">
+      <ns-nav-item href="#install" label="설치" badge="설치" active></ns-nav-item>
+      <ns-nav-item href="#usage" label="환경별 연동" badge="연동"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="기초">
+      <ns-nav-item href="#tokens" label="디자인 토큰" badge="토큰"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="컴포넌트">
+      <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
+      <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
+      <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
+      <ns-nav-item href="#ns-nav-item" label="ns-nav-item" badge="NI"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="예시">
+      <ns-nav-item href="#full" label="전체 셸 조합" badge="셸"></ns-nav-item>
+    </ns-nav-group>
+  </ns-sidebar>
+
+  <main>
+  <h2 id="install">설치</h2>
+  <p>
+    npm 레지스트리에 올리지 않는다. git 태그로 버전을 관리하고 소비자는 git 의존성으로 설치한다.
+    <code>package.json</code> 에 한 줄을 넣는다.
+  </p>
+  <script type="text/plain">
+    {
+      "dependencies": {
+        "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0"
+      }
+    }
+  </script>
+  <p>
+    업그레이드는 태그 번호만 바꾸면 된다. <code>#v0.1.0</code> → <code>#v0.2.0</code>.
+  </p>
+  <p>
+    <code>main</code> 브랜치에는 <code>dist</code> 가 없다. 빌드 산출물은 릴리스 태그가 가리키는
+    커밋에만 들어 있으므로, 반드시 태그를 지정해 설치한다.
+  </p>
+
+  <h2 id="usage">환경별 연동</h2>
+  <p>
+    <strong>어느 환경이든 <code>tokens.css</code> 를 반드시 불러와야 한다.</strong>
+    컴포넌트 스타일은 이 파일이 정의하는 CSS 변수를 값 없이 참조하므로, 빠지면
+    레이아웃이 무너진다. 잊으면 콘솔에 경고가 뜬다.
+  </p>
+
+  <h3>Next.js (App Router)</h3>
+  <script type="text/plain">
+    // app/layout.tsx
+    import "@neosimplix/common-ui/tokens.css";
+
+    // app/shell.tsx
+    "use client";
+    import { useState } from "react";
+    import { usePathname, useRouter } from "next/navigation";
+    import { NsHeader, NsSidebar, NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
+
+    export function Shell({ children }) {
+      const [open, setOpen] = useState(true);
+      const pathname = usePathname();
+      const router = useRouter();
+
+      return (
+        <>
+          <NsHeader projectName="대시보드" sidebarOpen={open}
+                    onNsToggle={(e) => setOpen(e.detail.open)}>
+            <div slot="actions"><UserMenu /></div>
+          </NsHeader>
+          <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+            <NsSidebar open={open} onNsNavigate={(e) => router.push(e.detail.href)}>
+              <NsNavGroup heading="프로젝트">
+                <NsNavItem href="/a" label="프로젝트 A" badge="PA"
+                           active={pathname === "/a"} />
+              </NsNavGroup>
+            </NsSidebar>
+            <main>{children}</main>
+          </div>
+        </>
+      );
+    }
+  </script>
+
+  <h3>React 18 (Vite 등)</h3>
+  <p>코드가 Next 와 완전히 동일하다. 래퍼가 React 18 과 19 의 차이를 흡수한다.</p>
+
+  <h3>순수 HTML</h3>
+  <p>
+    빌드 도구가 필요 없다. UMD 번들은 <code>type</code> 없는 클래식 script 로 불러야 한다 —
+    <code>file://</code> 에서 <code>type="module"</code> 은 CORS 로 막힌다.
+  </p>
+  <ul>
+    <li><code>dist/tokens.css</code> 를 <code>&lt;link rel="stylesheet"&gt;</code> 로</li>
+    <li><code>dist/bundle.umd.js</code> 를 <code>&lt;script src&gt;</code> 로 (<code>type</code> 없이)</li>
+  </ul>
+
+  <h4>마크업</h4>
+  <script type="text/plain">
+    <ns-header project-name="대시보드" sidebar-open>
+      <button slot="actions">로그아웃</button>
+    </ns-header>
+    <ns-sidebar open>
+      <ns-nav-group heading="프로젝트">
+        <ns-nav-item href="/a" label="프로젝트 A" badge="PA"></ns-nav-item>
+      </ns-nav-group>
+    </ns-sidebar>
+  </script>
+
+  <h4>배선</h4>
+  <script type="text/plain">
+    const header = document.querySelector("ns-header");
+    const sidebar = document.querySelector("ns-sidebar");
+
+    header.addEventListener("ns-toggle", (e) => {
+      header.sidebarOpen = e.detail.open;
+      sidebar.open = e.detail.open;
+    });
+    sidebar.addEventListener("ns-navigate", (e) => { location.href = e.detail.href; });
+  </script>
+
+  <h2 id="tokens">디자인 토큰</h2>
+  <p>
+    토큰 이름은 <code>dashboard-shell/app/globals.css</code> 와 동일하다. 접두사가 없으므로
+    이미 그 이름을 쓰던 코드는 그대로 동작한다.
+  </p>
+  <p>브랜드 색을 바꾸려면 <code>:root</code> 에서 다시 정의한다. 문서 쪽 선언이 항상 이긴다.</p>
+  <script type="text/plain">
+    :root {
+      --color-accent: #2563eb;
+      --color-accent-hover: #1d4ed8;
+    }
+  </script>
+
+  <div class="demo block" style="padding: var(--space-4)">
+    <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--space-2)"></div>
+  </div>
+
   <h1>common-ui</h1>
   <p>Next.js · React 18/19 · 순수 HTML 에서 동일하게 쓰는 대시보드 셸 웹 컴포넌트.</p>
-
-  <!-- 컴포넌트 섹션은 Task 5~8 에서, 설치·연동·토큰 섹션은 Task 9 에서 추가한다. -->
 
   <h2 id="ns-header">ns-header</h2>
   <p>
@@ -335,7 +479,50 @@
       onNsNavigate={(e) => router.push(e.detail.href)}
     />
   </script>
-</main>
+
+  <h2 id="full">전체 셸 조합</h2>
+  <p>헤더의 토글이 사이드바를 접고, 항목 클릭이 라우팅 이벤트를 올린다.</p>
+
+  <template class="ex">
+    <div style="display:flex;flex-direction:column;height:100%;width:100%" id="full-demo">
+      <ns-header project-name="대시보드" sidebar-open></ns-header>
+      <div style="display:flex;flex:1;min-height:0">
+        <ns-sidebar open>
+          <ns-nav-group heading="프로젝트">
+            <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
+            <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
+          </ns-nav-group>
+          <ns-nav-group heading="관리">
+            <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
+          </ns-nav-group>
+        </ns-sidebar>
+        <div style="flex:1;padding:var(--space-4);background:var(--color-surface-sunken)">
+          <span id="full-log">토글을 누르거나 항목을 클릭해보세요.</span>
+        </div>
+      </div>
+    </div>
+  </template>
+  <div class="demo"></div>
+  <pre></pre>
+
+  <h3>배선</h3>
+  <script type="text/plain">
+    const header = document.querySelector("ns-header");
+    const sidebar = document.querySelector("ns-sidebar");
+
+    // 컴포넌트는 자기 상태를 바꾸지 않는다. 이벤트를 받아 되돌려준다.
+    header.addEventListener("ns-toggle", (e) => {
+      header.sidebarOpen = e.detail.open;
+      sidebar.open = e.detail.open;
+    });
+
+    // ns-navigate 는 composed 라 사이드바에서 한 번만 들으면 된다.
+    sidebar.addEventListener("ns-navigate", (e) => {
+      router.push(e.detail.href);
+    });
+  </script>
+  </main>
+</div>
 
 <script src="./dist/bundle.umd.js"></script>
 
@@ -382,6 +569,39 @@
     pre.textContent = dedent(tpl.innerHTML);
   });
 
+  const docsHeader = document.getElementById("docs-header");
+  const docsNav = document.getElementById("docs-nav");
+
+  docsHeader.addEventListener("ns-toggle", (e) => {
+    docsHeader.sidebarOpen = e.detail.open;
+    docsNav.open = e.detail.open;
+  });
+
+  // document 가 아니라 셸 사이드바에 붙인다. ns-navigate 는 composed 라
+  // 데모 안에서 발생한 것도 document 까지 올라온다.
+  docsNav.addEventListener("ns-navigate", (e) => {
+    document.querySelector(e.detail.href)?.scrollIntoView({ behavior: "smooth" });
+    history.replaceState(null, "", e.detail.href);
+  });
+
+  // 스크롤에 따라 active 를 옮긴다. active 프로퍼티의 데모이기도 하다.
+  const navItems = [...docsNav.querySelectorAll("ns-nav-item")];
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        for (const item of navItems) {
+          item.active = item.href === `#${entry.target.id}`;
+        }
+      }
+    },
+    { rootMargin: "0px 0px -70% 0px" },
+  );
+  for (const item of navItems) {
+    const target = document.querySelector(item.href);
+    if (target) observer.observe(target);
+  }
+
   const demoSidebar = document.getElementById("demo-sidebar");
   const demoSidebarToggle = document.getElementById("demo-sidebar-toggle");
   const sidebarLog = document.getElementById("sidebar-log");
@@ -410,6 +630,48 @@
     demoHeader.addEventListener("ns-toggle", (e) => {
       demoHeader.sidebarOpen = e.detail.open;   // 소비자가 되돌려준다
       headerLog.textContent = `ns-toggle  open=${e.detail.open}`;
+    });
+  }
+
+  const swatchNames = [
+    "--color-surface", "--color-surface-sunken", "--color-surface-hover",
+    "--color-line", "--color-line-strong",
+    "--color-fg", "--color-fg-body", "--color-fg-muted", "--color-fg-subtle",
+    "--color-accent", "--color-accent-hover", "--color-accent-fg", "--color-disabled",
+    "--color-danger", "--color-danger-surface", "--color-warn", "--color-warn-surface",
+    "--color-success", "--color-success-surface",
+  ];
+  const swatches = document.getElementById("token-swatches");
+  if (swatches) {
+    const root = getComputedStyle(document.documentElement);
+    for (const name of swatchNames) {
+      const cell = document.createElement("div");
+      cell.style.cssText = "display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-xs)";
+      cell.innerHTML =
+        `<span style="width:1.5rem;height:1.5rem;flex:none;border-radius:var(--radius-badge);` +
+        `border:1px solid var(--color-line);background:var(${name})"></span>` +
+        `<code>${name}</code>`;
+      cell.title = root.getPropertyValue(name).trim();
+      swatches.append(cell);
+    }
+  }
+
+  const fullDemo = document.getElementById("full-demo");
+  if (fullDemo) {
+    const fullHeader = fullDemo.querySelector("ns-header");
+    const fullSidebar = fullDemo.querySelector("ns-sidebar");
+    const fullItems = [...fullDemo.querySelectorAll("ns-nav-item")];
+    const fullLog = fullDemo.querySelector("#full-log");
+
+    fullHeader.addEventListener("ns-toggle", (e) => {
+      fullHeader.sidebarOpen = e.detail.open;
+      fullSidebar.open = e.detail.open;
+      fullLog.textContent = `ns-toggle  open=${e.detail.open}`;
+    });
+
+    fullSidebar.addEventListener("ns-navigate", (e) => {
+      for (const item of fullItems) item.active = item.href === e.detail.href;
+      fullLog.textContent = `ns-navigate  href=${e.detail.href}`;
     });
   }
 
