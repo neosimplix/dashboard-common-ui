@@ -1,0 +1,65 @@
+/*
+  main 은 소스만 유지하고 dist 는 릴리스 태그에만 넣는다.
+
+  태그는 이미 존재하는 커밋에 파일을 얹을 수 없으므로, detached HEAD 에서
+  dist 를 포함한 커밋을 새로 만들고 거기에 태그를 붙인다. main 히스토리는
+  건드리지 않는다.
+*/
+import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+
+const version = process.argv[2];
+if (!/^\d+\.\d+\.\d+$/.test(version ?? "")) {
+  console.error("사용법: npm run release -- 0.1.0");
+  process.exit(1);
+}
+const tag = `v${version}`;
+
+const git = (...args) => execFileSync("git", args, { stdio: "inherit" });
+const gitOut = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
+const run = (cmd, ...args) => execFileSync(cmd, args, { stdio: "inherit" });
+
+if (gitOut("status", "--porcelain")) {
+  console.error("작업 트리가 깨끗하지 않습니다. 커밋하거나 stash 후 다시 실행하세요.");
+  process.exit(1);
+}
+if (gitOut("tag", "--list", tag)) {
+  console.error(`${tag} 태그가 이미 있습니다.`);
+  process.exit(1);
+}
+
+const branch = gitOut("rev-parse", "--abbrev-ref", "HEAD");
+
+// 버전 커밋은 현재 브랜치에 남긴다.
+const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+pkg.version = version;
+writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
+git("add", "package.json");
+git("commit", "-m", `chore(release): v${version}`);
+
+run("npm", "run", "check");
+run("npm", "run", "build");
+
+// dist 는 .gitignore 대상이라 -f 로 강제 추가한다.
+git("checkout", "--detach");
+git("add", "-f", "dist");
+git("commit", "-m", `release: ${tag}`);
+git("tag", tag);
+
+const hasOrigin = gitOut("remote").split("\n").includes("origin");
+if (hasOrigin) {
+  git("push", "origin", tag);
+  console.log(`\n${tag} 태그를 푸시했습니다.`);
+} else {
+  console.log(`\n${tag} 태그를 로컬에 만들었습니다. origin 이 없어 푸시는 건너뜁니다.`);
+}
+
+git("checkout", branch);
+
+console.log(`
+${branch} 브랜치의 버전 커밋은 아직 푸시되지 않았습니다:
+  git push origin ${branch}
+
+소비자 설치:
+  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#${tag}"
+`);
