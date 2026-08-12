@@ -26,6 +26,7 @@ Next.js, React 18/19, 순수 HTML에서 동일하게 쓰는 공통 UI를 Web Com
 | 스타일 격리 | Shadow DOM | 소비자 CSS와 충돌하지 않는다. slot 콘텐츠는 light DOM이라 소비자 CSS(Tailwind 포함)가 그대로 적용된다 |
 | 테마 | CSS custom property, 문서 `:root`에 정의 | 커스텀 프로퍼티는 shadow 경계를 통과해 상속된다. `[data-theme="dark"]` 한 줄로 전체 전환 가능 |
 | 토큰 로드 | **소비자가 명시적으로 import** | 패키지 자동 주입은 JS 실행 이후라 FOUC가 발생한다. `<link>`/CSS import는 첫 페인트 전에 로드된다 |
+| 토큰 이름 | `globals.css` 이름 그대로, 접두사 없음 | `dashboard-shell` 25개 파일이 이미 이 이름을 직접 참조한다. 대신 Tailwind 색 유틸 브리지는 포기한다(사용처 2곳) |
 | React 지원 | `@lit/react` 래퍼 단일 경로 (18·19 공통) | React 19도 `onXxx` 커스텀 이벤트를 자동 연결하지 않는다. Native JSX 경로는 만들지 않는다 |
 | 로컬 데모 | UMD 번들 + `file://` | `index.html` 더블 클릭만으로 실행된다. 로컬 서버 불필요 |
 | 배포 | 로컬 릴리스 스크립트, dist는 태그에만 | `main`은 소스만 유지해 커밋 로그가 깨끗하다. CI 권한·시크릿 설정이 필요 없다 |
@@ -88,35 +89,41 @@ dist/                               # main에는 없음(gitignore). 릴리스 �
 컴포넌트는 이름만 참조한다. `tokens.css`를 import하지 않는다.
 
 ```ts
-css`.row { border-color: var(--ns-color-line); }`   // 폴백 없이 이름만
+css`.row { border-color: var(--color-line); }`   // 폴백 없이 이름만
 ```
 
 폴백을 넣지 않는 이유는 hex 값이 `tokens.css`와 컴포넌트 스타일 두 곳에 존재하게 되어 어긋나기 때문이다. 대신 미로드를 **경고로** 잡는다(§4.4).
 
 ### 4.2 이름 체계
 
-`dashboard-shell/app/globals.css`에 정의된 토큰 **전체**를 그대로 승계하고 `--ns-` 접두사만 붙인다. 새 이름을 만들지 않는다 — 두 체계가 공존하면 어느 쪽이 진실인지 알 수 없게 된다. 이번 네 컴포넌트가 쓰지 않는 토큰(`--ns-color-warn`, `--ns-color-success`, `--ns-elevation-card` 등)도 함께 옮긴다. 토큰은 컴포넌트 목록이 아니라 디자인 시스템 전체의 어휘다.
-
-승계 대상 그룹:
+`dashboard-shell/app/globals.css`에 정의된 토큰 **전체를 이름 그대로** 승계한다. **접두사를 붙이지 않고 이름도 바꾸지 않는다.** 이번 네 컴포넌트가 쓰지 않는 토큰(`--color-warn`, `--color-success`, `--elevation-card` 등)도 함께 옮긴다. 토큰은 컴포넌트 목록이 아니라 디자인 시스템 전체의 어휘다.
 
 | 그룹 | 토큰 |
 |---|---|
-| 표면·전경·경계 | `--ns-color-surface`, `-surface-sunken`, `-surface-hover`, `--ns-color-line`, `-line-strong`, `--ns-color-overlay`, `--ns-color-fg`, `-fg-body`, `-fg-muted`, `-fg-subtle` |
-| 액센트 | `--ns-color-accent`, `-accent-hover`, `-accent-fg`, `--ns-color-disabled` |
-| 상태 | `--ns-color-danger`, `-danger-surface`, `--ns-color-warn`, `-warn-surface`, `--ns-color-success`, `-success-surface` |
-| 간격 | `--ns-space-1`, `-1-5`, `-2`, `-2-5`, `-3`, `-4`, `-5`, `-6`, `-8` |
-| 반경 | `--ns-radius-badge`, `-control`, `-panel`, `-card`, `-pill` |
-| 타이포 | `--ns-font-size-2xs` … `-xl`, 짝이 되는 `--ns-line-height-*`, `--ns-weight-medium`, `-semibold` |
-| 레이아웃 | `--ns-header-height`, `--ns-sidebar-width`, `--ns-sidebar-width-rail`, `--ns-page-padding-x`, `-y`, `--ns-card-padding`, `--ns-control-height-sm`, `-md` |
-| 기타 | `--ns-elevation-card`, `--ns-transition-fast`, `--ns-transition-ease` |
+| 표면·전경·경계 | `--color-surface`, `-surface-sunken`, `-surface-hover`, `--color-line`, `-line-strong`, `--color-overlay`, `--color-fg`, `-fg-body`, `-fg-muted`, `-fg-subtle` |
+| 액센트 | `--color-accent`, `-accent-hover`, `-accent-fg`, `--color-disabled` |
+| 상태 | `--color-danger`, `-danger-surface`, `--color-warn`, `-warn-surface`, `--color-success`, `-success-surface` |
+| 간격 | `--space-1`, `-1-5`, `-2`, `-2-5`, `-3`, `-4`, `-5`, `-6`, `-8` |
+| 반경 | `--radius-badge`, `-control`, `-panel`, `-card`, `-pill` |
+| 타이포 | `--font-size-2xs` … `-xl`, 짝이 되는 `--line-height-*`, `--weight-medium`, `-semibold` |
+| 레이아웃 | `--header-height`, `--sidebar-width`, `--sidebar-width-collapsed`, `--page-padding-x`, `-y`, `--card-padding`, `--control-height-sm`, `-md` |
+| 기타 | `--elevation-card`, `--transition-fast`, `--transition-ease` |
 
-`--sidebar-width-collapsed`만 `--ns-sidebar-width-rail`로 이름을 바꾼다. 접었을 때 완전히 사라지지 않고 레일이 남는다는 동작을 이름이 드러내게 한다.
+**접두사를 붙이지 않는 이유는 실측 결과다.** `dashboard-shell`은 25개 파일에서 `var(--space-3)`, `var(--color-line)` 같은 형태로 이 토큰을 직접 참조한다. 접두사를 붙이면 그 25개를 전부 고쳐야 하고, 이후 두 이름 체계가 영구히 공존한다. 이름을 그대로 두면 그 파일들은 손댈 필요가 없다.
 
-폰트 크기는 반드시 `--ns-line-height-*` 짝과 함께 옮긴다. 짝 없이 크기만 재정의하면 줄간격이 조용히 틀어진다.
+기존 이름은 이미 Tailwind 네임스페이스를 피해 지어져 있어서(`--text-*` 대신 `--font-size-*`, `--font-weight-*` 대신 `--weight-*`, `--spacing` 대신 `--space-*`) Tailwind를 쓰는 프로젝트에 import해도 유틸리티 값이 바뀌지 않는다. `--color-*`는 Tailwind 기본 팔레트에 없는 이름들(`surface`, `line`, `fg`, `accent`, `danger` …)이라 역시 충돌하지 않는다.
+
+`--sidebar-width-collapsed`도 이름을 유지한다. 기존 값이 이미 `4rem` 레일이라 "접었을 때 좌측에 작은 사이드바가 남는다"는 요구사항을 그대로 만족한다.
+
+폰트 크기는 반드시 `--line-height-*` 짝과 함께 옮긴다. 짝 없이 크기만 재정의하면 줄간격이 조용히 틀어진다.
+
+**패키지 내부용 커스텀 프로퍼티는 구별되게 `--ns-` 접두사를 쓴다.** 예: `--ns-label-display`(§5.2). 이것들은 공유 어휘가 아니라 컴포넌트 사이의 사적인 배선이고, 소비자가 건드릴 대상이 아니다.
 
 ### 4.3 값
 
 기존 토큰은 Tailwind v4 `@theme static` 안에서 `--color-zinc-*`를 참조한다. **순수 HTML에는 Tailwind가 없으므로 그대로 쓸 수 없다.** 구현 시 `dashboard-shell`을 실행해 `getComputedStyle`로 실제 계산값을 추출하고, 그 값을 `tokens.css`에 고정한다. Tailwind v4 기본 팔레트는 oklch이므로 v3 시절 hex를 추측해 적지 않는다.
+
+`tokens.css`는 Tailwind에 의존하지 않는 평범한 `:root` 블록 하나다.
 
 ### 4.4 레이아웃 예약과 경고
 
@@ -124,9 +131,9 @@ css`.row { border-color: var(--ns-color-line); }`   // 폴백 없이 이름만
 
 ```css
 /* tokens.css 하단 */
-ns-header  { display: block; height: var(--ns-header-height); }
-ns-sidebar { display: block; width: var(--ns-sidebar-width); }
-ns-sidebar:not([open]) { width: var(--ns-sidebar-width-rail); }
+ns-header  { display: block; height: var(--header-height); }
+ns-sidebar { display: block; width: var(--sidebar-width); }
+ns-sidebar:not([open]) { width: var(--sidebar-width-collapsed); }
 ```
 
 토큰 미로드는 조용히 실패하지 않게 한다. 첫 컴포넌트가 붙을 때 한 번만 검사한다.
@@ -137,7 +144,7 @@ let warned = false;
 export function warnIfTokensMissing() {
   if (warned || typeof getComputedStyle === "undefined") return;
   warned = true;
-  if (getComputedStyle(document.documentElement).getPropertyValue("--ns-color-line").trim()) return;
+  if (getComputedStyle(document.documentElement).getPropertyValue("--color-line").trim()) return;
   console.warn(
     '[@neosimplix/common-ui] tokens.css 가 로드되지 않아 레이아웃이 깨집니다.\n' +
     '  Next/React:  import "@neosimplix/common-ui/tokens.css";\n' +
@@ -146,21 +153,30 @@ export function warnIfTokensMissing() {
 }
 ```
 
-### 4.5 Tailwind 프로젝트 브리지
+### 4.5 `dashboard-shell`의 토큰 이관
 
-`dashboard-shell`은 토큰의 소비자가 된다. 값을 두 번 적지 않는다.
+`dashboard-shell`은 토큰의 정의자에서 소비자가 된다. 값을 두 번 적지 않는다.
 
 ```css
+/* app/globals.css — 이후 */
 @import "tailwindcss";
-@import "@neosimplix/common-ui/tokens.css";
+@import "@neosimplix/common-ui/tokens.css";   /* ← 진실의 원천 */
+@source not "../docs";
 
-@theme static {
-  --color-surface: var(--ns-color-surface);
-  --color-line:    var(--ns-color-line);
-  --color-fg:      var(--ns-color-fg);
-  /* … */
-}
+/* @theme static 블록과 :root 토큰 블록을 삭제한다.
+   토큰 이름이 동일하므로 var(--space-3) 을 쓰던 25개 파일은 그대로 동작한다. */
+
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
 ```
+
+**Tailwind 커스텀 색 유틸리티는 포기한다.** `@theme static`에 `--color-surface: var(--color-surface)`를 쓰면 자기 참조라 값이 무효가 되므로 브리지가 성립하지 않는다. 실제 사용처는 두 곳뿐이라 직접 값을 쓰도록 고친다.
+
+| 파일 | 현재 | 변경 |
+|---|---|---|
+| `app/(shell)/layout.tsx:160` | `bg-surface-sunken` | `style={{ background: "var(--color-surface-sunken)" }}` 또는 CSS 모듈로 |
+| `app/(shell)/projects/apply/MyRequestTable.tsx:39` | `text-fg-subtle` | 동일한 방식 |
+
+Tailwind 자체는 계속 쓴다. `border-zinc-200` 같은 기본 팔레트 유틸리티는 영향이 없다.
 
 ## 5. 컴포넌트 명세
 
@@ -185,7 +201,7 @@ export function warnIfTokensMissing() {
 
 | 프로퍼티 | 속성 | 타입 | 기본값 | 설명 |
 |---|---|---|---|---|
-| `open` | `open` | boolean (reflect) | `false` | 펼침 여부. 접히면 레일(`--ns-sidebar-width-rail`)만 남는다 |
+| `open` | `open` | boolean (reflect) | `false` | 펼침 여부. 접히면 레일(`--sidebar-width-collapsed`, 4rem)만 남는다 |
 
 | slot | 내용 |
 |---|---|
@@ -551,7 +567,12 @@ Storybook 라이브러리를 쓰지 않는다. 이 파일은 사람이 읽고, �
    node -e "import('@neosimplix/common-ui').then(() => console.log('ok'))"
    ```
 
-4. **`dashboard-shell` 실연동** — 첫 릴리스 후 `dashboard-shell`의 `Header.tsx`/`Sidebar.tsx`를 이 패키지로 교체해 실제 앱에서 동작을 확인한다. `shared-ui`는 데모에서는 되고 실제 앱에서 안 되는 문제가 있었다
+4. **`dashboard-shell` 실연동** — 첫 릴리스 후 다음을 수행해 실제 앱에서 동작을 확인한다. `shared-ui`는 데모에서는 되고 실제 앱에서 안 되는 문제가 있었다
+
+   - `globals.css`의 `@theme static`·`:root` 토큰 블록 삭제, `tokens.css` import로 교체 (§4.5)
+   - Tailwind 커스텀 색 유틸 2곳 수정
+   - `Header.tsx`/`Sidebar.tsx`를 `NsHeader`/`NsSidebar`로 교체
+   - `var(--space-*)` 등을 쓰는 25개 파일이 **수정 없이** 그대로 동작하는지 확인 — 이름을 유지한 이유가 여기다
 
 ## 13. 확인이 필요한 항목
 
