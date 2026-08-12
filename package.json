@@ -20,7 +20,8 @@
     "./umd": "./dist/bundle.umd.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "index.html"
   ],
   "scripts": {
     "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-tokens.mjs",

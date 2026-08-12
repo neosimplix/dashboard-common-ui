@@ -20,16 +20,15 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ## 문서 보기
 
-사용법·프로퍼티·이벤트·라이브 데모는 저장소의 `index.html` 에 있다. `files` 가 `dist` 만 고르므로 이 파일은 설치된 패키지에 포함되지 않는다. 저장소에서 봐야 한다.
-
-**태그를 clone 하면 빌드가 필요 없다.** 태그 커밋에는 `dist/` 가 들어 있어서 `index.html` 이 참조하는 것이 이미 다 있다.
+사용법·프로퍼티·이벤트·라이브 데모는 `index.html` 에 있다. **패키지에 함께 설치되므로 설치한 뒤 바로 열면 된다.** 옆에 `dist/` 가 있어 라이브 데모까지 그대로 동작한다.
 
 ```sh
-git clone --branch v0.1.4 --depth 1 https://github.com/neosimplix/dashboard-common-ui.git
-open dashboard-common-ui/index.html
+open node_modules/@neosimplix/common-ui/index.html
 ```
 
-`main` 을 clone 했다면 `dist/` 가 없으므로 빌드가 필요하다.
+이 파일은 설치된 버전과 정확히 같은 시점의 문서다. 저장소를 따로 보러 가면 다른 버전의 문서를 읽게 될 수 있다.
+
+이 저장소에서 직접 작업할 때는 `main` 에 `dist/` 가 없으므로 빌드가 필요하다.
 
 ```sh
 git clone https://github.com/neosimplix/dashboard-common-ui.git
