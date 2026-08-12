@@ -337,7 +337,12 @@ const r = (p: string) => path.resolve(here, p);
   정규식으로 lit 계열 전체를 외부로 둔다. lit 은 dependencies 에 있으므로
   소비자에게 함께 설치된다.
 */
-const litExternal = [/^lit(\/.*)?$/, /^@lit\/.*/, /^@lit-labs\/.*/];
+const litExternal = [
+  /^lit(\/.*)?$/,
+  /^lit-(html|element)(\/.*)?$/, // lit 이 재수출하는 별개 패키지들
+  /^@lit\/.*/,
+  /^@lit-labs\/.*/,
+];
 
 // 1. ES — 번들러(Next/Vite)가 소비하는 웹 컴포넌트
 const es: UserConfig = {
@@ -2326,6 +2331,14 @@ if (gitOut("tag", "--list", tag)) {
 
 const branch = gitOut("rev-parse", "--abbrev-ref", "HEAD");
 
+/*
+  검사와 빌드를 git 에 아무것도 쓰기 전에 먼저 돌린다. 순서를 뒤집으면
+  버전 커밋을 남긴 뒤에 빌드가 깨져서, 검증되지 않은 버전 커밋이
+  브랜치에 남는다.
+*/
+run("npm", "run", "check");
+run("npm", "run", "build");
+
 // 버전 커밋은 현재 브랜치에 남긴다.
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 pkg.version = version;
@@ -2333,24 +2346,39 @@ writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
 git("add", "package.json");
 git("commit", "-m", `chore(release): v${version}`);
 
-run("npm", "run", "check");
-run("npm", "run", "build");
-
-// dist 는 .gitignore 대상이라 -f 로 강제 추가한다.
-git("checkout", "--detach");
-git("add", "-f", "dist");
-git("commit", "-m", `release: ${tag}`);
-git("tag", tag);
-
 const hasOrigin = gitOut("remote").split("\n").includes("origin");
-if (hasOrigin) {
-  git("push", "origin", tag);
-  console.log(`\n${tag} 태그를 푸시했습니다.`);
-} else {
-  console.log(`\n${tag} 태그를 로컬에 만들었습니다. origin 이 없어 푸시는 건너뜁니다.`);
-}
 
-git("checkout", branch);
+/*
+  여기서부터 detached HEAD 다. 무슨 일이 있어도 브랜치로 돌아와야 한다 —
+  중간에 던지고 끝나면 사용자가 detached 상태에 갇힌 채 이유도 모른다.
+  push 실패(네트워크·인증)가 가장 현실적인 경로다.
+*/
+git("checkout", "--detach");
+try {
+  // dist 는 .gitignore 대상이라 -f 로 강제 추가한다.
+  git("add", "-f", "dist");
+  git("commit", "-m", `release: ${tag}`);
+  git("tag", tag);
+
+  if (hasOrigin) {
+    git("push", "origin", tag);
+    console.log(`\n${tag} 태그를 푸시했습니다.`);
+  } else {
+    console.log(`\n${tag} 태그를 로컬에 만들었습니다. origin 이 없어 푸시는 건너뜁니다.`);
+  }
+} catch (error) {
+  console.error(`
+릴리스가 중단됐습니다. ${branch} 브랜치로 돌아갑니다.
+
+정리할 것이 남아 있을 수 있습니다:
+  git tag -l ${tag}                 태그가 만들어졌는지 확인
+  git tag -d ${tag}                 만들어졌다면 삭제
+  git log --oneline -1 ${branch}    버전 커밋을 되돌릴지 판단
+`);
+  throw error;
+} finally {
+  git("checkout", branch);
+}
 
 console.log(`
 ${branch} 브랜치의 버전 커밋은 아직 푸시되지 않았습니다:
@@ -2378,9 +2406,11 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.0"
+  "@neosimplix/common-ui": "git+ssh://git@github.com/neosimplix/common-ui.git#v0.1.1"
 }
 ```
+
+**태그를 반드시 지정한다.** `main` 에는 `dist/` 가 없어서 브랜치를 가리키면 설치는 되지만 import 가 실패한다. 사용할 수 있는 태그는 `git tag -l` 로 확인한다.
 
 사용법·프로퍼티·이벤트는 `index.html` 에 있다. 빌드 후 파일을 그대로 열면 된다.
 
