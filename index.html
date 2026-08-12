@@ -68,6 +68,69 @@
   <p>Next.js · React 18/19 · 순수 HTML 에서 동일하게 쓰는 대시보드 셸 웹 컴포넌트.</p>
 
   <!-- 컴포넌트 섹션은 Task 5~8 에서, 설치·연동·토큰 섹션은 Task 9 에서 추가한다. -->
+
+  <h2 id="ns-nav-item">ns-nav-item</h2>
+  <p>
+    네비게이션 그룹 하위의 항목 하나. 클릭하면 <code>ns-navigate</code> 이벤트를 올리고,
+    라우팅은 이 컴포넌트를 쓰는 프로젝트가 처리한다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
+    <ns-nav-item href="/b" label="아주 긴 프로젝트 이름은 한 줄로 말줄임된다" badge="PB"></ns-nav-item>
+    <ns-nav-item href="/c" label="프로젝트 C" badge="PC">
+      <span slot="trailing">3</span>
+    </ns-nav-item>
+  </template>
+  <div class="demo block" id="nav-item-demo" style="padding: var(--space-2)"></div>
+  <pre></pre>
+  <p id="nav-item-log" style="font-family: monospace">클릭하면 여기에 이벤트가 찍힌다.</p>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>href</code></td><td><code>href</code></td><td>string</td><td><code>""</code></td><td>라우팅 키. 이벤트에 그대로 실린다</td></tr>
+    <tr><td><code>label</code></td><td><code>label</code></td><td>string</td><td><code>""</code></td><td>펼친 상태에서 보이는 라벨. 한 줄 말줄임</td></tr>
+    <tr><td><code>badge</code></td><td><code>badge</code></td><td>string</td><td><code>""</code></td><td>접힌 레일에서 보이는 두 글자 배지</td></tr>
+    <tr><td><code>active</code></td><td><code>active</code></td><td>boolean</td><td><code>false</code></td><td>활성 여부. 컴포넌트가 스스로 바꾸지 않는다</td></tr>
+  </table>
+
+  <h3>slot</h3>
+  <table>
+    <tr><th>이름</th><th>위치</th><th>용도</th></tr>
+    <tr><td><code>trailing</code></td><td>행의 우측 끝</td><td>카운트 배지 등 소비자가 원하는 것. 접히면 함께 숨는다</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-navigate</code></td><td><code>{ href: string, label: string }</code></td><td>평범한 좌클릭. ⌘/Ctrl/Shift/Alt 클릭과 가운데 클릭은 브라우저의 새 탭 열기에 넘긴다</td></tr>
+  </table>
+
+  <h3>HTML — 마크업</h3>
+  <script type="text/plain">
+    <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
+  </script>
+
+  <h3>HTML — 배선</h3>
+  <script type="text/plain">
+    document.querySelector("ns-nav-item")
+      .addEventListener("ns-navigate", (e) => { location.href = e.detail.href; });
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsNavItem } from "@neosimplix/common-ui/react";
+
+    <NsNavItem
+      href="/a"
+      label="프로젝트 A"
+      badge="PA"
+      active={pathname === "/a"}
+      onNsNavigate={(e) => router.push(e.detail.href)}
+    />
+  </script>
 </main>
 
 <script src="./dist/bundle.umd.js"></script>
@@ -114,6 +177,15 @@
     demo.append(tpl.content.cloneNode(true));
     pre.textContent = dedent(tpl.innerHTML);
   });
+
+  const navItemDemo = document.getElementById("nav-item-demo");
+  const navItemLog = document.getElementById("nav-item-log");
+  if (navItemDemo && navItemLog) {
+    // 이 데모 컨테이너에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
+    navItemDemo.addEventListener("ns-navigate", (e) => {
+      navItemLog.textContent = `ns-navigate  href=${e.detail.href}  label=${e.detail.label}`;
+    });
+  }
 
   // 실행하지 않는 예시(React/Next)는 <script type="text/plain"> 에 원문으로 담는다.
   // 브라우저가 파싱하지 않으므로 이스케이프가 필요 없다.
