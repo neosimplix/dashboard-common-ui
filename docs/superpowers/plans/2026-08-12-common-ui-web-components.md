@@ -672,11 +672,25 @@ addEventListener 에서 detail 타입이 따라오게 한다."
     return lines.map((l) => l.slice(indent)).join("\n");
   }
 
-  for (const tpl of document.querySelectorAll("template.ex")) {
+  /*
+    규약: <template class="ex"> 다음 형제가 .demo, 그 다음이 <pre> 다.
+
+    섹션을 추가하는 쪽이 이 순서를 어기면 예외가 이 스크립트 전체를 중단시켜
+    그 뒤의 모든 섹션이 함께 빈 화면이 된다. 원인 하나가 여러 곳의 고장으로
+    보여서 진단이 어렵다. 어긋난 곳을 짚어주고 그 섹션만 건너뛴다.
+  */
+  document.querySelectorAll("template.ex").forEach((tpl, i) => {
     const demo = tpl.nextElementSibling;
+    const pre = demo?.nextElementSibling;
+    if (!demo?.classList.contains("demo") || pre?.tagName !== "PRE") {
+      console.error(
+        `[docs] ${i + 1}번째 template.ex: 다음 형제가 .demo, 그 다음이 <pre> 여야 합니다.`
+      );
+      return;
+    }
     demo.append(tpl.content.cloneNode(true));
-    demo.nextElementSibling.textContent = dedent(tpl.innerHTML);
-  }
+    pre.textContent = dedent(tpl.innerHTML);
+  });
 
   // 실행하지 않는 예시(React/Next)는 <script type="text/plain"> 에 원문으로 담는다.
   // 브라우저가 파싱하지 않으므로 이스케이프가 필요 없다.
