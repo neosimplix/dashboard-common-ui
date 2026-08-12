@@ -690,5 +690,21 @@ React·Next 예시는 실행하지 않으므로 `<script type="text/plain">`에 
 
 ## 13. 확인이 필요한 항목
 
-- **저장소 URL** — 이 문서는 `git+ssh://git@github.com/neosimplix/common-ui.git`을 가정한다. 실제 호스트와 조직명 확인 필요
-- **토큰 실제 값** — §4.3에 따라 `dashboard-shell`에서 계산값을 추출해 고정
+- **저장소 URL** — 이 문서는 `git+ssh://git@github.com/neosimplix/common-ui.git`을 가정한다. 실제 호스트와 조직명 확인 필요. **`README.md`와 `index.html`이 이 주소를 설치 안내로 발행하고 있으므로, 저장소가 만들어지기 전까지 문서를 그대로 따라하면 clone에 실패한다.** remote 연결과 태그 푸시가 남아 있다
+- ~~**토큰 실제 값**~~ — 완료. Tailwind v4 팔레트의 oklch 값을 그대로 옮겼다
+
+## 14. 알려진 한계
+
+구현과 리뷰 과정에서 확인하고 **의도적으로 수용한** 것들이다. 나중에 "왜 이렇게 돼 있지"를 다시 조사하지 않도록 남긴다.
+
+| 항목 | 내용 | 수용 이유 |
+|---|---|---|
+| SSR 하이드레이션 점프 | `@lit/react`는 프로퍼티를 `useLayoutEffect`에서 적용하므로 서버 렌더 HTML에 `open` 속성이 없다. `tokens.css`의 `ns-sidebar:not([open])`가 4rem 레일로 그리므로, 기본값이 펼침인 소비자는 4rem → 15rem 점프를 겪는다 | 래퍼 `div`에 폭을 인라인으로 주는 우회법을 `index.html`에 문서화. 컴포넌트 쪽 해결은 SSR 전용 코드를 요구해 범위 밖 |
+| 접힘 전파 범위 | `::slotted(ns-nav-group)`은 직계 자식만 매치한다. `ns-nav-item`을 사이드바에 직접 넣거나 그룹을 감싸면 접어도 라벨이 남는다 | slot 계약이 "`ns-nav-group` 목록"이고 문서에 명시. `::slotted()`는 결합자를 받지 않아 더 넓게 쓸 방법이 없다 |
+| 그룹 간 여백 | `:host(:not(:first-child))`는 형제 종류를 가리지 않는다. 사이드바 첫 자식으로 다른 요소를 넣으면 첫 그룹에도 여백이 붙는다 | 위와 같은 `::slotted()` 제약. 실사용에서 사이드바에는 그룹만 넣는다 |
+| `label` 사실상 필수 | 접힌 레일에서 배지는 `aria-hidden`, 라벨은 `display:none`이라 `title`이 유일한 접근성 이름이 된다. `label=""`이면 이름 없는 링크가 된다 | 프로퍼티 표에 명시 |
+| `nav` 랜드마크 이름 없음 | `ns-sidebar`의 `<nav>`에 접근성 이름이 없다 | 페이지에 nav 랜드마크가 하나뿐이면 무해. 소비자가 두 번째 `<nav>`를 추가하는 시점에 `label` 패스스루를 추가한다 |
+| `check-events.mjs` 범위 | 리터럴 문자열 이벤트 이름만 잡고, 컴포넌트별이 아니라 전체 집합끼리 비교한다 | 스크립트 주석에 명시. 현재 코드는 전부 리터럴이고, 이 저장소의 최소 도구 원칙에 맞는 비용 |
+| 릴리스 후 `dist` 소멸 | `release.mjs`가 브랜치로 돌아오면서 `dist/`가 지워진다. 직후 `index.html`을 열면 "dist 가 없습니다" 배너가 뜬다 | 종료 메시지에 재빌드 안내. `dist`는 `main`에서 추적되지 않는다는 설계의 직접적 귀결 |
+| 다크모드 미구현 | `tokens.css`에 빈 `[data-theme="dark"] { }` 블록만 있다 | 이번 범위 밖. 토큰이 문서 `:root`에 있으므로 이 블록만 채우면 shadow DOM 안까지 전파된다 |
+| CJS 미지원 | `exports`에 `import` 조건만 있다 | ESM 전용 패키지. 필요해지면 `default` 조건을 추가한다 |
