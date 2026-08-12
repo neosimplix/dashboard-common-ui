@@ -691,23 +691,33 @@ addEventListener 에서 detail 타입이 따라오게 한다."
 </html>
 ```
 
-- [ ] **Step 2: 빌드하고 브라우저에서 연다**
+- [ ] **Step 2: 빌드가 통과하는지 확인**
 
-Run: `npm run demo`
-Expected: 브라우저에 "common-ui" 제목과 설명 한 줄이 보인다. 빨간 경고 배너는 **보이지 않는다**(`dist`가 있으므로).
+Run: `npm run build`
+Expected: 오류 없이 끝나고 `dist/bundle.umd.js`가 존재한다.
 
-- [ ] **Step 3: 누락 감지가 실제로 동작하는지 확인**
+**이 시점에 `index.html`을 열면 빨간 배너가 뜬다. 그게 정상이다.** 배너 조건은 `!customElements.get("ns-nav-item")`인데 컴포넌트가 아직 하나도 없으므로 참이다. 배너 문구("dist 가 없습니다")는 이 개발 중간 상태를 정확히 설명하지는 못하지만, Task 5에서 첫 컴포넌트가 등록되는 순간 사라진다. 소비자가 보게 되는 상태가 아니므로 문구를 바꾸지 않는다.
 
-Run:
+- [ ] **Step 3: 구조 검사**
+
+브라우저 없이 확인할 수 있는 것들이다.
+
 ```bash
-mv dist/bundle.umd.js dist/bundle.umd.js.bak && open index.html
-```
-Expected: 페이지 상단에 빨간 배너 "dist 가 없습니다. 먼저 npm run build 를 실행하세요."가 보인다.
+# ① text/plain 블록 안에 script 태그가 없는가 (있으면 HTML 파서가 페이지를 끊는다)
+grep -c '<script>' index.html          # 1 이어야 한다 (헬퍼 스크립트 하나)
 
-되돌리기:
-```bash
-mv dist/bundle.umd.js.bak dist/bundle.umd.js
+# ② 데모 헬퍼의 세 요소가 다 있는가
+grep -c 'template.ex\|class="demo"\|dedent' index.html
+
+# ③ dist 누락 감지 배너가 있는가
+grep -c 'npm run build' index.html
 ```
+
+Expected: ①이 `1`. ②가 1 이상. ③이 1 이상.
+
+①이 1보다 크면 예시 코드 안에 `<script>` 태그를 넣은 것이다. `<script type="text/plain">` 안이라도 HTML 파서는 첫 `</script>`에서 블록을 닫아버려 그 지점부터 페이지가 깨진다. 마크업 예시와 배선 예시를 별도 블록으로 나눠야 한다.
+
+시각 확인은 컨트롤러가 Task 5(첫 컴포넌트가 화면에 나오는 시점)와 Task 10(문서 완성)에서 한다.
 
 - [ ] **Step 4: 커밋**
 
