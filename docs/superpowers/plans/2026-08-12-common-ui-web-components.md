@@ -231,7 +231,7 @@ dist
   },
   "files": ["dist"],
   "scripts": {
-    "build": "vite build && tsc -p tsconfig.build.json && node scripts/copy-tokens.mjs",
+    "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-tokens.mjs",
     "check": "tsc -p tsconfig.json",
     "demo": "npm run build && open index.html",
     "release": "node scripts/release.mjs"
@@ -311,8 +311,10 @@ dist
 
 - [ ] **Step 5: `vite.config.ts` 작성**
 
+**Vite 는 배열 설정을 지원하지 않는다.** 배열로 여러 빌드를 묶는 것은 Rollup 기능이고, Vite 에 넘기면 `config must export or return an object` 로 실패한다. 대신 `--mode` 로 셋 중 하나를 고르고 `build` 스크립트가 `vite build` 를 세 번 호출한다. `--mode` 는 Vite 내장 플래그라 환경 변수와 달리 Windows 에서도 그대로 동작한다.
+
 ```ts
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -320,41 +322,47 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const r = (p: string) => path.resolve(here, p);
 
-export default defineConfig([
-  // 1. ES — 번들러(Next/Vite)가 소비하는 웹 컴포넌트
-  {
-    build: {
-      lib: { entry: r("src/index.ts"), formats: ["es"], fileName: () => "index.js" },
-      rollupOptions: { external: ["lit"] },
+// 1. ES — 번들러(Next/Vite)가 소비하는 웹 컴포넌트
+const es: UserConfig = {
+  build: {
+    lib: { entry: r("src/index.ts"), formats: ["es"], fileName: () => "index.js" },
+    rollupOptions: { external: ["lit"] },
+  },
+};
+
+// 2. ES — React 래퍼. 'use client' 배너가 필요해 별도 설정으로 분리한다
+const react: UserConfig = {
+  build: {
+    emptyOutDir: false,
+    lib: { entry: r("src/react/index.ts"), formats: ["es"], fileName: () => "react.js" },
+    rollupOptions: {
+      external: ["react", "react-dom", "lit", "@lit/react"],
+      // Rollup 은 모듈 최상단 디렉티브를 제거한다. 소스에 써도 남지 않으므로
+      // 여기서 다시 주입한다. 없으면 Next 의 Server Component 가 import 할 때 터진다.
+      output: { banner: "'use client';" },
     },
   },
-  // 2. ES — React 래퍼. 'use client' 배너가 필요해 별도 설정으로 분리한다
-  {
-    build: {
-      emptyOutDir: false,
-      lib: { entry: r("src/react/index.ts"), formats: ["es"], fileName: () => "react.js" },
-      rollupOptions: {
-        external: ["react", "react-dom", "lit", "@lit/react"],
-        // Rollup 은 모듈 최상단 디렉티브를 제거한다. 소스에 써도 남지 않으므로
-        // 여기서 다시 주입한다. 없으면 Next 의 Server Component 가 import 할 때 터진다.
-        output: { banner: "'use client';" },
-      },
+};
+
+// 3. UMD — file:// 로컬 실행용. lit 을 인라인한다
+const umd: UserConfig = {
+  build: {
+    emptyOutDir: false,
+    lib: {
+      entry: r("src/index.ts"),
+      name: "NsCommonUi",
+      formats: ["umd"],
+      fileName: () => "bundle.umd.js",
     },
   },
-  // 3. UMD — file:// 로컬 실행용. lit 을 인라인한다
-  {
-    build: {
-      emptyOutDir: false,
-      lib: {
-        entry: r("src/index.ts"),
-        name: "NsCommonUi",
-        formats: ["umd"],
-        fileName: () => "bundle.umd.js",
-      },
-    },
-  },
-]);
+};
+
+const configs: Record<string, UserConfig> = { es, react, umd };
+
+export default defineConfig(({ mode }) => configs[mode] ?? es);
 ```
+
+**`minify` 와 `target` 을 건드리지 않는다.** Vite 의 기본값을 그대로 쓴다. 특히 `bundle.umd.js` 는 번들러 없이 브라우저가 `<script src>` 로 직접 받는 유일한 산출물이라, 압축을 끄면 그 비용을 소비자가 그대로 치른다.
 
 `tokens.css`를 `lib.entry`에 넣지 않는다. `build.lib.entry`는 JS 진입점을 받으며, CSS를 넣으면 내용이 빈 `tokens.js`가 함께 생기고 출력 파일명이 Vite 버전에 따라 달라진다.
 
@@ -400,7 +408,9 @@ Expected: `bundle.umd.js`, `index.js`, `react.js`, `tokens.css`가 모두 보인
 - [ ] **Step 11: React 배너가 실제로 번들에 남았는지 확인**
 
 Run: `head -1 dist/react.js`
-Expected: `'use client';`
+Expected: `use client` 디렉티브가 첫 줄에 있다. **인용부호는 작은따옴표든 큰따옴표든 무방하다** — Vite 의 esbuild 재출력 패스가 문자열을 큰따옴표로 정규화할 수 있고, 두 형태 모두 유효한 디렉티브다. 확인하려는 것은 Rollup 이 디렉티브를 지워버리지 않았다는 사실 하나다.
+
+인용부호를 맞추려고 `minify` 나 `target` 을 건드리지 않는다. 검증 문구를 위해 산출물 품질을 바꾸는 것은 방향이 거꾸로다.
 
 이 확인이 중요하다. Rollup이 디렉티브를 제거하는 문제가 실재하므로, 배너 설정이 동작했다는 증거를 여기서 남긴다.
 
