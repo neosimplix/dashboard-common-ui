@@ -311,16 +311,22 @@ export function register(tag: string, ctor: CustomElementConstructor) {
 ```ts
 // src/react/index.ts
 import * as React from "react";
-import { createComponent } from "@lit/react";
+import { createComponent, type EventName } from "@lit/react";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
+import type { NsNavigateDetail } from "../types.js";
 
 export const NsNavItem = createComponent({
   react: React,
   tagName: "ns-nav-item",
   elementClass: NsNavItemElement,
-  events: { onNsNavigate: "ns-navigate" },
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
+  },
 });
 ```
+
+**`EventName<>` 캐스트를 빼면 안 된다.** `@lit/react` 는 `events` 값이 `EventName<T>` 로 브랜딩된 경우에만 핸들러를 `(e: T) => void` 로 타입한다. 평범한 문자열이면 `(e: Event) => void` 가 되어 소비자의 `e.detail` 이 컴파일 에러가 난다. 라이브러리 자체의 `tsc` 는 이걸 잡지 못한다 — 그 안에서는 값이 그냥 문자열이기 때문이다. 소비자 쪽에서만 드러난다.
 
 프로퍼티 타입은 Lit 클래스에서 자동으로 따라온다. **이벤트 매핑 테이블만 손으로 유지한다.** 어긋남을 막기 위해 릴리스 전 `scripts/check-events.mjs`가 `src/components/**`의 모든 `new CustomEvent("…")` 이름을 뽑아 `src/react/index.ts`의 `events` 값과 대조하고, 빠진 게 있으면 실패한다.
 
