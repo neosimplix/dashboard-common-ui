@@ -1,10 +1,11 @@
 import * as React from "react";
-import { createComponent } from "@lit/react";
+import { createComponent, type EventName } from "@lit/react";
 
 import { NsHeader as NsHeaderElement } from "../components/header/ns-header.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
+import type { NsToggleDetail, NsNavigateDetail } from "../types.js";
 
 /*
   프로퍼티 타입은 createComponent 가 Lit 클래스에서 자동으로 끌어온다.
@@ -16,7 +17,10 @@ export const NsHeader = createComponent({
   react: React,
   tagName: "ns-header",
   elementClass: NsHeaderElement,
-  events: { onNsToggle: "ns-toggle" },
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsToggle: "ns-toggle" as EventName<CustomEvent<NsToggleDetail>>,
+  },
 });
 
 /*
@@ -28,21 +32,30 @@ export const NsSidebar = createComponent({
   react: React,
   tagName: "ns-sidebar",
   elementClass: NsSidebarElement,
-  events: { onNsNavigate: "ns-navigate" },
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
+  },
 });
 
 export const NsNavGroup = createComponent({
   react: React,
   tagName: "ns-nav-group",
   elementClass: NsNavGroupElement,
-  events: { onNsNavigate: "ns-navigate" },
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
+  },
 });
 
 export const NsNavItem = createComponent({
   react: React,
   tagName: "ns-nav-item",
   elementClass: NsNavItemElement,
-  events: { onNsNavigate: "ns-navigate" },
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
+  },
 });
 
 export type { NsToggleDetail, NsNavigateDetail } from "../types.js";
