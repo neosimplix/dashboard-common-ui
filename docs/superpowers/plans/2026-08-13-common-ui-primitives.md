@@ -3325,7 +3325,7 @@ export type {
     <div id="dialog-demo-box">
       <button class="ns-button ns-button--outline ns-button--md" type="button" data-open>대화상자 열기</button>
       <ns-dialog heading="사용자 승인">
-        <p style="margin:0">임연정 님의 가입 신청을 승인하시겠습니까?</p>
+        <p style="margin:0">홍길동 님의 가입 신청을 승인하시겠습니까?</p>
         <div slot="footer">
           <button class="ns-button ns-button--outline ns-button--sm" type="button" data-close>취소</button>
           <button class="ns-button ns-button--solid ns-button--sm" type="button" data-close>승인</button>
@@ -3380,7 +3380,7 @@ export type {
   <h3>HTML — 마크업</h3>
   <script type="text/plain">
     <ns-dialog heading="사용자 승인" id="approve">
-      <p>임연정 님의 가입 신청을 승인하시겠습니까?</p>
+      <p>홍길동 님의 가입 신청을 승인하시겠습니까?</p>
       <div slot="footer">
         <button class="ns-button ns-button--outline ns-button--sm" type="button" data-close>취소</button>
         <button class="ns-button ns-button--solid ns-button--sm" type="button">승인</button>
@@ -3420,7 +3420,7 @@ export type {
         </>
       }
     >
-      <p>임연정 님의 가입 신청을 승인하시겠습니까?</p>
+      <p>홍길동 님의 가입 신청을 승인하시겠습니까?</p>
     </Dialog>
   </script>
 ```
