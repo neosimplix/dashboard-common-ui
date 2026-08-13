@@ -2618,12 +2618,15 @@ export class NsSkeleton extends LitElement {
   }
 
   override render() {
+    /*
+      aria-hidden 을 호스트가 아니라 이 div 에 둔다. 호스트에 명령적으로 찍으면
+      소비자가 쓴 속성을 덮어쓰게 되고, ns-icon 에서 그 방식이 문서화된 override 를
+      죽이는 것이 드러났다. 로딩 자리표시자는 읽힐 내용이 없으므로 내부에서 숨긴다.
+
+      주석을 템플릿 밖에 둔다 — Lit 템플릿 안의 HTML 주석은 shadow DOM 으로
+      함께 렌더돼 인스턴스마다 실려 나간다.
+    */
     return html`
-      <!--
-        aria-hidden 을 호스트가 아니라 이 div 에 둔다. 호스트에 명령적으로 찍으면
-        소비자가 쓴 속성을 덮어쓰게 되고, ns-icon 에서 그 방식이 문서화된 override 를
-        죽이는 것이 드러났다. 로딩 자리표시자는 읽힐 내용이 없으므로 내부에서 숨긴다.
-      -->
       <div
         class="bar"
         aria-hidden="true"
