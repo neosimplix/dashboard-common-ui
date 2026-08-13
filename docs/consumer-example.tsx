@@ -14,7 +14,7 @@
 */
 import * as React from "react";
 import { useState } from "react";
-import { NsHeader, NsSidebar, NsNavGroup, NsNavItem, Card, Button, ButtonLink } from "../src/react/index.js";
+import { NsHeader, NsSidebar, NsNavGroup, NsNavItem, Card, Button, ButtonLink, Input, Textarea } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -58,6 +58,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <main>
           <Card>
             {children}
+            <Input value="" onChange={(e) => log(e.target.value)} invalid />
+            <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} />
             <Button type="submit" size="sm" onClick={() => log("saved")}>저장</Button>
             <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
           </Card>

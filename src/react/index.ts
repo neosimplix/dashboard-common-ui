@@ -18,4 +18,9 @@ export type {
 export { Card } from "./controls/Card.js";
 export type { CardProps } from "./controls/Card.js";
 
+export { Input } from "./controls/Input.js";
+export type { InputProps } from "./controls/Input.js";
+export { Textarea } from "./controls/Textarea.js";
+export type { TextareaProps } from "./controls/Textarea.js";
+
 export type { NsToggleDetail, NsNavigateDetail } from "../types.js";

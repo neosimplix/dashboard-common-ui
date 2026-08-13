@@ -84,6 +84,8 @@
     </ns-nav-group>
     <ns-nav-group heading="클래스">
       <ns-nav-item href="#ns-button" label=".ns-button" badge="BT"></ns-nav-item>
+      <ns-nav-item href="#ns-input" label=".ns-input" badge="IN"></ns-nav-item>
+      <ns-nav-item href="#ns-textarea" label=".ns-textarea" badge="TA"></ns-nav-item>
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
@@ -325,6 +327,86 @@
     <Button type="submit" size="sm">저장</Button>
     <Button variant="ghost" size="sm" onClick={onDelete}>삭제</Button>
     <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
+  </script>
+
+  <h2 id="ns-input">.ns-input</h2>
+  <p>
+    한 줄 입력. 값·검증·자동완성·IME 를 전부 네이티브 <code>input</code> 이 처리한다.
+    <code>invalid</code> 상태는 <strong>클래스가 아니라 <code>aria-invalid="true"</code></strong> 로 표시한다 —
+    화면낭독기에 알리지 않고 빨간 테두리만 얻는 조합을 만들 수 없게 하기 위해서다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <input class="ns-input" placeholder="기본">
+    <input class="ns-input" value="값이 있는 상태">
+    <input class="ns-input" value="invalid" aria-invalid="true">
+    <input class="ns-input" placeholder="disabled" disabled>
+  </template>
+  <div class="demo block" id="input-demo" style="display:grid;gap:var(--space-3);max-width:20rem;padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>역할</th></tr>
+    <tr><td><code>.ns-input</code></td><td>기본. 변형 없음</td></tr>
+  </table>
+
+  <h3>상태</h3>
+  <table>
+    <tr><th>선택자</th><th>모양</th></tr>
+    <tr><td><code>:focus</code></td><td>테두리가 <code>--color-accent</code></td></tr>
+    <tr><td><code>[aria-invalid="true"]</code></td><td>테두리가 <code>--color-danger</code>. 포커스 중에도 유지</td></tr>
+    <tr><td><code>:disabled</code></td><td>글자가 <code>--color-fg-subtle</code>, 커서 <code>not-allowed</code></td></tr>
+    <tr><td><code>::placeholder</code></td><td><code>--color-fg-subtle</code></td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <input class="ns-input" name="email" type="email" autocomplete="email" required>
+    <input class="ns-input" aria-invalid="true" aria-errormessage="email-error">
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Input } from "@neosimplix/common-ui/react";
+
+    <Input value={name} onChange={(e) => setName(e.target.value)} required />
+    <Input invalid value={email} onChange={onChange} />
+  </script>
+
+  <h2 id="ns-textarea">.ns-textarea</h2>
+  <p>
+    여러 줄 입력. <code>.ns-input</code> 과 값을 맞춰 두었다 — 필드 컨테이너 안에
+    나란히 놓였을 때 어긋나 보이지 않게 하기 위해서다. 가로 <code>resize</code> 는 막는다.
+    표나 대화상자 안에서 폭을 깨뜨리기 때문이다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <textarea class="ns-textarea" rows="3" placeholder="기본"></textarea>
+    <textarea class="ns-textarea" rows="3" aria-invalid="true">invalid</textarea>
+    <textarea class="ns-textarea" rows="6" placeholder="rows=6"></textarea>
+  </template>
+  <div class="demo block" id="textarea-demo" style="display:grid;gap:var(--space-3);max-width:20rem;padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>역할</th></tr>
+    <tr><td><code>.ns-textarea</code></td><td>기본. 변형 없음. <code>font-family: inherit</code> 과 <code>resize: vertical</code> 포함</td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <textarea class="ns-textarea" name="purpose" rows="3" required></textarea>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Textarea } from "@neosimplix/common-ui/react";
+
+    <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={6} />
   </script>
 
   <h2 id="ns-card">.ns-card</h2>
