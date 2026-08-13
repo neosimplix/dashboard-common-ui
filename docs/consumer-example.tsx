@@ -14,7 +14,7 @@
 */
 import * as React from "react";
 import { useState } from "react";
-import { NsHeader, NsSidebar, NsNavGroup, NsNavItem, Card, Button, ButtonLink, Input, Textarea, Select, Checkbox } from "../src/react/index.js";
+import { NsHeader, NsSidebar, NsNavGroup, NsNavItem, Card, Button, ButtonLink, Field, Input, Textarea, Select, Checkbox } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -59,12 +59,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <Card>
             {children}
             <Input value="" onChange={(e) => log(e.target.value)} invalid />
-            <Select
-              value=""
-              onChange={(e) => log(e.target.value)}
-              placeholder="부서를 선택하세요"
-              options={[{ value: "platform", label: "플랫폼개발팀" }]}
-            />
+            <Field label="이메일" error="@neosimplix.com 계정만 사용할 수 있습니다.">
+              <Input value="" onChange={(e) => log(e.target.value)} />
+            </Field>
+            <Field label="직급" hint="관리자 승인 후 반영됩니다">
+              <Select
+                value=""
+                onChange={(e) => log(e.target.value)}
+                placeholder="직급을 선택하세요"
+                options={[{ value: "senior", label: "선임" }]}
+              />
+            </Field>
             <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} />
             <Checkbox
               label="사용자 목록 조회"

@@ -88,6 +88,7 @@
       <ns-nav-item href="#ns-textarea" label=".ns-textarea" badge="TA"></ns-nav-item>
       <ns-nav-item href="#ns-select" label=".ns-select" badge="SL"></ns-nav-item>
       <ns-nav-item href="#ns-checkbox" label=".ns-checkbox" badge="CB"></ns-nav-item>
+      <ns-nav-item href="#ns-field" label=".ns-field" badge="FD"></ns-nav-item>
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
@@ -379,7 +380,7 @@
 
   <h2 id="ns-textarea">.ns-textarea</h2>
   <p>
-    여러 줄 입력. <code>.ns-input</code> 과 값을 맞춰 두었다 — 필드 컨테이너 안에
+    여러 줄 입력. <code>.ns-input</code> 과 값을 맞춰 두었다 — <code>.ns-field</code> 안에
     나란히 놓였을 때 어긋나 보이지 않게 하기 위해서다. 가로 <code>resize</code> 는 막는다.
     표나 대화상자 안에서 폭을 깨뜨리기 때문이다.
   </p>
@@ -542,6 +543,76 @@
       checked={granted}
       onChange={(e) => setGranted(e.target.checked)}
     />
+  </script>
+
+  <h2 id="ns-field">.ns-field</h2>
+  <p>
+    라벨·hint·error 를 컨트롤 하나에 묶는다. <code>hint</code> 와 <code>error</code> 는
+    <code>label</code> <strong>밖</strong>에 두고 <code>id</code> 로 연결한다 —
+    <code>label</code> 이 컨트롤을 감싸면 그 문구까지 accessible name 에 들어가
+    화면낭독기가 포커스마다 라벨과 오류를 한 문장으로 읽는다.
+  </p>
+  <p>
+    <code>error</code> 가 있으면 <code>hint</code> 는 감춘다. 둘 다 보이면 어느 쪽을
+    읽어야 할지 모호하다.
+  </p>
+  <p>
+    <strong>순수 HTML 에서는 <code>id</code>·<code>for</code>·<code>aria-*</code> 를 직접 적어야 한다.</strong>
+    React 의 <code>Field</code> 는 <code>useId</code> 로 자동 배선하지만, 클래스만으로는
+    그 일을 할 수 없다. 빠뜨려도 경고가 없다는 것이 이 설계에서 수용한 한계다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="ns-field">
+      <label class="ns-field__label" for="f-dept">부서</label>
+      <input class="ns-input" id="f-dept" placeholder="예: 플랫폼개발팀">
+    </div>
+    <div class="ns-field">
+      <label class="ns-field__label" for="f-rank">직급</label>
+      <input class="ns-input" id="f-rank" placeholder="예: 선임" aria-describedby="f-rank-hint">
+      <span class="ns-field__hint" id="f-rank-hint">입력한 직급은 관리자 승인 대상입니다.</span>
+    </div>
+    <div class="ns-field">
+      <label class="ns-field__label" for="f-email">이메일</label>
+      <input class="ns-input" id="f-email" value="someone@gmail.com"
+             aria-invalid="true" aria-errormessage="f-email-error">
+      <span class="ns-field__error" id="f-email-error">@neosimplix.com 계정만 사용할 수 있습니다.</span>
+    </div>
+  </template>
+  <div class="demo block" id="field-demo" style="display:grid;gap:var(--space-4);max-width:22rem;padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-field</code></td><td><code>div</code></td><td>세로 배치와 간격</td></tr>
+    <tr><td><code>.ns-field__label</code></td><td><code>label</code></td><td><code>for</code> 로 컨트롤을 가리킨다</td></tr>
+    <tr><td><code>.ns-field__hint</code></td><td><code>span</code></td><td>컨트롤의 <code>aria-describedby</code> 대상</td></tr>
+    <tr><td><code>.ns-field__error</code></td><td><code>span</code></td><td>컨트롤의 <code>aria-errormessage</code> 대상. <code>aria-invalid="true"</code> 를 함께 붙인다</td></tr>
+  </table>
+
+  <h3>HTML — 배선까지 직접 적는다</h3>
+  <script type="text/plain">
+    <div class="ns-field">
+      <label class="ns-field__label" for="email">이메일</label>
+      <input class="ns-input" id="email" name="email"
+             aria-invalid="true" aria-errormessage="email-error">
+      <span class="ns-field__error" id="email-error">@neosimplix.com 계정만 사용할 수 있습니다.</span>
+    </div>
+  </script>
+
+  <h3>React — 배선은 자동이다</h3>
+  <script type="text/plain">
+    import { Field, Input } from "@neosimplix/common-ui/react";
+
+    <Field label="이메일" error={emailError}>
+      <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+    </Field>
+
+    <Field label="직급" hint="관리자 승인 후 반영됩니다">
+      <Select placeholder="직급을 선택하세요" options={ranks} />
+    </Field>
   </script>
 
   <h2 id="ns-card">.ns-card</h2>

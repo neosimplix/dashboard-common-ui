@@ -223,6 +223,40 @@
     color: var(--color-fg-subtle);
   }
 
+  /*
+    hint/error 는 <label> 밖에 두고 id 로 컨트롤과 연결한다. label 이 컨트롤을
+    감싸면 hint/error 텍스트까지 그 컨트롤의 accessible name 에 포함돼,
+    화면낭독기가 포커스마다 라벨과 오류 문구를 한 문장으로 읽게 된다.
+
+    hint 와 error 가 둘 다 span 이라 양쪽 모두 이름이 필요하다. label 은
+    하나뿐이지만, .ns-checkbox 의 label 이 역할이 정반대(행 전체를 감싼다)라
+    구분을 위해 이름을 붙인다.
+  */
+  .ns-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1-5);
+  }
+
+  .ns-field__label {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-fg-body);
+  }
+
+  .ns-field__hint {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-xs);
+    color: var(--color-fg-muted);
+  }
+
+  .ns-field__error {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-xs);
+    color: var(--color-danger);
+  }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--color-line);

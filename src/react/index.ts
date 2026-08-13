@@ -29,4 +29,7 @@ export type { SelectOption, SelectProps } from "./controls/Select.js";
 export { Checkbox } from "./controls/Checkbox.js";
 export type { CheckboxProps } from "./controls/Checkbox.js";
 
+export { Field } from "./controls/Field.js";
+export type { FieldProps } from "./controls/Field.js";
+
 export type { NsToggleDetail, NsNavigateDetail } from "../types.js";
