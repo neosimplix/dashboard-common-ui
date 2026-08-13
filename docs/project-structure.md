@@ -25,7 +25,7 @@
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 둘뿐이다. `ns-toggle`(`{ open }`)과 `ns-navigate`(`{ href, label }`). 둘 다 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 셋이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 
@@ -100,7 +100,7 @@ dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 | 명령 | 하는 일 |
 |---|---|
 | `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 대조 |
-| `npm run build` | `dist/` 에 ES · React · UMD · tokens.css 생성 |
+| `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css 생성 |
 | `npm run demo` | 빌드 후 `index.html` 열기 (macOS `open`) |
 | `npm run release -- 0.1.4` | 검사 → 빌드 → 버전 커밋 → dist 포함 태그 생성 |
 

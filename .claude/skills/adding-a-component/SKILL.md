@@ -23,6 +23,7 @@ description: Use when adding a new web component to this library, adding a custo
 - [ ] `src/react/elements.ts` — `createComponent` 래퍼, 이벤트 매핑
 - [ ] `src/react/index.ts` — 값과 타입 재export
 - [ ] `index.html` — 문서 섹션
+- [ ] `.claude/skills/releasing/SKILL.md` 의 콜드 설치 스모크 테스트가 기대하는 export 목록 — `src/index.ts` 에 새 클래스를 재export 하면 그 목록도 늘어난다. 이 스모크 테스트가 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사이므로, 새 컴포넌트의 등록 경로는 여기를 고치지 않으면 그 검사 밖에 남는다
 
 ## 클래스를 추가할 때
 

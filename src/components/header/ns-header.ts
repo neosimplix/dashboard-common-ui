@@ -23,6 +23,12 @@ export class NsHeader extends LitElement {
     warnIfTokensMissing();
   }
 
+  /*
+    이 버튼의 svg 를 손으로 그린다. icons.ts 의 "menu" 와 viewBox·stroke-width 가
+    다르다는 것을 알고 남긴 상태다 — <ns-icon> 으로 바꾸면 이미 배포된 셸의
+    렌더링이 바뀌므로, 통일은 이 수정과 별개로 결정할 일이다. (Lit 템플릿 안의
+    HTML 주석은 인스턴스마다 shadow DOM 에 실려 나가므로 여기 밖에 둔다.)
+  */
   override render() {
     return html`
       <header>

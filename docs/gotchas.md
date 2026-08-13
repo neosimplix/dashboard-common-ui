@@ -46,7 +46,7 @@ React 래퍼의 `events` 값은 라이브러리 안에서는 그냥 문자열이
 
 이 결함은 열한 번의 Task 리뷰를 전부 통과했다. 소비자 관점에서 타입 체크를 돌려야만 드러난다.
 
-→ `docs/consumer-example.tsx` 와 `tsconfig.consumer.json` 이 `check` 에 포함돼 있다. 네 래퍼 **전부**에 핸들러를 붙여야 한다 — 둘만 붙였을 때 나머지 둘의 회귀가 조용히 통과한 적이 있다.
+→ `docs/consumer-example.tsx` 와 `tsconfig.consumer.json` 이 `check` 에 포함돼 있다. 이벤트를 가진 래퍼 **전부**에 핸들러를 붙여야 한다 — 둘만 붙였을 때 나머지 둘의 회귀가 조용히 통과한 적이 있다. `ns-dialog-close` 처럼 `consumer-example.tsx` 가 닿지 못하는 비공개 래퍼는 "인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다" 항목의 방식(shim 이 `e.detail` 을 직접 읽는 것)으로 같은 방어를 받는다.
 
 ## `<script type="text/plain">` 안의 `</script>`
 
@@ -151,6 +151,25 @@ const reactExternal = [/^react(\/.*)?$/, /^react-dom(\/.*)?$/];
 같은 파일이 여덟 줄 아래에서 `.footer[hidden] { display: none }` 을 명시하며 *"`display: flex` 가 UA 의 `[hidden]` 규칙을 이기므로 되돌려야 한다"* 고 적고 있었다. **함정을 아는 것과 매번 적용하는 것은 다른 일이다.**
 
 → shadow 스타일이 UA 기본값을 덮으면 **되돌릴 규칙을 함께 둔다.** `dialog:not([open]) { display: none }` 은 `(0,1,1)` 이라 `(0,0,1)` 을 순서와 무관하게 이긴다.
+
+## 분리된 동안 열려 있던 대화상자는 재연결해도 스스로 안 닫힌다
+
+DOM 스펙의 node-removing 단계는 열린 모달을 문서에서 떼어낼 때 top layer 에서만
+빼고 `dialog.open` 은 그대로 둔다. `ns-dialog` 를 열어 둔 채 다른 컨테이너로
+옮기면(예: `appendChild` 로 재부모 교체) 재연결 시점에 `connectedCallback` 은
+원래 `warnIfTokensMissing()` 만 부르고 끝났다. Lit 은 그 재연결에 새 갱신을
+스스로 예약하지 않고, 설령 `updated()` 가 돌아도 `#isOpen && el.open` 은 이미
+둘 다 true 라 아무 것도 안 하는 분기다. 결과: `:host { display: contents }`
+안에서 `dialog` 가 백드롭도 `inert` 도 포커스 트랩도 없이 통상 흐름으로 그려진다.
+
+"author 선언은 cascade origin 으로 UA 스타일시트를 이긴다" 의 닫힌 대화상자
+누출과 같은 실패 유형이다 — 컴포넌트가 짜 둔 상태 재조정이 특정 경로(여기서는
+분리→재연결)를 놓치면 네이티브 `dialog` 의 상태와 우리 상태가 어긋난다.
+
+→ `connectedCallback` 에서 `dialogEl?.open` 이 참이면 먼저 `close()` 로 닫는다
+(`#closedByUs` 를 세워 그 close 를 Esc 로 착각하지 않게 한다). 그 뒤
+`requestUpdate()` 를 불러 `updated()` 가 `#isOpen` 을 보고 `showModal()` 로
+다시 열게 한다.
 
 ## 인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다
 

@@ -159,15 +159,20 @@
 
   <h2 id="usage">환경별 연동</h2>
   <p>
-    <strong>어느 환경이든 <code>tokens.css</code> 를 반드시 불러와야 한다.</strong>
-    컴포넌트 스타일은 이 파일이 정의하는 CSS 변수를 값 없이 참조하므로, 빠지면
-    레이아웃이 무너진다. 잊으면 콘솔에 경고가 뜬다.
+    <strong>어느 환경이든 <code>tokens.css</code> 와 <code>controls.css</code> 를
+    반드시 함께 불러와야 한다.</strong> 컴포넌트 스타일은 <code>tokens.css</code> 가
+    정의하는 CSS 변수를 값 없이 참조하고, <code>.ns-*</code> 클래스는
+    <code>controls.css</code> 에만 있다 — 둘 중 하나라도 빠지면 레이아웃이
+    무너진다. <code>tokens.css</code> 가 빠지면 콘솔에 경고가 뜨지만,
+    <code>controls.css</code> 가 빠진 것은 <strong>감지되지 않는다</strong> —
+    경고는 <code>--color-line</code> 하나만 확인한다.
   </p>
 
   <h3>Next.js (App Router)</h3>
   <script type="text/plain">
     // app/layout.tsx
     import "@neosimplix/common-ui/tokens.css";
+    import "@neosimplix/common-ui/controls.css";
 
     // app/shell.tsx
     "use client";
@@ -233,13 +238,14 @@
   </p>
   <ul>
     <li><code>dist/tokens.css</code> 를 <code>&lt;link rel="stylesheet"&gt;</code> 로</li>
+    <li><code>dist/controls.css</code> 를 <code>&lt;link rel="stylesheet"&gt;</code> 로</li>
     <li><code>dist/bundle.umd.js</code> 를 <code>&lt;script src&gt;</code> 로 (<code>type</code> 없이)</li>
   </ul>
 
   <h4>마크업</h4>
   <script type="text/plain">
     <ns-header project-name="대시보드" sidebar-open>
-      <button slot="actions">로그아웃</button>
+      <button class="ns-button ns-button--outline ns-button--sm" slot="actions">로그아웃</button>
     </ns-header>
     <ns-sidebar open>
       <ns-nav-group heading="프로젝트">
@@ -300,7 +306,12 @@
     <button class="ns-button ns-button--ghost ns-button--md">ghost</button>
     <button class="ns-button ns-button--solid ns-button--sm">sm</button>
     <button class="ns-button ns-button--solid ns-button--md" disabled>disabled</button>
+    <button class="ns-button ns-button--outline ns-button--md" disabled>disabled outline</button>
     <a class="ns-button ns-button--outline ns-button--md" href="#ns-button">링크</a>
+    <button class="ns-button ns-button--icon" type="button" aria-label="메뉴">
+      <ns-icon name="menu"></ns-icon>
+    </button>
+    <button class="ns-button ns-button--solid ns-button--md ns-button--full">full</button>
   </template>
   <div class="demo block" id="button-demo" style="display:flex;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-4)"></div>
   <pre></pre>
@@ -473,12 +484,30 @@
   </script>
 
   <h3>React</h3>
+  <p>
+    <code>value</code> 도 <code>defaultValue</code> 도 안 주면(완전 비제어) <code>placeholder</code>
+    가 있는 경우에만 <code>Select</code> 가 <code>defaultValue=""</code> 를 대신 채운다.
+    HTML 의 selectedness 알고리즘이 <code>disabled</code> option 을 건너뛰기 때문에,
+    이걸 안 하면 <code>selected</code> 를 못 쓰는 React 에서 플레이스홀더가 조용히
+    선택되지 않고 첫 실제 항목이 선택된다.
+  </p>
   <script type="text/plain">
     import { Select } from "@neosimplix/common-ui/react";
 
+    // 제어. value 를 주므로 위 자동 채움은 관여하지 않는다.
     <Select
       value={dept}
       onChange={(e) => setDept(e.target.value)}
+      placeholder="부서를 선택하세요"
+      options={[
+        { value: "platform", label: "플랫폼개발팀" },
+        { value: "data", label: "데이터분석팀" },
+      ]}
+    />
+
+    // 완전 비제어. value/defaultValue 를 안 주므로 placeholder 가 실제로 보인다.
+    <Select
+      name="department"
       placeholder="부서를 선택하세요"
       options={[
         { value: "platform", label: "플랫폼개발팀" },
@@ -678,7 +707,7 @@
   <h3>프로퍼티</h3>
   <table>
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
+    <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. 기본값인 빈 문자열은 "아직 정하지 않음"으로 보고 조용히 아무것도 그리지 않는다 — 경고가 없다. 값을 줬는데 스프라이트에 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
   </table>
 
   <h3>수록된 아이콘</h3>
@@ -876,7 +905,7 @@
   </template>
   <div class="demo block" id="dialog-demo" style="padding:var(--space-4)"></div>
   <pre></pre>
-  <p id="dialog-log" style="font-family: monospace">닫으면 여기에 이벤트가 찍힌다.</p>
+  <p id="dialog-log" style="font-family: monospace">Esc·닫기 버튼(X)·backdrop 클릭으로 닫으면 여기에 이벤트가 찍힌다. 아래 취소/승인 버튼은 close() 를 직접 불러 이벤트를 내지 않는다.</p>
 
   <h3>프로퍼티</h3>
   <table>
@@ -1301,8 +1330,9 @@
     script 요소는 변환 전까지 화면에 보이지 않는다. 이 변환을 스크립트의
     맨 앞에 두는 이유는, 아래쪽 어디선가(예: 셸 배선) 예외가 던져지면 이
     스크립트의 나머지 문장이 전혀 실행되지 않기 때문이다. 변환을 마지막에
-    두면 그 경우 17개 예시 코드가 전부 빈 화면으로 남는데, 페이지 자체는
-    멀쩡해 보여서 원인을 알아채기 어렵다. 이 변환은 dedent 외에는 이 파일
+    두면 그 경우 이 파일의 예시 코드가 전부(script[type="text/plain"] 전체) 빈
+    화면으로 남는데, 페이지 자체는 멀쩡해 보여서 원인을 알아채기 어렵다.
+    이 변환은 dedent 외에는 이 파일
     위쪽의 어떤 것에도 의존하지 않으므로 가장 먼저 실행해도 안전하다.
 
     실행하지 않는 예시(React/Next)는 <script type="text/plain"> 에 원문으로

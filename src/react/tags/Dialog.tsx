@@ -43,7 +43,7 @@ export function Dialog({
       onNsDialogClose={(e) => onClose(e.detail.reason)}
     >
       {children}
-      {footer !== undefined && <div slot="footer">{footer}</div>}
+      {footer != null && <div slot="footer">{footer}</div>}
     </NsDialogBase>
   );
 }

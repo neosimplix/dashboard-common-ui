@@ -64,6 +64,19 @@ export class NsDialog extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
+
+    /*
+      분리되는 동안 열려 있던 대화상자는 top layer 에서만 빠지고 open 속성은 남는다.
+      그대로 재연결하면 백드롭·inert·포커스 트랩 없이 통상 흐름에 그려진다.
+      닫아서 updated() 가 showModal() 로 다시 열게 한다 — #closedByUs 가 이 닫힘을
+      Esc 로 오해하지 않게 막는다.
+    */
+    const el = this.dialogEl;   // 첫 연결에는 아직 shadowRoot 가 없어 null 이다
+    if (el?.open) {
+      this.#closedByUs = true;
+      el.close();
+    }
+    this.requestUpdate();
   }
 
   /*
