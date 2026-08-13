@@ -7,6 +7,14 @@
 */
 export { NsHeader, NsNavGroup, NsNavItem, NsSidebar } from "./elements.js";
 
+export { Button, ButtonLink } from "./controls/Button.js";
+export type {
+  ButtonLinkProps,
+  ButtonProps,
+  ButtonSize,
+  ButtonVariant,
+} from "./controls/Button.js";
+
 export { Card } from "./controls/Card.js";
 export type { CardProps } from "./controls/Card.js";
 

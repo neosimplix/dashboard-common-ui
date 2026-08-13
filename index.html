@@ -83,6 +83,7 @@
       <ns-nav-item href="#tokens" label="디자인 토큰" badge="토큰"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="클래스">
+      <ns-nav-item href="#ns-button" label=".ns-button" badge="BT"></ns-nav-item>
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
@@ -271,6 +272,60 @@
   <div class="demo block" style="padding: var(--space-4)">
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--space-2)"></div>
   </div>
+
+  <h2 id="ns-button">.ns-button</h2>
+  <p>
+    <code>button</code> 과 <code>a</code> 에 똑같이 붙는다. 클릭 결과가 페이지 이동이면
+    <code>a</code>, 그 자리에서 무언가 하면 <code>button</code> 이다.
+  </p>
+  <p>
+    <strong>웹 컴포넌트로 만들지 않은 이유가 여기서 가장 뚜렷하다.</strong>
+    shadow DOM 안의 <code>button type="submit"</code> 은 바깥 폼을 제출하지 못하고,
+    텍스트 필드에서 Enter 로 제출되는 동작도 보장되지 않는다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <button class="ns-button ns-button--solid ns-button--md">solid</button>
+    <button class="ns-button ns-button--outline ns-button--md">outline</button>
+    <button class="ns-button ns-button--ghost ns-button--md">ghost</button>
+    <button class="ns-button ns-button--solid ns-button--sm">sm</button>
+    <button class="ns-button ns-button--solid ns-button--md" disabled>disabled</button>
+    <a class="ns-button ns-button--outline ns-button--md" href="#ns-button">링크</a>
+  </template>
+  <div class="demo block" id="button-demo" style="display:flex;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>역할</th></tr>
+    <tr><td><code>.ns-button</code></td><td>기본. 항상 붙인다</td></tr>
+    <tr><td><code>.ns-button--solid</code></td><td>액센트 배경. 주 동작</td></tr>
+    <tr><td><code>.ns-button--outline</code></td><td>테두리만. 보조 동작</td></tr>
+    <tr><td><code>.ns-button--ghost</code></td><td>배경 없음. 파괴적이거나 낮은 우선순위</td></tr>
+    <tr><td><code>.ns-button--icon</code></td><td>정사각 패딩. <strong><code>--sm</code>/<code>--md</code> 와 함께 쓰지 않는다</strong></td></tr>
+    <tr><td><code>.ns-button--md</code></td><td>기본 높이 <code>--control-height-md</code></td></tr>
+    <tr><td><code>.ns-button--sm</code></td><td>낮은 높이 <code>--control-height-sm</code></td></tr>
+    <tr><td><code>.ns-button--full</code></td><td><code>width: 100%</code></td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <button class="ns-button ns-button--solid ns-button--md" type="submit">저장</button>
+    <a class="ns-button ns-button--outline ns-button--md" href="/login">로그인</a>
+    <button class="ns-button ns-button--icon" type="button" aria-label="메뉴">
+      <ns-icon name="menu"></ns-icon>
+    </button>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Button, ButtonLink } from "@neosimplix/common-ui/react";
+
+    <Button type="submit" size="sm">저장</Button>
+    <Button variant="ghost" size="sm" onClick={onDelete}>삭제</Button>
+    <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
+  </script>
 
   <h2 id="ns-card">.ns-card</h2>
   <p>

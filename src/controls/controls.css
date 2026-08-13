@@ -22,6 +22,82 @@
     방법이 없어 문서로만 지키는 요구사항이다.
 */
 @layer ns-controls {
+  /*
+    <button> 과 <a> 가 같은 클래스를 쓴다. 동작이 링크면 마크업도 링크여야 하고,
+    참고 구현이 Button/ButtonLink 두 컴포넌트로 나눠 스타일을 공유하려고
+    헬퍼를 두었던 이유가 클래스에서는 사라진다.
+  */
+  .ns-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    border-radius: var(--radius-control);
+    font-weight: var(--weight-medium);
+    transition: background-color var(--transition-fast) var(--transition-ease),
+      color var(--transition-fast) var(--transition-ease);
+    cursor: pointer;
+    /* <a> 로 렌더될 때를 위한 것. <button> 에는 영향이 없다. */
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  .ns-button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* ── 크기 ── */
+  .ns-button--md {
+    min-height: var(--control-height-md);
+    padding-inline: var(--space-4);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+
+  .ns-button--sm {
+    min-height: var(--control-height-sm);
+    padding-inline: var(--space-2);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+
+  /* ── 변형 ── */
+  .ns-button--solid {
+    background: var(--color-accent);
+    color: var(--color-accent-fg);
+  }
+  .ns-button--solid:hover:not(:disabled) { background: var(--color-accent-hover); }
+  .ns-button--solid:disabled { background: var(--color-disabled); }
+
+  .ns-button--outline {
+    background: transparent;
+    color: var(--color-fg-body);
+    border: 1px solid var(--color-line-strong);
+  }
+  .ns-button--outline:hover:not(:disabled) { background: var(--color-surface-sunken); }
+
+  .ns-button--ghost {
+    background: transparent;
+    color: var(--color-fg-muted);
+  }
+  .ns-button--ghost:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+  }
+
+  /* 정사각 패딩만 쓴다. --sm/--md 와 함께 쓰지 않는다. */
+  .ns-button--icon {
+    background: transparent;
+    color: var(--color-fg-body);
+    padding: var(--space-1-5);
+  }
+  .ns-button--icon:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+  }
+
+  .ns-button--full { width: 100%; }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--color-line);
