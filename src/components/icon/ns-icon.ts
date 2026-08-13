@@ -17,14 +17,16 @@ export class NsIcon extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
-    /*
-      기본은 장식이다. 의미를 가져야 하면 소비자가 호스트에
-      role="img" aria-label="…" 을 붙인다.
-    */
-    this.setAttribute("aria-hidden", "true");
   }
 
   override render() {
+    /*
+      name 이 빈 문자열인 것은 잘못이 아니다 — 아직 아이콘을 정하지 않은 슬롯이다.
+      경고 없이 조용히 비운다. #warned 의 초기값이 "" 라서 우연히 같은 결과가
+      나오지만, 그 우연에 의존하지 않고 여기서 명시적으로 갈라둔다.
+    */
+    if (this.name === "") return nothing;
+
     const def = icons[this.name];
 
     if (!def) {
@@ -38,7 +40,15 @@ export class NsIcon extends LitElement {
       return nothing;
     }
 
-    return html`<svg viewBox=${def.viewBox} fill="none">${def.content}</svg>`;
+    /*
+      aria-hidden 을 호스트가 아니라 이 <svg> 에 둔다.
+
+      호스트에 붙이면 소비자가 role="img" aria-label 로 의미를 주려 해도 연결
+      시점에 다시 찍혀 요소가 접근성 트리에서 제거된다 — 문서가 안내하는
+      override 가 에러 없이 죽는다. 여기 두면 기본은 장식이면서 그 override 가
+      그대로 동작하고, 컴포넌트가 소비자 소유의 속성을 건드리지 않는다.
+    */
+    return html`<svg viewBox=${def.viewBox} fill="none" aria-hidden="true">${def.content}</svg>`;
   }
 }
 
