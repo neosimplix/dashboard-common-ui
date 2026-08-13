@@ -48,6 +48,11 @@ export interface NsSelectChangeDetail {
   ids: string[];
 }
 
+/** ns-pagination 의 페이지 이동. 요청되는 다음 페이지다. */
+export interface NsPageChangeDetail {
+  page: number;
+}
+
 declare global {
   interface HTMLElementEventMap {
     "ns-toggle": CustomEvent<NsToggleDetail>;
@@ -55,5 +60,6 @@ declare global {
     "ns-dialog-close": CustomEvent<NsDialogCloseDetail>;
     "ns-sort": CustomEvent<NsSortDetail>;
     "ns-select-change": CustomEvent<NsSelectChangeDetail>;
+    "ns-page-change": CustomEvent<NsPageChangeDetail>;
   }
 }

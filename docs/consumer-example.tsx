@@ -26,6 +26,7 @@ import {
   NsIcon,
   NsNavGroup,
   NsNavItem,
+  NsPagination,
   NsSidebar,
   NsSkeleton,
   NsTable,
@@ -56,6 +57,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [sort, setSort] = useState<NsSortDetail>({ key: "", direction: "none" });
 
   const [rows, setRows] = useState<string[]>([]);
+
+  const [page, setPage] = useState(1);
 
   // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
   const onDialogClose = (reason: NsDialogCloseReason) => {
@@ -154,6 +157,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 </tbody>
               </table>
             </NsTable>
+            <NsPagination
+              total={240}
+              perPage={20}
+              page={page}
+              onNsPageChange={(e) => setPage(e.detail.page)}
+            />
           </Card>
         </main>
       </div>

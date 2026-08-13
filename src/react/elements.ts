@@ -7,6 +7,7 @@ import { NsIcon as NsIconElement } from "../components/icon/ns-icon.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
 import { NsPageHeading as NsPageHeadingElement } from "../components/page-heading/ns-page-heading.js";
+import { NsPagination as NsPaginationElement } from "../components/pagination/ns-pagination.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
 import { NsSkeleton as NsSkeletonElement } from "../components/skeleton/ns-skeleton.js";
 import { NsTable as NsTableElement } from "../components/table/ns-table.js";
@@ -16,6 +17,7 @@ import type {
   NsDialogCloseDetail,
   NsSelectChangeDetail,
   NsSortDetail,
+  NsPageChangeDetail,
 } from "../types.js";
 
 /*
@@ -129,5 +131,15 @@ export const NsTable = createComponent({
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsSort: "ns-sort" as EventName<CustomEvent<NsSortDetail>>,
     onNsSelectChange: "ns-select-change" as EventName<CustomEvent<NsSelectChangeDetail>>,
+  },
+});
+
+export const NsPagination = createComponent({
+  react: React,
+  tagName: "ns-pagination",
+  elementClass: NsPaginationElement,
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsPageChange: "ns-page-change" as EventName<CustomEvent<NsPageChangeDetail>>,
   },
 });

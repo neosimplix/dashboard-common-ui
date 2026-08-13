@@ -405,6 +405,27 @@
     rotate: 180deg;
   }
 
+  ns-pagination {
+    display: block;
+  }
+
+  /*
+    nav 는 이 컴포넌트가 렌더하는 유일한 자식이라 요소 타입으로 특정된다 —
+    클래스를 붙이지 않는다.
+  */
+  ns-pagination nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .ns-pagination-gap {
+    padding-inline: var(--space-2);
+    color: var(--color-fg-subtle);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--color-line);

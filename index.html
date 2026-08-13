@@ -98,6 +98,7 @@
       <ns-nav-item href="#ns-skeleton" label="ns-skeleton" badge="SK"></ns-nav-item>
       <ns-nav-item href="#ns-dialog" label="ns-dialog" badge="DG"></ns-nav-item>
       <ns-nav-item href="#ns-table-tag" label="ns-table" badge="TT"></ns-nav-item>
+      <ns-nav-item href="#ns-pagination" label="ns-pagination" badge="PG"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -1347,6 +1348,114 @@
     </NsTable>
   </script>
 
+  <h2 id="ns-pagination">ns-pagination</h2>
+  <p>
+    목록 페이지 이동 컨트롤. <strong>표를 모르고 데이터를 모른다</strong> — 어떤 목록에도 붙는다.
+    페이지를 실제로 바꾸는 것은 소비자다.
+  </p>
+  <p>
+    <strong>Light DOM 이라 <code>.ns-button</code> 을 그대로 쓴다.</strong> shadow 였다면
+    버튼 스타일 전부를 다시 적어야 했다 — <code>ns-dialog</code> 닫기 버튼에서 수용한
+    열 줄짜리 중복이 여기서는 훨씬 커진다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-pagination total="240" per-page="20" default-page="4"></ns-pagination>
+  </template>
+  <div class="demo block" id="pagination-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="pagination-log" style="font-family: monospace">페이지를 누르면 여기에 이벤트가 찍힌다.</p>
+
+  <h3>경계</h3>
+  <template class="ex">
+    <div style="display:grid;gap:var(--space-4)">
+      <ns-pagination total="60" per-page="20" default-page="1"></ns-pagination>
+      <ns-pagination total="140" per-page="20" default-page="7"></ns-pagination>
+      <ns-pagination total="15" per-page="20"></ns-pagination>
+    </div>
+  </template>
+  <div class="demo block" id="pagination-edge-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p>
+    위에서부터 3페이지(전부 표시) · 7페이지(<code>…</code> 등장) · 1페이지
+    (<strong>아무것도 렌더하지 않는다</strong>) 다.
+  </p>
+
+  <h3>프로퍼티</h3>
+  <table class="ns-table">
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>total</code></td><td><code>total</code></td><td>number</td><td><code>0</code></td><td>전체 <strong>항목</strong> 수. 페이지 수가 아니다</td></tr>
+    <tr><td><code>perPage</code></td><td><code>per-page</code></td><td>number</td><td><code>20</code></td><td></td></tr>
+    <tr><td><code>page</code></td><td>없음</td><td>number | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>defaultPage</code></td><td><code>default-page</code></td><td>number</td><td><code>1</code></td><td>비제어 초기값</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table class="ns-table">
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-page-change</code></td><td><code>{ page: number }</code></td><td>다른 페이지 클릭. 현재 페이지를 눌러도 발생하지 않는다</td></tr>
+  </table>
+
+  <h3>클래스</h3>
+  <table class="ns-table">
+    <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>ns-pagination</code></td><td>(요소 선택자)</td><td>배치. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
+    <tr><td><code>.ns-pagination-gap</code></td><td>컴포넌트가 렌더하는 <code>span</code></td><td><code>…</code> 자리. 나머지 버튼은 전부 <code>.ns-button</code> 재사용이다</td></tr>
+  </table>
+  <p>
+    <code>nav</code> 는 이 컴포넌트가 렌더하는 유일한 자식이라 요소 타입으로 특정되어
+    클래스가 없다. 이 표에 <code>.ns-pagination-gap</code> 이 적혀 있어야
+    <code>check-controls.mjs</code> 가 통과한다 — 데모 템플릿에는 그 클래스가 소스로
+    등장하지 않는다(컴포넌트가 런타임에 만든다).
+  </p>
+
+  <h3>번호 윈도우</h3>
+  <ul>
+    <li>페이지 수 ≤ 7 이면 전부 표시</li>
+    <li>그 외에는 <strong>첫 페이지 · 현재±1 · 마지막 페이지</strong>, 빈 구간에 <code>…</code></li>
+    <li>현재 페이지는 <code>--outline</code> + <code>aria-current="page"</code>. <strong>비활성화하지 않는다</strong> — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다</li>
+    <li>이전·다음은 양 끝에서 <code>disabled</code></li>
+  </ul>
+
+  <h3>경계 처리</h3>
+  <ul>
+    <li><strong>페이지가 1개 이하면 아무것도 렌더하지 않는다.</strong> <code>total = 0</code> 도 같다 — 빈 상태 문구는 소비자 것이다</li>
+    <li><code>page</code> 가 범위를 벗어나면 표시용으로만 clamp 하고 콘솔 경고를 한 번 낸다. <strong>이벤트로 교정하지 않는다</strong> — 소비자 상태와 서로 밀어내는 루프가 된다</li>
+  </ul>
+
+  <h3>제공하지 않는 것</h3>
+  <p>
+    페이지 크기 선택(10/20/50)과 "전체 240개 선택" 은 없다. 전자는 컨트롤이 하나 더
+    늘고 지금 요구가 없으며, 후자는 <code>ns-table</code> 의 선택 범위 결정과 짝인 별개 기능이다.
+  </p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-pagination total="240" per-page="20" default-page="1"></ns-pagination>
+  </script>
+
+  <h3>HTML — 배선</h3>
+  <script type="text/plain">
+    document.querySelector("ns-pagination").addEventListener("ns-page-change", (e) => {
+      load(e.detail.page);   /* 데이터를 가져오는 것은 소비자다 */
+    });
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsPagination } from "@neosimplix/common-ui/react";
+
+    const [page, setPage] = useState(1);
+
+    <NsPagination
+      total={total}
+      perPage={20}
+      page={page}
+      onNsPageChange={(e) => setPage(e.detail.page)}
+    />
+  </script>
+
   <h2 id="ns-header">ns-header</h2>
   <p>
     좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
@@ -1887,6 +1996,15 @@
     selectDemo.querySelector("ns-table").addEventListener("ns-select-change", (e) => {
       const ids = e.detail.ids;
       selectLog.textContent = `ns-select-change  ids=[${ids.join(", ")}]  (${ids.length}개)`;
+    });
+  }
+
+  const paginationDemo = document.getElementById("pagination-demo");
+  const paginationLog = document.getElementById("pagination-log");
+  if (paginationDemo && paginationLog) {
+    // 비제어 데모다 — 컴포넌트가 현재 페이지를 스스로 관리한다.
+    paginationDemo.querySelector("ns-pagination").addEventListener("ns-page-change", (e) => {
+      paginationLog.textContent = `ns-page-change  page=${e.detail.page}`;
     });
   }
 </script>
