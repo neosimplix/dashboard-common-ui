@@ -1176,6 +1176,15 @@ git commit -m "feat(controls): .ns-input 과 .ns-textarea 추가"
 
 `.ns-textarea` 규칙 다음에 넣는다.
 
+> **실행 중 판정 (2026-08-13).** 아래 블록은 `.ns-input, .ns-textarea` 의 기본 선언 11개를
+> 그대로 복사한다. Task 4 리뷰가 이것을 Important(plan-mandated)로 올렸고, 사용자가
+> **셋을 한 셀렉터 목록으로 합치는 쪽**으로 판정했다. 참고 구현이 세 벌을 갖고 있었던 것은
+> CSS Modules 라 파일이 나뉘어 불가피했던 것이고, 한 파일에서는 `gotchas.md` 가 `var()`
+> 폴백을 금지하는 이유("값이 두 곳에 존재하면 어긋나고, 어긋나도 아무도 모른다")에 그대로
+> 걸린다. **최종 형태는 `git log` 의 Task 4 fix 커밋을 보라** — 아래 블록은 판정 이전의
+> 원안이다. `.ns-checkbox`·`.ns-field` 는 이 값을 공유하지 않으므로 병합은 여기서 끝난다.
+
+
 ```css
   .ns-select {
     width: 100%;
