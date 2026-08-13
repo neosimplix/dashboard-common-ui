@@ -36,6 +36,16 @@ const litExternal = [
   /^@lit-labs\/.*/,
 ];
 
+/*
+  같은 이유로 react 도 정규식이어야 한다. tsconfig 의 "jsx": "react-jsx" 트랜스폼은
+  import { jsx as _jsx } from "react/jsx-runtime" 을 넣는데, 문자열 "react" 는
+  그 지정자를 잡지 못한다. 그러면 React 의 jsx-runtime 이 dist/react.js 에
+  번들되어 소비자 앱에 React 런타임이 두 벌 생긴다.
+
+  react 는 peerDependencies 이므로 소비자가 이미 갖고 있다.
+*/
+const reactExternal = [/^react(\/.*)?$/, /^react-dom(\/.*)?$/];
+
 const es: UserConfig = {
   // 1. ES — 번들러(Next/Vite)가 소비하는 웹 컴포넌트
   build: {
@@ -50,7 +60,7 @@ const react: UserConfig = {
     emptyOutDir: false,
     lib: { entry: r("src/react/index.ts"), formats: ["es"], fileName: () => "react.js" },
     rollupOptions: {
-      external: ["react", "react-dom", ...litExternal],
+      external: [...reactExternal, ...litExternal],
       // Rollup 은 모듈 최상단 디렉티브를 제거한다. 소스에 써도 남지 않으므로
       // 여기서 다시 주입한다. 없으면 Next 의 Server Component 가 import 할 때 터진다.
       output: { banner: "'use client';" },

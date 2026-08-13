@@ -17,6 +17,7 @@
       "import": "./dist/react.js"
     },
     "./tokens.css": "./dist/tokens.css",
+    "./controls.css": "./dist/controls.css",
     "./umd": "./dist/bundle.umd.js"
   },
   "files": [
@@ -24,8 +25,8 @@
     "index.html"
   ],
   "scripts": {
-    "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-tokens.mjs",
-    "check": "tsc -p tsconfig.json && tsc -p tsconfig.consumer.json && node scripts/check-events.mjs",
+    "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-css.mjs",
+    "check": "tsc -p tsconfig.json && tsc -p tsconfig.consumer.json && node scripts/check-events.mjs && node scripts/check-controls.mjs",
     "demo": "npm run build && open index.html",
     "release": "node scripts/release.mjs"
   },

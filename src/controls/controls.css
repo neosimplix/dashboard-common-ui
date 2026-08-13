@@ -1,0 +1,33 @@
+/*
+  common-ui 네이티브 요소용 클래스.
+
+  폼 컨트롤·버튼·카드를 웹 컴포넌트로 만들지 않는 이유는 설계 문서
+  docs/superpowers/specs/2026-08-13-common-ui-primitives-design.md §2 에 있다.
+  요약: shadow DOM 은 폼 참여·label for·검증·자동완성을 끊고, FACE 로 되살려도
+  "JS 없이 동작한다" 는 성질은 돌아오지 않는다.
+
+  값은 tokens.css 의 토큰만 참조한다. var() 폴백을 쓰지 않는다 — 값이 두 곳에
+  존재하면 어긋나고, 어긋나도 아무도 모른다.
+
+  @layer 로 감싸는 이유:
+    Tailwind v4 는 preflight 를 @layer base, 유틸을 @layer utilities 에 넣는다.
+    레이어에 들지 않은 스타일은 레이어에 든 스타일을 항상 이긴다 — 순서와
+    무관하게. 감싸지 않으면 preflight 는 이기지만 소비자의 className="px-6"
+    같은 유틸 오버라이드까지 막아버린다.
+
+    그래서 감싸고, 소비자가 Tailwind import 위에 레이어 순서를 선언한다:
+      @layer theme, base, ns-controls, components, utilities;
+
+    이 한 줄이 없으면 preflight 가 이 파일의 스타일을 지운다. JS 로 감지할
+    방법이 없어 문서로만 지키는 요구사항이다.
+*/
+@layer ns-controls {
+  .ns-card {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    padding: var(--card-padding);
+    box-shadow: var(--elevation-card);
+  }
+}

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>common-ui</title>
 <link rel="stylesheet" href="./dist/tokens.css">
+<link rel="stylesheet" href="./dist/controls.css">
 <style>
   body {
     margin: 0;
@@ -81,6 +82,9 @@
     <ns-nav-group heading="기초">
       <ns-nav-item href="#tokens" label="디자인 토큰" badge="토큰"></ns-nav-item>
     </ns-nav-group>
+    <ns-nav-group heading="클래스">
+      <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
+    </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
@@ -116,6 +120,32 @@
   <p>
     업그레이드는 태그 번호만 바꾸면 된다. <code>#v0.1.0</code> → <code>#v0.2.0</code>.
   </p>
+
+  <h3>CSS 두 개를 모두 불러온다</h3>
+  <p>
+    <code>tokens.css</code> 는 색·치수의 단일 출처이고, <code>controls.css</code> 는
+    네이티브 요소용 <code>.ns-*</code> 클래스다. 컴포넌트 스타일은 토큰을
+    폴백 없이 참조하므로 둘 중 하나라도 빠지면 레이아웃이 무너진다.
+  </p>
+  <script type="text/plain">
+    /* Next.js — app/globals.css */
+    @import "@neosimplix/common-ui/tokens.css";
+    @import "@neosimplix/common-ui/controls.css";
+  </script>
+
+  <h3>Tailwind 를 쓰면 레이어 순서를 선언해야 한다</h3>
+  <p>
+    Tailwind v4 는 preflight 를 <code>@layer base</code>, 유틸을
+    <code>@layer utilities</code> 에 넣는다. <code>controls.css</code> 는
+    <code>@layer ns-controls</code> 로 감싸 배포되므로, 순서를 선언하지 않으면
+    preflight 가 이 클래스들을 지운다. <strong>이 한 줄이 빠졌는지는 자바스크립트로
+    감지할 수 없다</strong> — 유틸이 클래스를 이기는지 화면으로 확인하는 것이 유일한 수단이다.
+  </p>
+  <script type="text/plain">
+    /* app/globals.css — Tailwind import 보다 위 */
+    @layer theme, base, ns-controls, components, utilities;
+    @import "tailwindcss";
+  </script>
 
   <h2 id="usage">환경별 연동</h2>
   <p>
@@ -241,6 +271,40 @@
   <div class="demo block" style="padding: var(--space-4)">
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--space-2)"></div>
   </div>
+
+  <h2 id="ns-card">.ns-card</h2>
+  <p>
+    카드 표면. 감싸는 <code>div</code> 하나에 스타일뿐이라 클래스다.
+    여백(<code>margin</code>)은 제공하지 않는다 — 카드 사이 간격은 배치하는 쪽이 정한다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="ns-card">
+      <p style="margin:0">카드 안의 내용</p>
+    </div>
+  </template>
+  <div class="demo block" id="card-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-card</code></td><td><code>div</code></td><td>테두리·반경·표면색·<code>--card-padding</code>·그림자</td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <div class="ns-card">내용</div>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Card } from "@neosimplix/common-ui/react";
+
+    <Card>내용</Card>
+    <Card className="mt-8">유틸로 여백을 준다</Card>
+  </script>
 
   <h2 id="ns-header">ns-header</h2>
   <p>

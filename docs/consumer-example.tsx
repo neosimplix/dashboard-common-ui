@@ -14,7 +14,7 @@
 */
 import * as React from "react";
 import { useState } from "react";
-import { NsHeader, NsSidebar, NsNavGroup, NsNavItem } from "../src/react/index.js";
+import { NsHeader, NsSidebar, NsNavGroup, NsNavItem, Card } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -55,7 +55,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             />
           </NsNavGroup>
         </NsSidebar>
-        <main>{children}</main>
+        <main>
+          <Card>{children}</Card>
+        </main>
       </div>
     </>
   );
