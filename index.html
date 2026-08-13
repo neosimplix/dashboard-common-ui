@@ -97,6 +97,7 @@
       <ns-nav-item href="#ns-page-heading" label="ns-page-heading" badge="PH"></ns-nav-item>
       <ns-nav-item href="#ns-skeleton" label="ns-skeleton" badge="SK"></ns-nav-item>
       <ns-nav-item href="#ns-dialog" label="ns-dialog" badge="DG"></ns-nav-item>
+      <ns-nav-item href="#ns-table-tag" label="ns-table" badge="TT"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -1170,6 +1171,133 @@
     </Dialog>
   </script>
 
+  <h2 id="ns-table-tag">ns-table</h2>
+  <p>
+    소비자가 쓴 <code>table</code> 을 감싸는 Light DOM 컴포넌트.
+    <strong>셀을 렌더하지 않고 데이터를 모른다.</strong> 정렬 상태와 그 시각 표시만 갖고,
+    데이터를 다시 정렬하는 것은 소비자다.
+  </p>
+  <p>
+    그렇게 나눈 이유는 실사용 셀이 데이터 주입형 API 로 표현되지 않기 때문이다 —
+    조건부 버튼 여섯, 참조 조회로 만든 이름, 조건부 칼럼이 들어 있다.
+    <strong>Lit 엘리먼트는 소비자의 React 렌더 함수를 호출해 자기 안에 React 요소를
+    만들 수 없다.</strong>
+  </p>
+
+  <h3>정렬 헤더는 <code>button</code> 을 품는다</h3>
+  <p>
+    <code>th</code> 자체를 클릭 가능하게만 만들면 <strong>키보드로 도달할 수 없고</strong>
+    화면낭독기가 상호작용 요소로 안내하지 않는다. <code>tabindex</code>/<code>role="button"</code> 을
+    <code>th</code> 에 얹는 것은 표 의미를 깨뜨린다. 컴포넌트가 렌더를 하지 않으므로
+    이것을 대신 만들어 줄 수 없다 — 셀을 소비자에게 남긴 대가다.
+  </p>
+  <p>
+    <code>data-ns-sort-key</code> 가 없는 <code>th</code> 는 정렬되지 않는다. 칼럼별 스위치가 그것뿐이다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr>
+            <th data-ns-sort-key="name"><button class="ns-table-sort" type="button">이름</button></th>
+            <th>부서</th>
+            <th data-ns-sort-key="joined"><button class="ns-table-sort" type="button">가입일</button></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>홍길동</td><td>마케팅팀</td><td>2026-07-15</td></tr>
+          <tr><td>김대기</td><td>플랫폼개발팀</td><td>2026-08-05</td></tr>
+          <tr><td>박서준</td><td>데이터분석팀</td><td>2026-06-02</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="sort-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="sort-log" style="font-family: monospace">헤더를 누르면 여기에 이벤트가 찍힌다.</p>
+  <p>
+    "부서" 는 <code>data-ns-sort-key</code> 가 없어 정렬되지 않는다.
+    같은 헤더를 세 번 누르면 <strong>정렬이 해제되어 원래 순서로 돌아온다</strong>.
+  </p>
+
+  <h3>프로퍼티</h3>
+  <table class="ns-table">
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>sortKey</code></td><td>없음</td><td>string | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>sortDirection</code></td><td>없음</td><td>"ascending" | "descending" | "none" | undefined</td><td><code>undefined</code></td><td><code>sortKey</code> 와 짝</td></tr>
+    <tr><td><code>defaultSortKey</code></td><td><code>default-sort-key</code></td><td>string</td><td><code>""</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>defaultSortDirection</code></td><td><code>default-sort-direction</code></td><td>같음</td><td><code>"none"</code></td><td>비제어 초기값</td></tr>
+  </table>
+
+  <h3>소비자가 쓰는 훅</h3>
+  <table class="ns-table">
+    <tr><th>속성</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>data-ns-sort-key</code></td><td><code>th</code></td><td>이 칼럼을 정렬 대상으로 만든다. 값이 <code>ns-sort</code> 의 <code>key</code> 로 실린다</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table class="ns-table">
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-sort</code></td><td><code>{ key: string, direction: "ascending" | "descending" | "none" }</code></td><td>정렬 헤더 클릭. <code>direction</code> 이 <code>"none"</code> 이면 <code>key</code> 는 빈 문자열이다</td></tr>
+  </table>
+
+  <h3>방향은 3-상태다</h3>
+  <p>
+    <code>none → ascending → descending → none</code>.
+    2-상태로 하면 <strong>서버의 기본 정렬로 돌아갈 방법이 없다.</strong> 그 기본 순서가
+    의도를 담는 경우가 있다 — "오래된 신청이 위" 같은 것이다.
+  </p>
+
+  <h3>접근성</h3>
+  <p>
+    <code>aria-sort</code> 의 <strong>유일한 작성자가 컴포넌트다.</strong> 소비자는 쓰지 않는다.
+    삼각형은 <code>content</code> 문자가 아니라 <code>border</code> 로 그린다 — 생성된 텍스트는
+    일부 브라우저에서 화면낭독기에 읽혀 <code>aria-sort</code> 와 중복 안내가 된다.
+  </p>
+
+  <h3>HTML — 마크업</h3>
+  <script type="text/plain">
+    <ns-table>
+      <table class="ns-table">
+        <thead><tr>
+          <th data-ns-sort-key="name"><button class="ns-table-sort" type="button">이름</button></th>
+          <th>이메일</th>
+        </tr></thead>
+        <tbody><!-- 소비자가 쓴 그대로 --></tbody>
+      </table>
+    </ns-table>
+  </script>
+
+  <h3>HTML — 배선</h3>
+  <script type="text/plain">
+    document.querySelector("ns-table").addEventListener("ns-sort", (e) => {
+      /* 데이터를 다시 정렬하는 것은 소비자다 */
+      redraw(sortRows(rows, e.detail.key, e.detail.direction));
+    });
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsTable } from "@neosimplix/common-ui/react";
+
+    const [sort, setSort] = useState({ key: "", direction: "none" as const });
+
+    <NsTable
+      sortKey={sort.key}
+      sortDirection={sort.direction}
+      onNsSort={(e) => setSort(e.detail)}
+    >
+      <table className="ns-table">
+        <thead><tr>
+          <th data-ns-sort-key="name"><button className="ns-table-sort" type="button">이름</button></th>
+        </tr></thead>
+        <tbody>{sortRows(records, sort).map(/* … */)}</tbody>
+      </table>
+    </NsTable>
+  </script>
+
   <h2 id="ns-header">ns-header</h2>
   <p>
     좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
@@ -1661,6 +1789,45 @@
     // 이 데모 컨테이너에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
     dialogDemo.addEventListener("ns-dialog-close", (e) => {
       dialogLog.textContent = `ns-dialog-close  reason=${e.detail.reason}`;
+    });
+  }
+
+  const sortDemo = document.getElementById("sort-demo");
+  const sortLog = document.getElementById("sort-log");
+  if (sortDemo && sortLog) {
+    const sortTable = sortDemo.querySelector("ns-table");
+    const sortBody = sortDemo.querySelector("tbody");
+    // 원래 순서를 보존한다 — 3-상태의 "none" 이 이 순서로 돌아오는 것을 보여준다.
+    const sortRows = [...sortBody.querySelectorAll("tr")].map((tr) => ({
+      name: tr.cells[0].textContent,
+      dept: tr.cells[1].textContent,
+      joined: tr.cells[2].textContent,
+    }));
+
+    const drawSort = (key, direction) => {
+      const list = [...sortRows];
+      if (direction !== "none") {
+        list.sort((a, b) => a[key].localeCompare(b[key], "ko"));
+        if (direction === "descending") list.reverse();
+      }
+      sortBody.replaceChildren(
+        ...list.map((r) => {
+          const tr = document.createElement("tr");
+          for (const value of [r.name, r.dept, r.joined]) {
+            const td = document.createElement("td");
+            td.textContent = value;
+            tr.append(td);
+          }
+          return tr;
+        }),
+      );
+    };
+
+    // 이 데모 컨테이너에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
+    sortTable.addEventListener("ns-sort", (e) => {
+      drawSort(e.detail.key, e.detail.direction);
+      sortLog.textContent =
+        `ns-sort  key=${e.detail.key || "(없음)"}  direction=${e.detail.direction}`;
     });
   }
 </script>

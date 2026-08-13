@@ -28,11 +28,12 @@ import {
   NsNavItem,
   NsSidebar,
   NsSkeleton,
+  NsTable,
   PageHeading,
   Select,
   Textarea,
 } from "../src/react/index.js";
-import type { NsDialogCloseReason } from "../src/react/index.js";
+import type { NsDialogCloseReason, NsSortDetail } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -51,6 +52,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const log = (msg: string) => console.log(msg);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [sort, setSort] = useState<NsSortDetail>({ key: "", direction: "none" });
 
   // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
   const onDialogClose = (reason: NsDialogCloseReason) => {
@@ -117,6 +120,24 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               <p>승인하시겠습니까?</p>
             </Dialog>
+            <NsTable
+              sortKey={sort.key}
+              sortDirection={sort.direction}
+              onNsSort={(e) => setSort({ key: e.detail.key, direction: e.detail.direction })}
+            >
+              <table className="ns-table">
+                <thead>
+                  <tr>
+                    <th data-ns-sort-key="name">
+                      <button className="ns-table-sort" type="button">이름</button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>{sort.direction}</td></tr>
+                </tbody>
+              </table>
+            </NsTable>
           </Card>
         </main>
       </div>

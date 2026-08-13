@@ -20,10 +20,26 @@ export interface NsDialogCloseDetail {
   reason: NsDialogCloseReason;
 }
 
+/** ns-table 의 정렬 방향. */
+export type NsSortDirection = "ascending" | "descending" | "none";
+
+/**
+ * ns-table 의 정렬 헤더 클릭이 올리는 이벤트.
+ *
+ * `direction` 이 `"none"` 이면 `key` 는 빈 문자열이다 — 정렬이 해제된 상태다.
+ * **데이터를 다시 정렬하는 것은 소비자다.** 컴포넌트는 어느 칼럼이 어느 방향인지와
+ * 그 시각 표시만 갖는다.
+ */
+export interface NsSortDetail {
+  key: string;
+  direction: NsSortDirection;
+}
+
 declare global {
   interface HTMLElementEventMap {
     "ns-toggle": CustomEvent<NsToggleDetail>;
     "ns-navigate": CustomEvent<NsNavigateDetail>;
     "ns-dialog-close": CustomEvent<NsDialogCloseDetail>;
+    "ns-sort": CustomEvent<NsSortDetail>;
   }
 }
