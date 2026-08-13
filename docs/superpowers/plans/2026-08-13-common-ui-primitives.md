@@ -3674,6 +3674,88 @@ const reactExternal = [/^react(\/.*)?$/, /^react-dom(\/.*)?$/];
 ```
 ```
 
+- [ ] **Step 2b: 실행 중에 실제로 물린 함정을 추가한다**
+
+Step 2 의 목록은 계획을 쓸 때 예상한 것이다. Task 1~10 을 실제로 구현하면서 **리뷰가 잡아낸** 것들이 아래다. 전부 `docs/gotchas.md` 에 들어간다 — 그 파일이 존재하는 이유가 이것이고, 이유를 모르면 다음 사람이 되돌린다.
+
+Step 2 의 항목들 **뒤에**, "## 검사는 실패시켜 봐야 검사다" 절 앞에 넣는다.
+
+```markdown
+## 컴포넌트가 호스트에 속성을 찍으면 문서화된 override 가 죽는다
+
+`ns-icon` 이 `connectedCallback` 에서 `this.setAttribute("aria-hidden", "true")` 를 무조건 실행했다. 같은 커밋의 문서는 "의미가 필요하면 `aria-hidden` 을 지우고 `role="img" aria-label` 을 붙이라" 고 안내했다. **그 지시를 따라도 연결 시점에 다시 찍혀 요소가 접근성 트리에서 제거된다.** 에러는 없다.
+
+각 파일은 옳았다. 코드는 "아이콘은 장식" 을 정확히 구현했고 문서는 override 를 정확히 안내했다. **둘이 서로를 무효화하는 것만 아무도 볼 수 없었다** — 타입 검사도, `check-events` 도, `check-controls` 도 코드와 문서가 같은 것을 말하는지는 검사하지 않는다.
+
+→ **컴포넌트는 호스트의 속성을 쓰지 않는다.** 숨겨야 할 것이 있으면 shadow 안의 요소에 붙인다. `ns-icon` 은 `<svg>` 에, `ns-skeleton` 은 내부 막대에 `aria-hidden` 을 둔다. 호스트에 aria 속성이 없으면 소비자의 `role`/`aria-label` 이 싸울 상대 없이 동작한다.
+
+## author 선언은 cascade origin 으로 UA 스타일시트를 이긴다
+
+`ns-dialog` 의 shadow CSS 가 `dialog { display: flex }` 를 무조건 선언했다. UA 스타일시트는 `dialog:not([open]) { display: none }` 으로 닫힌 대화상자를 숨기는데 `!important` 가 아니다. **author 선언은 특정도와 무관하게 origin 으로 UA 를 이기고, shadow 트리 스타일도 author origin 이다.** 게다가 `:host { display: contents }` 라 호스트가 박스를 만들지 않아, 닫힌 대화상자의 제목·닫기 버튼·본문·footer 가 페이지에 그대로 떠 있었다. `index.html` 자신이 그 상태로 배포될 뻔했다.
+
+같은 파일이 여덟 줄 아래에서 `.footer[hidden] { display: none }` 을 명시하며 *"`display: flex` 가 UA 의 `[hidden]` 규칙을 이기므로 되돌려야 한다"* 고 적고 있었다. **함정을 아는 것과 매번 적용하는 것은 다른 일이다.**
+
+→ shadow 스타일이 UA 기본값을 덮으면 **되돌릴 규칙을 함께 둔다.** `dialog:not([open]) { display: none }` 은 `(0,1,1)` 이라 `(0,0,1)` 을 순서와 무관하게 이긴다.
+
+## 인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다
+
+`Dialog` shim 이 `onNsDialogClose={() => onClose()}` 였다. **인자 수가 적은 함수는 어떤 핸들러 타입에도 대입되므로** `(e: Event) => void` 와 `(e: CustomEvent<T>) => void` 를 구분하지 못한다. `NsDialogBase` 는 비공개라 `consumer-example.tsx` 가 그 prop 에 닿을 수도 없었다. 결과: 캐스트를 지워도 `npm run check` 가 통과했다.
+
+`gotchas.md` 위쪽의 "`npm run check` 가 못 보는 영역" 항목이 이 방어를 만든 이유는 `v0.1.1` 이 실제로 `onNsToggle: string` 을 배포한 사고였다. `ns-dialog-close` 만 그 방어 밖에 있었다.
+
+→ **shim 이 `e.detail` 을 실제로 읽는다.** `onClose: (reason) => void` 로 사유를 넘기면 캐스트가 라이브러리 코드에서 load-bearing 이 되고, 캐스트가 빠지면 **①번 검사**(`tsc -p tsconfig.json`)가 막는다. 예시 파일이 지워지면 사라지는 방어보다 강하다.
+
+## Lit 은 첫 업데이트를 마이크로태스크로 미룬다
+
+`ns-dialog` 의 `firstUpdated()` 가 `#innerOpen = this.defaultOpen` 로 무조건 대입했다. 생성과 같은 태스크에서 부른 `show()` 는 **항상** 그보다 먼저 실행되므로 조용히 덮였다. 경합이 아니라 결정론적이다.
+
+```js
+const d = document.createElement("ns-dialog");
+document.body.append(d);
+d.show();          // 무시된다
+```
+
+→ `firstUpdated` 에서 초기값은 **seed 만 한다.** `if (this.defaultOpen) this.#innerOpen = true;`
+
+(`defaultOpen` 을 `connectedCallback` 이 아니라 `firstUpdated` 에서 읽는 이유는 별개다 — `createElement` 후 `setAttribute` 하는 경로에서는 `connectedCallback` 시점에 속성이 아직 없을 수 있다.)
+
+## 포인터 좌표로 판별하면 키보드 클릭을 놓친다
+
+`ns-dialog` 의 backdrop 판별이 `clientX/clientY` 를 `getBoundingClientRect()` 와 비교한다. **키보드로 활성화된 클릭은 좌표가 `0,0` 이고**, 대화상자는 가운데 정렬이라 `(0,0)` 은 항상 "밖" 이다. 여기에 `#downOutside` 플래그를 어느 경로에서도 지우지 않는 버그가 겹쳐, backdrop 에 mousedown 했다가 안에서 손을 뗀 뒤 footer 버튼을 Enter 로 누르면 `reason: "backdrop"` 으로 닫혔다.
+
+→ 플래그는 **소비**한다(모든 종료 경로에서 지운다). 그리고 `e.detail === 0` 으로 키보드·프로그램 클릭을 걸러낸다 — 실제 마우스 클릭은 언제나 `detail >= 1` 이다.
+
+## 클래스 하나는 클래스+타입 선택자에 진다
+
+`.ns-checkbox span` 은 `(0,1,1)`, `.ns-checkbox__hint` 단독은 `(0,1,0)` 이다. **클래스 개수가 먼저 비교되므로 자손 선택자가 이기고**, hint 가 라벨과 같은 크기·색으로 렌더된다. 순서를 바꿔도 해결되지 않는다.
+
+→ `.ns-checkbox .ns-checkbox__hint` `(0,2,0)` 로 쓴다. **그리고 이 확인은 구현자에게 맡길 수 없다** — `npm run check` 는 CSS 를 평가하지 않고 결과는 화면으로만 드러난다. 특정도 산수는 코드 리뷰가, 결과는 사람 눈이 본다.
+
+## `check-controls.mjs` 의 역방향 검사는 클래스 전방 참조를 막는다
+
+`.ns-textarea` 문서가 아직 만들지 않은 `.ns-field` 를 가리키자 "`controls.css` 에 없는 클래스가 `index.html` 에 있습니다" 로 `npm run check` 가 막혔다. 검사가 제 역할을 한 것이지만, 클래스를 하나씩 추가하는 동안 문서가 서로를 참조하면 순서에 걸린다.
+
+→ 뒤에 올 클래스를 가리키는 문구는 그 클래스가 생긴 뒤에 넣는다. **CSS 주석 안의 언급은 안전하다** — 스크립트가 CSS 주석을 먼저 제거한다.
+
+## Lit 템플릿 안의 HTML 주석은 shadow DOM 으로 렌더된다
+
+`html` 태그 템플릿 안에 `<!-- … -->` 를 두면 인스턴스마다 그 주석이 shadow root 에 실려 나간다. 설명은 템플릿 **밖**에 `/* */` 로 둔다.
+```
+
+그리고 `.claude/rules/library-invariants.md` 의 "## 컴포넌트" 절에 세 줄을 더한다.
+
+```markdown
+- **호스트의 속성을 쓰지 않는다.** `setAttribute` 로 소비자가 쓴 속성을 덮으면 문서화된 override 가 조용히 죽는다. 숨길 것은 shadow 안의 요소에 붙인다.
+- **shadow 스타일이 UA 기본값을 덮으면 되돌릴 규칙을 함께 둔다.** author 선언은 특정도와 무관하게 origin 으로 UA 를 이긴다.
+- **React shim 은 이벤트 `detail` 을 실제로 읽는다.** 인자 0개 핸들러는 `EventName<>` 캐스트 누락을 감춘다.
+```
+
+"## 이름" 절에도 한 줄을 더한다.
+
+```markdown
+- **shim 이 있는 태그는 이름이 셋이다.** Lit 클래스 별칭 `Ns<X>Element`, 내부 `createComponent` 래퍼 `Ns<X>Base`(비공개), 공개 shim `<X>`. shim 이 없는 태그는 래퍼가 평범한 이름을 갖는다.
+```
+
 - [ ] **Step 3: `docs/project-structure.md` 를 갱신한다**
 
 "## 무엇을 제공하나" 표를 태그 여덟 개로 늘리고, 그 아래에 클래스 표를 새로 만든다.
