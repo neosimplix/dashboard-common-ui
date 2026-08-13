@@ -712,6 +712,35 @@
   <div class="demo block" id="table-narrow-demo" style="max-width:26rem;padding:var(--space-4)"></div>
   <pre></pre>
 
+  <h3>정렬 헤더의 모양</h3>
+  <p>
+    정렬 <strong>동작</strong>은 <code>ns-table</code> 태그가 붙여 준다(별도 절).
+    여기서는 <code>aria-sort</code> 세 상태의 <strong>모양만</strong> 정적으로 보여준다 —
+    삼각형이 <code>border</code> 로 그려지고, 정렬되지 않은 칼럼에서도 자리를 차지해
+    헤더 폭이 흔들리지 않는 것을 확인하는 자리다.
+  </p>
+  <p>
+    이 데모는 <code>ns-table</code> 로 감싸지 않는다 — 그 컴포넌트가
+    <code>aria-sort</code> 의 유일한 작성자라서, 감싸면 손으로 쓴 값을 덮어쓴다.
+  </p>
+  <template class="ex">
+    <table class="ns-table">
+      <thead>
+        <tr>
+          <th aria-sort="ascending"><button class="ns-table-sort" type="button">오름차순</button></th>
+          <th aria-sort="descending"><button class="ns-table-sort" type="button">내림차순</button></th>
+          <th aria-sort="none"><button class="ns-table-sort" type="button">정렬 안 됨</button></th>
+          <th>버튼 없는 칼럼</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>가</td><td>나</td><td>다</td><td>라</td></tr>
+      </tbody>
+    </table>
+  </template>
+  <div class="demo block" id="table-sort-states-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+
   <h3>클래스</h3>
   <table class="ns-table">
     <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
