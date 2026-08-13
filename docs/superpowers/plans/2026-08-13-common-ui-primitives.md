@@ -1447,14 +1447,20 @@ git commit -m "feat(controls): .ns-select 추가"
     color: var(--color-fg-body);
   }
 
-  .ns-checkbox__hint {
+  /*
+    자손 선택자로 써야 한다. `.ns-checkbox__hint` 단독은 특정도 (0,1,0) 이고
+    위의 `.ns-checkbox span` 은 (0,1,1) 이라 자손 선택자가 이긴다 — hint 가
+    라벨과 같은 크기·색으로 렌더되고 **에러는 나지 않는다.**
+    `.ns-checkbox .ns-checkbox__hint` 는 (0,2,0) 이라 이긴다.
+  */
+  .ns-checkbox .ns-checkbox__hint {
     font-size: var(--font-size-xs);
     line-height: var(--line-height-xs);
     color: var(--color-fg-subtle);
   }
 ```
 
-`.ns-checkbox__hint` 가 `.ns-checkbox span` 다음에 와야 한다. 특정도가 같지 않지만(클래스 하나 vs 클래스+타입) 순서를 지켜 두면 나중에 특정도를 조정할 때 실수가 줄어든다.
+**검증 방법:** 순서를 바꿔도 결과가 같아야 한다. `.ns-checkbox .ns-checkbox__hint` 블록을 `.ns-checkbox span` **앞**으로 옮겨도 hint 가 여전히 작고 옅으면 특정도로 이긴 것이다. 순서에 의존하고 있었다면 그때 깨진다. 확인 후 원래 위치로 되돌린다.
 
 - [ ] **Step 2: `src/react/controls/Checkbox.tsx` 를 만든다**
 
