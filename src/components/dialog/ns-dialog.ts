@@ -26,6 +26,10 @@ export class NsDialog extends LitElement {
    * 속성이 아니라 프로퍼티 전용인 이유: `<ns-dialog open>` 이라고 쓰면 boolean
    * 속성이 `true` 로 읽혀 제어 모드로 들어가고, 그러면 컴포넌트가 스스로 닫지
    * 못한다. 순수 HTML 소비자는 `default-open` 을 쓴다.
+   *
+   * `open` 을 나중에 `undefined` 로 되돌리면 비제어로 전환되고, 그 시점의 내부
+   * 상태(보통 닫힘)가 화면에 반영된다 — 열려 있던 대화상자가 닫힌다. React 의
+   * controlled/uncontrolled 전환과 같은 성질이다.
    */
   @property({ attribute: false }) open?: boolean;
 
@@ -67,9 +71,13 @@ export class NsDialog extends LitElement {
     로 만든 뒤 setAttribute 하는 경로에서는 connectedCallback 시점에 속성이 아직
     없을 수 있다. firstUpdated 는 같은 갱신 주기의 updated 보다 먼저 실행되므로
     아래 값이 그 주기에서 바로 반영된다.
+
+    덮어쓰지 않고 seed 만 한다. Lit 은 첫 업데이트를 마이크로태스크로 미루므로
+    생성과 같은 태스크에서 부른 show() 가 여기보다 먼저 실행되는데, 무조건
+    대입하면 그 show() 가 경고도 없이 사라진다.
   */
   override firstUpdated(): void {
-    this.#innerOpen = this.defaultOpen;
+    if (this.defaultOpen) this.#innerOpen = true;
   }
 
   /**
@@ -112,7 +120,8 @@ export class NsDialog extends LitElement {
     if (!el) return;
 
     if (this.#isOpen && !el.open) {
-      el.showModal();
+      // 분리된 동안 open 이 바뀌면 showModal() 이 InvalidStateError 를 던져 갱신 주기를 끊는다.
+      if (this.isConnected) el.showModal();
     } else if (!this.#isOpen && el.open) {
       this.#closedByUs = true;
       el.close();
@@ -169,13 +178,28 @@ export class NsDialog extends LitElement {
   };
 
   #onClick = (e: MouseEvent): void => {
+    /*
+      플래그를 소비한다. 지우지 않으면 backdrop 에 mousedown 했다가 안에서 손을 뗀
+      뒤 남은 true 가 다음 클릭까지 살아남는다.
+    */
+    const downOutside = this.#downOutside;
+    this.#downOutside = false;
+
     if (this.noBackdropClose) return;
+
+    /*
+      키보드로 활성화된 클릭은 clientX/clientY 가 0 이다. 대화상자는 가운데 정렬이라
+      (0,0) 은 항상 밖으로 판정되므로, 걸러내지 않으면 footer 버튼을 Enter 로 누른 것이
+      backdrop 클릭이 된다. e.detail === 0 이 관용적인 판별법이다.
+    */
+    if (e.detail === 0) return;
+
     /*
       mousedown 과 click 이 모두 밖이어야 한다. 본문 글자를 드래그로 선택하다
       backdrop 에서 손을 떼면 click 타깃이 <dialog> 가 되므로, 이 확인이 없으면
       복사하려던 사용자가 대화상자를 잃는다.
     */
-    if (!this.#downOutside || !this.#isOutside(e)) return;
+    if (!downOutside || !this.#isOutside(e)) return;
     this.#requestClose("backdrop");
   };
 

@@ -28,6 +28,19 @@ export const styles = css`
     overflow: hidden;
   }
 
+  /*
+    UA 스타일시트의 dialog:not([open]) { display: none } 은 !important 가 아니고,
+    author 선언은 cascade origin 에서 user-agent 를 이긴다 — 위의 display: flex 가
+    닫힌 상태에도 적용된다. :host 가 display: contents 라 호스트는 박스를 만들지
+    않으므로, 되돌리지 않으면 닫힌 대화상자의 내용이 페이지에 그대로 그려진다.
+    (아래 .footer[hidden] 과 같은 종류의 함정이다.)
+
+    특정도가 (0,1,1) 로 위 규칙 (0,0,1) 보다 높아 순서에 의존하지 않는다.
+  */
+  dialog:not([open]) {
+    display: none;
+  }
+
   dialog::backdrop {
     background: var(--color-overlay);
   }
