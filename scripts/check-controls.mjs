@@ -15,6 +15,10 @@
   html.includes("ns-dialog") 로 판정하면 태그가 클래스로 잡힌다.
 
   한계: 클래스가 언급됐는지만 본다. 예시가 올바른지는 보지 못한다.
+
+  요소 선택자(ns-table 등)는 정방향으로만 대조한다. CSS 에 있으면 문서에도
+  있어야 하지만, 태그 이름은 index.html 전체에 정당하게 등장하므로 역방향
+  대조는 넣지 않는다.
 */
 import { readFileSync } from "node:fs";
 
@@ -27,6 +31,21 @@ const CLASS = /\.(ns-[a-z0-9_-]+)/g;
 
 const defined = new Set([...css.matchAll(CLASS)].map((m) => m[1]));
 
+/*
+  요소 선택자도 잡는다.
+
+  ns-table · ns-pagination 은 Light DOM 컴포넌트라 controls.css 가 요소
+  선택자로 직접 스타일한다(`ns-table { overflow-x: auto }`). 점이 붙은 클래스만
+  찾으면 그 규칙들이 문서 대조 밖에 놓인다.
+
+  정방향만 본다 — CSS 에 있으면 문서에도 있어야 한다. 역방향은 넣지 않는다.
+  태그 이름은 index.html 전체에 정당하게 등장하므로(데모 마크업, 프로퍼티 표,
+  예시 블록) 역방향으로 보면 거짓 양성만 쏟아진다.
+*/
+const ELEMENT = /^[ \t]*(ns-[a-z-]+)[ \t]*[,{]/gm;
+
+for (const m of css.matchAll(ELEMENT)) defined.add(m[1]);
+
 const documented = new Set([...html.matchAll(CLASS)].map((m) => m[1]));
 for (const m of html.matchAll(/class="([^"]*)"/g)) {
   for (const name of m[1].split(/\s+/)) {
@@ -34,7 +53,16 @@ for (const m of html.matchAll(/class="([^"]*)"/g)) {
   }
 }
 
-const missing = [...defined].filter((n) => !documented.has(n)).sort();
+/*
+  요소 선택자의 문서화 여부는 태그가 등장하는지로 본다 — <ns-table> 마크업이든
+  <code>ns-table</code> 언급이든 상관없다. defined 에 있는 이름만 확인하므로
+  (documented 에 넣는 것이 아니라) 역방향 거짓 양성이 생기지 않는다.
+*/
+const TAG = (name) => new RegExp(`<${name}[\\s>]|<code>${name}</code>`);
+
+const missing = [...defined]
+  .filter((n) => !documented.has(n) && !TAG(n).test(html))
+  .sort();
 if (missing.length > 0) {
   console.error(`index.html 에 문서화되지 않은 클래스: ${missing.join(", ")}`);
   process.exit(1);

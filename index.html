@@ -89,6 +89,7 @@
       <ns-nav-item href="#ns-select" label=".ns-select" badge="SL"></ns-nav-item>
       <ns-nav-item href="#ns-checkbox" label=".ns-checkbox" badge="CB"></ns-nav-item>
       <ns-nav-item href="#ns-field" label=".ns-field" badge="FD"></ns-nav-item>
+      <ns-nav-item href="#ns-table" label=".ns-table" badge="TB"></ns-nav-item>
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
@@ -646,6 +647,107 @@
     <Field label="직급" hint="관리자 승인 후 반영됩니다">
       <Select placeholder="직급을 선택하세요" options={ranks} />
     </Field>
+  </script>
+
+  <h2 id="ns-table">.ns-table</h2>
+  <p>
+    표 표면. 정렬·페이징·선택 <strong>동작</strong>은 <code>ns-table</code> 태그가 맡고
+    (아래 별도 절), 이 클래스는 테두리·패딩·hover 만 갖는다.
+  </p>
+  <p>
+    <strong>스크롤 컨테이너는 <code>ns-table</code> 요소다.</strong> 좁은 화면에서 표가
+    부모를 밀어내지 않게 하고, <code>min-width: max-content</code> 와 짝을 이뤄
+    액션 칸의 버튼이 쥐어짜여 줄바꿈되는 것을 막는다. 요소 선택자로 스타일하므로
+    <strong>JS 없이도 동작한다</strong> — 정의되지 않은 커스텀 엘리먼트에도 적용된다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr><th>이름</th><th>부서</th><th>가입일</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>홍길동</td><td>마케팅팀</td><td>2026-07-15</td></tr>
+          <tr><td>김대기</td><td>플랫폼개발팀</td><td>2026-08-05</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="table-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>좁은 컨테이너</h3>
+  <p>
+    칸이 쥐어짜이는 대신 가로로 스크롤되는지 보는 자리다. 이 조합이 실제로 깨졌던
+    화면(관리자 프로젝트 표)의 축소판이다.
+  </p>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr><th>이름</th><th>주소</th><th>URL</th><th>부서</th><th>담당자</th><th>상태</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>글로벌 인플루언서 마케팅</td>
+            <td>global-influencer-marketing</td>
+            <td>https://dash.example.com/global</td>
+            <td>마케팅팀, 플랫폼개발팀</td>
+            <td>담당자 둘</td>
+            <td>운영 중</td>
+            <td>
+              <span style="display:inline-flex;gap:var(--space-2)">
+                <button class="ns-button ns-button--ghost ns-button--sm" type="button">문의</button>
+                <button class="ns-button ns-button--outline ns-button--sm" type="button">수정</button>
+                <button class="ns-button ns-button--ghost ns-button--sm" type="button">삭제</button>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="table-narrow-demo" style="max-width:26rem;padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table class="ns-table">
+    <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>ns-table</code></td><td>(요소 선택자)</td><td>스크롤 컨테이너. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
+    <tr><td><code>.ns-table</code></td><td><code>table</code></td><td>표면. <code>th</code>·<code>td</code>·hover 는 자손 선택자로 잡혀 클래스가 필요 없다</td></tr>
+    <tr><td><code>.ns-table-sort</code></td><td><code>th</code> 안의 <code>button</code></td><td>정렬 헤더. 삼각형 자리를 늘 잡아 두어 정렬 시 헤더 폭이 흔들리지 않는다</td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-table>
+      <table class="ns-table">
+        <thead><tr><th>이름</th></tr></thead>
+        <tbody><tr><td>홍길동</td></tr></tbody>
+      </table>
+    </ns-table>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsTable } from "@neosimplix/common-ui/react";
+
+    /* 셀 내용에 제약이 없다 — 표는 데이터를 모른다 */
+    <NsTable>
+      <table className="ns-table">
+        <thead><tr><th>이름</th><th /></tr></thead>
+        <tbody>
+          {records.map((r) => (
+            <tr key={r.email}>
+              <td>{r.name}</td>
+              <td><Button size="sm" onClick={() => onEdit(r)}>수정</Button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </NsTable>
   </script>
 
   <h2 id="ns-card">.ns-card</h2>
