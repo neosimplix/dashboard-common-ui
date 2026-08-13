@@ -1228,6 +1228,34 @@
     같은 헤더를 세 번 누르면 <strong>정렬이 해제되어 원래 순서로 돌아온다</strong>.
   </p>
 
+  <h3>선택 데모</h3>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr>
+            <th><label class="ns-checkbox"><input type="checkbox" data-ns-select-all></label></th>
+            <th>이름</th>
+            <th>부서</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="hong"></label></td><td>홍길동</td><td>마케팅팀</td></tr>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="kim"></label></td><td>김대기</td><td>플랫폼개발팀</td></tr>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="park"></label></td><td>박서준</td><td>데이터분석팀</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="select-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="select-log" style="font-family: monospace">체크하면 여기에 이벤트가 찍힌다.</p>
+  <p>
+    한 행만 체크하면 전체 선택이 <strong>가로줄(indeterminate)</strong> 이 된다.
+    <code>indeterminate</code> 는 프로퍼티고 대응하는 HTML 속성이 없어
+    <strong>마크업만으로는 만들 수 없다</strong> — 컴포넌트가 이걸 맡는 이유다.
+  </p>
+
   <h3>프로퍼티</h3>
   <table class="ns-table">
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
@@ -1235,18 +1263,22 @@
     <tr><td><code>sortDirection</code></td><td>없음</td><td>"ascending" | "descending" | "none" | undefined</td><td><code>undefined</code></td><td><code>sortKey</code> 와 짝</td></tr>
     <tr><td><code>defaultSortKey</code></td><td><code>default-sort-key</code></td><td>string</td><td><code>""</code></td><td>비제어 초기값</td></tr>
     <tr><td><code>defaultSortDirection</code></td><td><code>default-sort-direction</code></td><td>같음</td><td><code>"none"</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>selected</code></td><td>없음</td><td>string[] | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>비제어 초기 선택은 마크업의 <code>checked</code> 에서 온다</strong></td></tr>
   </table>
 
   <h3>소비자가 쓰는 훅</h3>
   <table class="ns-table">
     <tr><th>속성</th><th>붙이는 요소</th><th>설명</th></tr>
     <tr><td><code>data-ns-sort-key</code></td><td><code>th</code></td><td>이 칼럼을 정렬 대상으로 만든다. 값이 <code>ns-sort</code> 의 <code>key</code> 로 실린다</td></tr>
+    <tr><td><code>data-ns-select-all</code></td><td><code>input[type=checkbox]</code></td><td>전체 선택. <strong><code>checked</code>·<code>indeterminate</code> 를 컴포넌트가 쓴다</strong> — 바인딩하지 않는다</td></tr>
+    <tr><td><code>data-ns-row-id</code></td><td><code>input[type=checkbox]</code></td><td>행 식별자. 값이 <code>ns-select-change</code> 의 <code>ids</code> 에 실린다</td></tr>
   </table>
 
   <h3>이벤트</h3>
   <table class="ns-table">
     <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
     <tr><td><code>ns-sort</code></td><td><code>{ key: string, direction: "ascending" | "descending" | "none" }</code></td><td>정렬 헤더 클릭. <code>direction</code> 이 <code>"none"</code> 이면 <code>key</code> 는 빈 문자열이다</td></tr>
+    <tr><td><code>ns-select-change</code></td><td><code>{ ids: string[] }</code></td><td>체크박스 변경. <strong>요청되는 다음 전체 집합</strong>이다</td></tr>
   </table>
 
   <h3>방향은 3-상태다</h3>
@@ -1254,6 +1286,17 @@
     <code>none → ascending → descending → none</code>.
     2-상태로 하면 <strong>서버의 기본 정렬로 돌아갈 방법이 없다.</strong> 그 기본 순서가
     의도를 담는 경우가 있다 — "오래된 신청이 위" 같은 것이다.
+  </p>
+
+  <h3>전체 선택의 범위는 현재 페이지다</h3>
+  <p>
+    DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 <strong>보이는 20개</strong>를
+    뜻한다. "240개 전부 선택" 은 별개 기능으로 제공하지 않는다.
+  </p>
+  <p>
+    제어 모드에서는 <strong>행 체크박스의 <code>checked</code> 를 컴포넌트가 건드리지
+    않는다.</strong> React 가 그 값을 소유하므로 쓰면 다음 렌더에 덮어써진다. 요청되는
+    다음 집합만 이벤트로 올리고, 적용은 소비자가 한다.
   </p>
 
   <h3>접근성</h3>
@@ -1834,6 +1877,16 @@
       drawSort(e.detail.key, e.detail.direction);
       sortLog.textContent =
         `ns-sort  key=${e.detail.key || "(없음)"}  direction=${e.detail.direction}`;
+    });
+  }
+
+  const selectDemo = document.getElementById("select-demo");
+  const selectLog = document.getElementById("select-log");
+  if (selectDemo && selectLog) {
+    // 비제어 데모다 — 컴포넌트가 행 체크박스와 3-상태를 모두 관리한다.
+    selectDemo.querySelector("ns-table").addEventListener("ns-select-change", (e) => {
+      const ids = e.detail.ids;
+      selectLog.textContent = `ns-select-change  ids=[${ids.join(", ")}]  (${ids.length}개)`;
     });
   }
 </script>

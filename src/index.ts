@@ -24,4 +24,5 @@ export type {
   NsDialogCloseReason,
   NsSortDetail,
   NsSortDirection,
+  NsSelectChangeDetail,
 } from "./types.js";

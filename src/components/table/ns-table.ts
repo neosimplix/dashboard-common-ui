@@ -3,7 +3,11 @@ import { property } from "lit/decorators.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
-import type { NsSortDetail, NsSortDirection } from "../../types.js";
+import type {
+  NsSelectChangeDetail,
+  NsSortDetail,
+  NsSortDirection,
+} from "../../types.js";
 
 /*
   none → ascending → descending → none.
@@ -64,6 +68,15 @@ export class NsTable extends ReactiveElement {
   @property({ type: String, attribute: "default-sort-direction" })
   defaultSortDirection: NsSortDirection = "none";
 
+  /**
+   * 제어 모드의 선택 집합. `undefined` 면 비제어다.
+   *
+   * 배열은 속성으로 표현할 수 없어 프로퍼티 전용이다. **비제어 초기 선택은
+   * 마크업의 `checked` 속성에서 온다** — `default-selected` 프로퍼티를 두지
+   * 않는다. 네이티브 폼과 같은 방식이고 컴포넌트는 DOM 을 읽으면 된다.
+   */
+  @property({ attribute: false }) selected?: string[];
+
   /** 비제어일 때의 진실. */
   #innerKey = "";
   #innerDirection: NsSortDirection = "none";
@@ -87,22 +100,34 @@ export class NsTable extends ReactiveElement {
     warnIfTokensMissing();
     // 위임이라 소비자가 행을 다시 그려도 리스너를 다시 붙일 필요가 없다.
     this.addEventListener("click", this.#onClick);
+    this.addEventListener("change", this.#onChange);
 
     /*
-      updated() 는 반응형 프로퍼티가 바뀔 때만 돈다. 소비자가 정렬과 무관한
-      이유로(칼럼 구성 변경, i18n) <thead> 를 교체하면 새 <th> 에 aria-sort 가
-      쓰이지 않고 다음 클릭까지 조용히 낡는다 — 이 컴포넌트가 스스로 주장하는
-      "aria-sort 의 유일한 작성자" 보증이 그 사이에 깨진다.
+      updated() 는 반응형 프로퍼티가 바뀔 때만 돈다. 소비자가 정렬·선택과 무관한
+      이유로(칼럼 구성 변경, i18n, 페이지 이동, 필터) <thead>/<tbody> 를 교체하면
+      새 <th>·체크박스에 aria-sort·3-상태가 쓰이지 않고 다음 상호작용까지 조용히
+      낡는다 — 이 컴포넌트가 스스로 주장하는 "유일한 작성자" 보증이 그 사이에 깨진다.
 
       attributes 는 관찰하지 않는다. #syncAriaSort 가 setAttribute 를 쓰므로
       관찰했다면 자기 쓰기에 다시 깨어나 루프가 된다. childList·subtree 만 본다.
+      #syncSelectAll 은 checked·indeterminate 프로퍼티만 쓰고 속성을 바꾸지
+      않으므로 애초에 이 재발동 문제가 없다.
+
+      ns-field 를 light DOM 엘리먼트로 만드는 안은 MutationObserver 복잡도 때문에
+      거절했다(프리미티브 스펙 §4.4). 여기서는 받아들인다 — 그 관찰자는 임의의
+      자식에 id·aria-* 를 주입하는 일을 다시 해야 했고, 이 관찰자는
+      querySelectorAll 로 개수를 다시 세는 것만 한다.
     */
-    this.#observer = new MutationObserver(() => this.#syncAriaSort());
+    this.#observer = new MutationObserver(() => {
+      this.#syncAriaSort();
+      this.#syncSelectAll();
+    });
     this.#observer.observe(this, { childList: true, subtree: true });
   }
 
   override disconnectedCallback(): void {
     this.removeEventListener("click", this.#onClick);
+    this.removeEventListener("change", this.#onChange);
     this.#observer?.disconnect();
     super.disconnectedCallback();
   }
@@ -119,16 +144,18 @@ export class NsTable extends ReactiveElement {
 
   protected override updated(): void {
     this.#syncAriaSort();
+    this.#syncSelectAll();
   }
 
   /*
-    Light DOM 이라 shadow 경계가 없다. 중첩된 <ns-table> 의 <th> 도 바깥 호스트의
-    querySelectorAll·closest 에 그대로 잡히므로, 안쪽 헤더 클릭이 바깥 컴포넌트에서도
-    처리돼 ns-sort 가 두 번 발생하고 두 컴포넌트가 같은 aria-sort 를 두고 다툰다.
-    가장 가까운 ns-table 이 자기인 <th> 만 자기 것이다.
+    Light DOM 이라 shadow 경계가 없다. 중첩된 <ns-table> 의 <th>·체크박스도 바깥
+    호스트의 querySelectorAll·closest 에 그대로 잡히므로, 안쪽 헤더 클릭이나 안쪽
+    체크박스가 바깥 컴포넌트에서도 처리돼 이벤트가 두 번 발생하고 두 컴포넌트가
+    같은 상태를 두고 다툰다. 가장 가까운 ns-table 이 자기인 요소만 자기 것이다.
+    헤더 · 행 체크박스 · 전체 선택 체크박스 모두 이 검사를 거친다.
   */
-  #owns(th: HTMLElement): boolean {
-    return th.closest("ns-table") === this;
+  #owns(el: HTMLElement): boolean {
+    return el.closest("ns-table") === this;
   }
 
   /*
@@ -172,6 +199,97 @@ export class NsTable extends ReactiveElement {
     this.dispatchEvent(
       new CustomEvent("ns-sort", { detail, bubbles: true, composed: true }),
     );
+  };
+
+  /*
+    중첩된 <ns-table> 의 행 체크박스도 바깥 호스트의 querySelectorAll 에 그대로
+    잡힌다 — #owns 로 걸러 자기 것만 남긴다.
+  */
+  #rowBoxes(): HTMLInputElement[] {
+    return [...this.querySelectorAll<HTMLInputElement>("input[data-ns-row-id]")].filter(
+      (box) => this.#owns(box),
+    );
+  }
+
+  #rowId(box: HTMLInputElement): string {
+    return box.dataset.nsRowId ?? "";
+  }
+
+  /*
+    전체 선택 체크박스의 3-상태를 쓴다. checked 와 indeterminate 의 유일한
+    작성자가 컴포넌트다 — 소비자는 그 둘을 바인딩하지 않는다.
+
+    indeterminate 는 프로퍼티고 대응하는 HTML 속성이 없다. 마크업만으로는
+    "일부 선택" 을 만들 수 없어서, 이것이 컴포넌트가 가져갈 값이 있는 지점이다.
+  */
+  #syncSelectAll(): void {
+    const all = [...this.querySelectorAll<HTMLInputElement>("input[data-ns-select-all]")].find(
+      (box) => this.#owns(box),
+    );
+    if (!all) return;
+
+    const boxes = this.#rowBoxes();
+    const selected = this.selected;
+    const count =
+      selected === undefined
+        ? boxes.filter((box) => box.checked).length
+        : boxes.filter((box) => selected.includes(this.#rowId(box))).length;
+
+    all.checked = boxes.length > 0 && count === boxes.length;
+    all.indeterminate = count > 0 && count < boxes.length;
+  }
+
+  #emitSelect(ids: string[]): void {
+    const detail: NsSelectChangeDetail = { ids };
+    this.dispatchEvent(
+      new CustomEvent("ns-select-change", { detail, bubbles: true, composed: true }),
+    );
+  }
+
+  #onChange = (e: Event): void => {
+    const box = (e.target as Element | null)?.closest<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    if (!box || !this.#owns(box)) return;
+
+    const boxes = this.#rowBoxes();
+
+    if (box.hasAttribute("data-ns-select-all")) {
+      /*
+        비제어면 행 체크박스를 직접 쓴다 — 아무도 안 하니까. 제어면 쓰지 않는다:
+        React 가 checked 를 소유하므로 다음 렌더에 덮어쓴다.
+      */
+      if (this.selected === undefined) {
+        for (const row of boxes) row.checked = box.checked;
+      }
+      this.#emitSelect(box.checked ? boxes.map((row) => this.#rowId(row)) : []);
+      // 제어 모드에서는 selected 가 아직 옛 값이다. updated() 가 갱신한다.
+      if (this.selected === undefined) this.#syncSelectAll();
+      return;
+    }
+
+    if (!box.hasAttribute("data-ns-row-id")) return;
+
+    let ids: string[];
+    if (this.selected === undefined) {
+      ids = boxes.filter((row) => row.checked).map((row) => this.#rowId(row));
+      this.#emitSelect(ids);
+      this.#syncSelectAll();
+      return;
+    }
+
+    /*
+      제어 모드에서는 다른 행의 DOM checked 를 신뢰할 수 없다 — React 가 아직
+      리렌더하지 않았을 수 있다. 방금 눌린 하나의 변화만 selected 에 반영하고,
+      순서는 DOM 의 행 순서를 따른다.
+    */
+    const next = new Set(this.selected);
+    const id = this.#rowId(box);
+    if (box.checked) next.add(id);
+    else next.delete(id);
+    ids = boxes.map((row) => this.#rowId(row)).filter((rowId) => next.has(rowId));
+
+    this.#emitSelect(ids);
   };
 }
 

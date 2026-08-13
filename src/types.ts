@@ -35,11 +35,25 @@ export interface NsSortDetail {
   direction: NsSortDirection;
 }
 
+/**
+ * ns-table 의 선택 변경. **요청되는 다음 전체 집합**이다 — 바뀐 하나가 아니다.
+ *
+ * 전체 집합으로 두는 이유는 소비자 처리가 한 줄이 되기 때문이다. 행 토글이든
+ * 전체 선택이든 같다 — `setSelected(new Set(e.detail.ids))`.
+ *
+ * 범위는 **DOM 에 있는 행**, 즉 현재 페이지다. 서버 페이징에서 "전체 선택" 은
+ * 보이는 20개를 뜻한다. "240개 전부 선택" 은 별개 기능이다.
+ */
+export interface NsSelectChangeDetail {
+  ids: string[];
+}
+
 declare global {
   interface HTMLElementEventMap {
     "ns-toggle": CustomEvent<NsToggleDetail>;
     "ns-navigate": CustomEvent<NsNavigateDetail>;
     "ns-dialog-close": CustomEvent<NsDialogCloseDetail>;
     "ns-sort": CustomEvent<NsSortDetail>;
+    "ns-select-change": CustomEvent<NsSelectChangeDetail>;
   }
 }

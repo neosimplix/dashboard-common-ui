@@ -55,6 +55,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   const [sort, setSort] = useState<NsSortDetail>({ key: "", direction: "none" });
 
+  const [rows, setRows] = useState<string[]>([]);
+
   // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
   const onDialogClose = (reason: NsDialogCloseReason) => {
     log(`closed by ${reason}`);
@@ -123,18 +125,32 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <NsTable
               sortKey={sort.key}
               sortDirection={sort.direction}
+              selected={rows}
               onNsSort={(e) => setSort({ key: e.detail.key, direction: e.detail.direction })}
+              onNsSelectChange={(e) => setRows(e.detail.ids)}
             >
               <table className="ns-table">
                 <thead>
                   <tr>
+                    <th>
+                      <label className="ns-checkbox">
+                        <input type="checkbox" data-ns-select-all />
+                      </label>
+                    </th>
                     <th data-ns-sort-key="name">
                       <button className="ns-table-sort" type="button">이름</button>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>{sort.direction}</td></tr>
+                  <tr>
+                    <td>
+                      <label className="ns-checkbox">
+                        <input type="checkbox" data-ns-row-id="a" checked={rows.includes("a")} readOnly />
+                      </label>
+                    </td>
+                    <td>{sort.direction}</td>
+                  </tr>
                 </tbody>
               </table>
             </NsTable>

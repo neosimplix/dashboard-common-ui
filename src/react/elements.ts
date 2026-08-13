@@ -14,6 +14,7 @@ import type {
   NsToggleDetail,
   NsNavigateDetail,
   NsDialogCloseDetail,
+  NsSelectChangeDetail,
   NsSortDetail,
 } from "../types.js";
 
@@ -127,5 +128,6 @@ export const NsTable = createComponent({
   events: {
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsSort: "ns-sort" as EventName<CustomEvent<NsSortDetail>>,
+    onNsSelectChange: "ns-select-change" as EventName<CustomEvent<NsSelectChangeDetail>>,
   },
 });
