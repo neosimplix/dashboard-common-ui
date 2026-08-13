@@ -78,6 +78,14 @@
   --elevation-card: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
   --transition-fast: 150ms;
   --transition-ease: cubic-bezier(.4, 0, .2, 1);
+
+  /*
+    패키지 내부 배선이라 --ns- 접두사를 쓴다. 아래 ns-icon 요소 선택자 대신
+    커스텀 프로퍼티인 이유는 shadow 경계다 — 요소 선택자는 문서 트리에만
+    적용되므로 ns-dialog 의 shadow 안에 있는 <ns-icon> 에 닿지 못한다.
+    커스텀 프로퍼티는 상속되므로 중첩 shadow 까지 도달한다.
+  */
+  --ns-icon-size: 1.25rem;
 }
 
 /* 다크모드는 이번 범위 밖. 나중에 이 블록만 채우면 된다. */
@@ -94,8 +102,12 @@ ns-header  { display: block; height: var(--header-height); }
 ns-sidebar { display: block; width: var(--sidebar-width); }
 ns-sidebar:not([open]) { width: var(--sidebar-width-collapsed); }
 
-/* ns-icon 의 크기는 여기가 단일 출처다. 컴포넌트 shadow 에 두면 값이 두 곳에 존재한다. */
-ns-icon { display: inline-flex; width: 1.25rem; height: 1.25rem; }
+/*
+  ns-icon 은 값을 --ns-icon-size 에서 받는다. 이 요소 선택자만으로는 문서 트리의
+  아이콘만 잡히고 다른 컴포넌트 shadow 안의 아이콘은 크기를 잃는다.
+  소비자는 ns-icon { width: … } 로 여전히 덮을 수 있다(문서 선택자가 :host 를 이긴다).
+*/
+ns-icon { display: inline-flex; width: var(--ns-icon-size); height: var(--ns-icon-size); }
 
 ns-page-heading { display: block; }
 ns-skeleton { display: block; }
