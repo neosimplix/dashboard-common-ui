@@ -2611,8 +2611,6 @@ export class NsSkeleton extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
-    // 로딩 자리표시자는 화면낭독기에 읽힐 내용이 없다.
-    this.setAttribute("aria-hidden", "true");
   }
 
   #radiusValue(): string {
@@ -2621,8 +2619,14 @@ export class NsSkeleton extends LitElement {
 
   override render() {
     return html`
+      <!--
+        aria-hidden 을 호스트가 아니라 이 div 에 둔다. 호스트에 명령적으로 찍으면
+        소비자가 쓴 속성을 덮어쓰게 되고, ns-icon 에서 그 방식이 문서화된 override 를
+        죽이는 것이 드러났다. 로딩 자리표시자는 읽힐 내용이 없으므로 내부에서 숨긴다.
+      -->
       <div
         class="bar"
+        aria-hidden="true"
         style="width:${this.width};height:${this.height};border-radius:${this.#radiusValue()}"
       ></div>
     `;
@@ -2719,8 +2723,9 @@ export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsSidebar, NsSkeleton } from "
 
   <h3>접근성</h3>
   <p>
-    호스트에 <code>aria-hidden="true"</code> 를 자동으로 붙인다. 로딩 중임을 알려야 하면
-    감싸는 영역에 <code>aria-busy="true"</code> 를 소비자가 붙인다.
+    shadow 안의 막대에 <code>aria-hidden="true"</code> 가 붙어 있어 화면낭독기가 읽지 않는다.
+    호스트에는 aria 속성을 붙이지 않는다 — 컴포넌트가 소비자가 쓴 속성을 덮어쓰지 않기 위해서다.
+    로딩 중임을 알려야 하면 감싸는 영역에 <code>aria-busy="true"</code> 를 소비자가 붙인다.
   </p>
 
   <h3>HTML</h3>
