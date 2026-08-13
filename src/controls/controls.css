@@ -152,6 +152,43 @@
     border-color: var(--color-danger);
   }
 
+  .ns-select {
+    width: 100%;
+    min-height: var(--control-height-md);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .ns-select:focus {
+    border-color: var(--color-accent);
+  }
+
+  /*
+    아직 고르지 않은 상태는 플레이스홀더처럼 옅게 보여준다.
+    빈 값 option 이 선택돼 있는지를 :has() 로 판별한다 — 클래스를 토글하는
+    자바스크립트가 필요 없고, 순수 HTML 에서도 동작한다.
+  */
+  .ns-select:has(option[value=""]:checked) {
+    color: var(--color-fg-subtle);
+  }
+
+  .ns-select:disabled {
+    color: var(--color-fg-subtle);
+    cursor: not-allowed;
+  }
+
+  .ns-select[aria-invalid="true"],
+  .ns-select[aria-invalid="true"]:focus {
+    border-color: var(--color-danger);
+  }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--color-line);

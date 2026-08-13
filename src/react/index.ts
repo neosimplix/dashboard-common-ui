@@ -23,4 +23,7 @@ export type { InputProps } from "./controls/Input.js";
 export { Textarea } from "./controls/Textarea.js";
 export type { TextareaProps } from "./controls/Textarea.js";
 
+export { Select } from "./controls/Select.js";
+export type { SelectOption, SelectProps } from "./controls/Select.js";
+
 export type { NsToggleDetail, NsNavigateDetail } from "../types.js";
