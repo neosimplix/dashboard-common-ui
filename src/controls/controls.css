@@ -99,15 +99,18 @@
   .ns-button--full { width: 100%; }
 
   /*
-    .ns-input 과 .ns-textarea 는 값을 의도적으로 맞춰 둔다. Field 안에서
-    나란히 놓였을 때 어긋나 보이지 않게 하기 위해서다.
+    .ns-input · .ns-textarea · .ns-select 는 기본 값을 공유한다. 값이 같은 것은
+    우연이 아니라 의도다 — .ns-field 안에 나란히 놓였을 때 어긋나 보이지 않게
+    하기 위해서다. 한 셀렉터 목록으로 묶어 그 의도를 코드로 남긴다. 참고 구현이
+    세 벌로 갖고 있었던 것은 CSS Modules 라 파일이 나뉘어 불가피했던 것이다.
 
     invalid 는 변형 클래스가 아니라 [aria-invalid="true"] 로 잡는다. 붙여야
     마땅한 속성을 붙이면 스타일이 따라온다 — 빨간 테두리만 원하고 화면낭독기에는
     안 알리는 조합은 만들 수 없고, 그건 막는 것이 맞다.
   */
   .ns-input,
-  .ns-textarea {
+  .ns-textarea,
+  .ns-select {
     width: 100%;
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--color-line-strong);
@@ -120,7 +123,11 @@
     box-sizing: border-box;
   }
 
-  .ns-input { min-height: var(--control-height-md); }
+  /* textarea 만 높이를 rows 로 정하므로 최소 높이를 갖지 않는다. */
+  .ns-input,
+  .ns-select {
+    min-height: var(--control-height-md);
+  }
 
   .ns-textarea {
     /* textarea 는 폼 컨트롤 기본 글꼴을 쓴다 — 상속시키지 않으면 혼자 monospace 로 뜬다. */
@@ -129,43 +136,14 @@
     resize: vertical;
   }
 
+  /* select 에는 ::placeholder 가 없다 — 아래 :has() 규칙이 그 역할을 한다. */
   .ns-input::placeholder,
   .ns-textarea::placeholder {
     color: var(--color-fg-subtle);
   }
 
   .ns-input:focus,
-  .ns-textarea:focus {
-    border-color: var(--color-accent);
-  }
-
-  .ns-input:disabled,
-  .ns-textarea:disabled {
-    color: var(--color-fg-subtle);
-    cursor: not-allowed;
-  }
-
-  .ns-input[aria-invalid="true"],
-  .ns-input[aria-invalid="true"]:focus,
-  .ns-textarea[aria-invalid="true"],
-  .ns-textarea[aria-invalid="true"]:focus {
-    border-color: var(--color-danger);
-  }
-
-  .ns-select {
-    width: 100%;
-    min-height: var(--control-height-md);
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-fg);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-sm);
-    outline: none;
-    box-sizing: border-box;
-  }
-
+  .ns-textarea:focus,
   .ns-select:focus {
     border-color: var(--color-accent);
   }
@@ -179,11 +157,17 @@
     color: var(--color-fg-subtle);
   }
 
+  .ns-input:disabled,
+  .ns-textarea:disabled,
   .ns-select:disabled {
     color: var(--color-fg-subtle);
     cursor: not-allowed;
   }
 
+  .ns-input[aria-invalid="true"],
+  .ns-input[aria-invalid="true"]:focus,
+  .ns-textarea[aria-invalid="true"],
+  .ns-textarea[aria-invalid="true"]:focus,
   .ns-select[aria-invalid="true"],
   .ns-select[aria-invalid="true"]:focus {
     border-color: var(--color-danger);
