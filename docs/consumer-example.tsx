@@ -1,7 +1,7 @@
 /*
   소비자 관점의 타입 검사 파일.
 
-  React 래퍼(src/react/index.ts)의 이벤트 핸들러 타입은 라이브러리 내부의
+  React 래퍼(src/react/elements.ts)의 이벤트 핸들러 타입은 라이브러리 내부의
   npm run check(tsc -p tsconfig.json) 로는 볼 수 없다 — 그 안에서는
   events 값이 그냥 문자열이라 EventName<> 브랜딩이 빠져도 통과한다.
   이 파일은 "@neosimplix/common-ui/react" 를 실제로 설치해 쓰는 소비자

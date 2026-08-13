@@ -10,6 +10,20 @@
 | `ns-sidebar` | 네비게이션 컨테이너. 접으면 좌측에 4rem 레일이 남는다 |
 | `ns-nav-group` | 제목이 붙은 네비게이션 그룹 |
 | `ns-nav-item` | 그룹 하위 항목. 행 우측에 `trailing` slot |
+| `ns-icon` | 이름으로 꺼내는 인라인 SVG |
+| `ns-page-heading` | `h1` + 설명 `p` |
+| `ns-skeleton` | 로딩 자리표시자. 크기를 프로퍼티로 받는다 |
+| `ns-dialog` | 네이티브 `dialog` 모달. 제어/비제어 |
+
+| 클래스 | 붙이는 요소 |
+|---|---|
+| `.ns-button` | `button` · `a` |
+| `.ns-input` `.ns-select` `.ns-textarea` | 같은 이름의 네이티브 컨트롤 |
+| `.ns-checkbox` | `label` (내부에 `input[type=checkbox]`) |
+| `.ns-field` | `div`. `__label` `__hint` `__error` 를 함께 쓴다 |
+| `.ns-card` | `div` |
+
+**태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
 이벤트는 둘뿐이다. `ns-toggle`(`{ open }`)과 `ns-navigate`(`{ href, label }`). 둘 다 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
@@ -21,12 +35,15 @@
 
 **테스트 러너를 두지 않는다.** 같은 시도가 검증 하네스 복잡도 때문에도 폐기됐다. 회귀 확인은 `npm run check` 와 `index.html` 육안 확인이다. 문서 페이지의 헤더와 좌측 네비게이션이 이 라이브러리의 컴포넌트로 만들어져 있어서, 깨지면 문서가 열리지 않는 것으로 즉시 드러난다.
 
+**폼 컨트롤을 웹 컴포넌트로 만들지 않는다.** shadow DOM 이 폼 참여·라벨·검증·자동완성을 끊고, FACE 로 되살려도 "JS 없이 동작한다"는 성질은 돌아오지 않는다. 근거는 `docs/gotchas.md` 에 있다.
+
 ## 디렉터리
 
 ```
 common-ui/
 ├── src/
 │   ├── tokens/tokens.css              디자인 토큰. Tailwind 비의존. 손으로 쓰는 정적 파일
+│   ├── controls/controls.css          .ns-* 클래스. @layer ns-controls. 손으로 쓰는 정적 파일
 │   ├── internal/
 │   │   ├── register.ts                SSR 안전 customElements.define
 │   │   └── warn-missing-tokens.ts     tokens.css 미로드 경고(페이지당 1회)
@@ -34,11 +51,17 @@ common-ui/
 │   │   ├── ns-<name>.ts               Lit 엘리먼트 + 등록 + 태그 타입 선언
 │   │   └── ns-<name>.styles.ts        shadow CSS (css`` 템플릿, .css 파일 아님)
 │   ├── types.ts                       이벤트 detail 타입 + HTMLElementEventMap 확장
-│   ├── index.ts                       네 컴포넌트 등록 진입점
-│   └── react/index.ts                 @lit/react 래퍼. 이벤트 매핑의 단일 출처
+│   ├── index.ts                       컴포넌트 등록 진입점
+│   ├── react/
+│   │   ├── cx.ts                      조건부 클래스 합치기(내부 전용)
+│   │   ├── controls/*.tsx             네이티브 요소에 클래스를 붙이는 컴포넌트 7종
+│   │   ├── tags/*.tsx                 커스텀 엘리먼트 래퍼의 프롭 이름을 맞추는 shim
+│   │   ├── elements.ts                @lit/react 래퍼. 이벤트 매핑의 단일 출처
+│   │   └── index.ts                   재export 허브
 ├── scripts/
-│   ├── copy-tokens.mjs                tokens.css → dist/ 복사
+│   ├── copy-css.mjs                   tokens.css · controls.css → dist/
 │   ├── check-events.mjs               발생 이벤트 ↔ React 래퍼 매핑 대조
+│   ├── check-controls.mjs             클래스 ↔ index.html 문서 양방향 대조
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
@@ -62,18 +85,21 @@ dist/index.js         ES. lit 은 external      → Next / Vite 등 번들러
 dist/react.js         ES. 'use client' 배너     → React 프로젝트
 dist/bundle.umd.js    UMD. lit 인라인 (27KB)    → 순수 HTML <script src>, file:// 가능
 dist/tokens.css       복사본                    → 모든 환경에서 필수
+dist/controls.css     복사본                    → 순수 HTML 이 직접 링크
 dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 ```
 
-`package.json` 의 `exports` 가 이것들을 `.`, `./react`, `./tokens.css`, `./umd` 로 노출한다.
+`package.json` 의 `exports` 가 이것들을 `.`, `./react`, `./tokens.css`, `./controls.css`, `./umd` 로 노출한다.
 
 **`tokens.css` 는 어느 환경에서든 반드시 불러와야 한다.** 컴포넌트 스타일은 이 파일이 정의하는 CSS 변수를 폴백 없이 참조한다. 빠지면 레이아웃이 무너지고 콘솔에 경고가 뜬다.
+
+**Tailwind 를 쓰는 소비자는 레이어 순서를 한 줄 선언해야 한다.** `@layer theme, base, ns-controls, components, utilities;` 를 Tailwind import 위에 둔다. 빠지면 preflight 가 클래스 스타일을 지우고, **JS 로 감지할 수 없다.**
 
 ## 명령
 
 | 명령 | 하는 일 |
 |---|---|
-| `npm run check` | ① 라이브러리 타입 검사 ② 소비자 관점 타입 검사 ③ 이벤트 매핑 대조 |
+| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 대조 |
 | `npm run build` | `dist/` 에 ES · React · UMD · tokens.css 생성 |
 | `npm run demo` | 빌드 후 `index.html` 열기 (macOS `open`) |
 | `npm run release -- 0.1.4` | 검사 → 빌드 → 버전 커밋 → dist 포함 태그 생성 |
@@ -105,4 +131,6 @@ grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
 
 ## 남은 일
 
+- **`ns-table`.** 정렬·페이징·선택이 붙는 데이터 주입형 표. 별도 스펙이 필요하다 — 셀 커스터마이징, 서버 페이징 지원 여부, 선택 상태의 제어/비제어, 그리고 shadow 안에서 `.ns-checkbox`·`.ns-button` 을 재사용하는 문제가 얽혀 있다.
+- **`ns-header`·`ns-sidebar` 의 비제어 지원.** 토글을 소비자 코드 없이 동작시키는 것. 지금 소비자 코드가 필요한 이유는 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다는 것이다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다.
 - **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 삭제, Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.
