@@ -7,6 +7,9 @@
 */
 export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsSidebar } from "./elements.js";
 
+export { PageHeading } from "./tags/PageHeading.js";
+export type { PageHeadingProps } from "./tags/PageHeading.js";
+
 export { Button, ButtonLink } from "./controls/Button.js";
 export type {
   ButtonLinkProps,

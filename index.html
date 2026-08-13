@@ -93,6 +93,7 @@
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
       <ns-nav-item href="#ns-icon" label="ns-icon" badge="IC"></ns-nav-item>
+      <ns-nav-item href="#ns-page-heading" label="ns-page-heading" badge="PH"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -722,6 +723,52 @@
     <Button variant="icon" aria-label="메뉴 열기" onClick={onToggle}>
       <NsIcon name="menu" />
     </Button>
+  </script>
+
+  <h2 id="ns-page-heading">ns-page-heading</h2>
+  <p>
+    페이지 제목과 한 줄 설명. <code>h1</code> 과 <code>p</code> 두 줄, 그리고 제목
+    레벨을 만들어 주므로 태그다.
+  </p>
+  <p>
+    <strong>속성 이름이 <code>title</code> 이 아니라 <code>heading</code> 이다.</strong>
+    <code>title</code> 은 모든 HTML 요소의 전역 속성이라 브라우저가 툴팁을 띄운다 —
+    제목 위에 마우스를 올리면 같은 글자가 툴팁으로 한 번 더 뜬다.
+    React 프롭은 <code>title</code> 을 유지한다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-page-heading
+      heading="가입 신청 완료"
+      description="관리자가 승인하면 대시보드에 접근할 수 있습니다."
+    ></ns-page-heading>
+    <ns-page-heading heading="설명 없는 제목"></ns-page-heading>
+  </template>
+  <div class="demo block" id="page-heading-demo" style="display:grid;gap:var(--space-6);padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td><code>h1</code> 의 내용</td></tr>
+    <tr><td><code>description</code></td><td><code>description</code></td><td>string</td><td><code>""</code></td><td>빈 문자열이면 <code>p</code> 를 렌더하지 않는다</td></tr>
+  </table>
+  <p>
+    마크업이 필요한 설명은 받지 않는다. 소비자 8곳의 <code>description</code> 이 전부
+    평문 문자열이어서 속성으로 충분하다.
+  </p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-page-heading heading="사용자" description="가입 신청을 승인하고 권한을 관리합니다."></ns-page-heading>
+  </script>
+
+  <h3>React — 프롭은 title 이다</h3>
+  <script type="text/plain">
+    import { PageHeading } from "@neosimplix/common-ui/react";
+
+    <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />
   </script>
 
   <h2 id="ns-header">ns-header</h2>

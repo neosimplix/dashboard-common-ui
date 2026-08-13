@@ -14,7 +14,7 @@
 */
 import * as React from "react";
 import { useState } from "react";
-import { NsHeader, NsIcon, NsSidebar, NsNavGroup, NsNavItem, Card, Button, ButtonLink, Field, Input, Textarea, Select, Checkbox } from "../src/react/index.js";
+import { NsHeader, NsIcon, NsSidebar, NsNavGroup, NsNavItem, PageHeading, Card, Button, ButtonLink, Field, Input, Textarea, Select, Checkbox } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -57,6 +57,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </NsSidebar>
         <main>
           <Card>
+            <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />
             {children}
             <Input value="" onChange={(e) => log(e.target.value)} invalid />
             <Field label="이메일" error="@neosimplix.com 계정만 사용할 수 있습니다.">

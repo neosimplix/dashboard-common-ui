@@ -5,6 +5,7 @@ import { NsHeader as NsHeaderElement } from "../components/header/ns-header.js";
 import { NsIcon as NsIconElement } from "../components/icon/ns-icon.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
+import { NsPageHeading as NsPageHeadingElement } from "../components/page-heading/ns-page-heading.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
 import type { NsToggleDetail, NsNavigateDetail } from "../types.js";
 
@@ -71,4 +72,16 @@ export const NsNavItem = createComponent({
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
   },
+});
+
+/*
+  이 래퍼는 소비자에게 직접 노출하지 않는다. tags/PageHeading.tsx 가 감싸서
+  title 프롭을 heading 속성으로 넘긴다 — 소비자 호출부를 바꾸지 않기 위해서다.
+  Element 는 Lit 클래스 별칭이 쓰므로(기존 네 컴포넌트와 같은 규칙) 래퍼는 Base 다.
+*/
+export const NsPageHeadingBase = createComponent({
+  react: React,
+  tagName: "ns-page-heading",
+  elementClass: NsPageHeadingElement,
+  events: {},
 });
