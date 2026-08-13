@@ -2,6 +2,7 @@ import * as React from "react";
 import { createComponent, type EventName } from "@lit/react";
 
 import { NsHeader as NsHeaderElement } from "../components/header/ns-header.js";
+import { NsIcon as NsIconElement } from "../components/icon/ns-icon.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
@@ -27,6 +28,14 @@ export const NsHeader = createComponent({
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsToggle: "ns-toggle" as EventName<CustomEvent<NsToggleDetail>>,
   },
+});
+
+/* 이벤트가 없다. events 를 빈 객체로 두면 createComponent 가 그대로 받는다. */
+export const NsIcon = createComponent({
+  react: React,
+  tagName: "ns-icon",
+  elementClass: NsIconElement,
+  events: {},
 });
 
 /*

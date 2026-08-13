@@ -92,6 +92,7 @@
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
+      <ns-nav-item href="#ns-icon" label="ns-icon" badge="IC"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -647,6 +648,75 @@
 
     <Card>내용</Card>
     <Card className="mt-8">유틸로 여백을 준다</Card>
+  </script>
+
+  <h2 id="ns-icon">ns-icon</h2>
+  <p>
+    인라인 SVG 를 이름으로 꺼낸다. <strong>행동은 없지만 마크업을 만들어 주므로</strong>
+    클래스가 아니라 태그다 — CSS 는 SVG 를 만들 수 없다.
+  </p>
+  <p>
+    색은 <code>currentColor</code> 다. <code>color</code> 는 shadow 경계를 넘어
+    상속되므로 바깥에서 정할 수 있다. 크기는 호스트 CSS 로 정한다
+    (<code>ns-icon { width: 1rem }</code>). <code>google</code> 만 브랜드 규정상 색이 고정이다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-icon name="menu"></ns-icon>
+    <ns-icon name="close"></ns-icon>
+    <ns-icon name="google"></ns-icon>
+    <span style="color: var(--color-danger)"><ns-icon name="close"></ns-icon></span>
+    <span style="color: var(--color-fg-muted)"><ns-icon name="menu" style="width:2rem;height:2rem"></ns-icon></span>
+  </template>
+  <div class="demo block" id="icon-demo" style="display:flex;align-items:center;gap:var(--space-4);padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
+  </table>
+
+  <h3>수록된 아이콘</h3>
+  <table>
+    <tr><th>이름</th><th>용도</th><th>색</th></tr>
+    <tr><td><code>menu</code></td><td>사이드바 토글 등 햄버거</td><td><code>currentColor</code></td></tr>
+    <tr><td><code>close</code></td><td>대화상자 닫기</td><td><code>currentColor</code></td></tr>
+    <tr><td><code>google</code></td><td>구글 로그인 버튼</td><td>브랜드 고정 4색</td></tr>
+  </table>
+  <p>
+    아이콘 전부가 번들에 들어간다 — 트리 셰이킹되지 않는다. 셋이면 무시할 수준이고,
+    늘어나면 서브패스 분리를 검토한다.
+  </p>
+
+  <h3>접근성</h3>
+  <p>
+    호스트에 <code>aria-hidden="true"</code> 를 자동으로 붙인다. 아이콘이 유일한
+    내용인 버튼은 <strong>버튼에</strong> <code>aria-label</code> 을 붙인다.
+    아이콘 자체가 의미를 가져야 하는 드문 경우에만 <code>aria-hidden</code> 을 지우고
+    <code>role="img" aria-label</code> 을 붙인다.
+  </p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <button class="ns-button ns-button--icon" type="button" aria-label="메뉴 열기">
+      <ns-icon name="menu"></ns-icon>
+    </button>
+
+    <a class="ns-button ns-button--outline ns-button--md" href="/api/auth/google/start">
+      <ns-icon name="google"></ns-icon>
+      Google 계정으로 로그인
+    </a>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Button, NsIcon } from "@neosimplix/common-ui/react";
+
+    <Button variant="icon" aria-label="메뉴 열기" onClick={onToggle}>
+      <NsIcon name="menu" />
+    </Button>
   </script>
 
   <h2 id="ns-header">ns-header</h2>
