@@ -99,3 +99,6 @@ ns-icon { display: inline-flex; width: 1.25rem; height: 1.25rem; }
 
 ns-page-heading { display: block; }
 ns-skeleton { display: block; }
+
+/* 정의 전에는 light DOM 자식이 그대로 보인다. 모달 내용이 페이지에 새는 것을 막는다. */
+ns-dialog:not(:defined) { display: none; }

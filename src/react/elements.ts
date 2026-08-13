@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createComponent, type EventName } from "@lit/react";
 
+import { NsDialog as NsDialogElement } from "../components/dialog/ns-dialog.js";
 import { NsHeader as NsHeaderElement } from "../components/header/ns-header.js";
 import { NsIcon as NsIconElement } from "../components/icon/ns-icon.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
@@ -8,7 +9,11 @@ import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-ite
 import { NsPageHeading as NsPageHeadingElement } from "../components/page-heading/ns-page-heading.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
 import { NsSkeleton as NsSkeletonElement } from "../components/skeleton/ns-skeleton.js";
-import type { NsToggleDetail, NsNavigateDetail } from "../types.js";
+import type {
+  NsToggleDetail,
+  NsNavigateDetail,
+  NsDialogCloseDetail,
+} from "../types.js";
 
 /*
   @lit/react 래퍼 전부가 이 파일에 모인다. 두 가지 이유다.
@@ -92,4 +97,18 @@ export const NsSkeleton = createComponent({
   tagName: "ns-skeleton",
   elementClass: NsSkeletonElement,
   events: {},
+});
+
+/*
+  소비자에게 직접 노출하지 않는다. tags/Dialog.tsx 가 감싸서 title/onClose/footer
+  프롭 이름을 맞춘다.
+*/
+export const NsDialogBase = createComponent({
+  react: React,
+  tagName: "ns-dialog",
+  elementClass: NsDialogElement,
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsDialogClose: "ns-dialog-close" as EventName<CustomEvent<NsDialogCloseDetail>>,
+  },
 });

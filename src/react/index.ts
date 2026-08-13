@@ -10,6 +10,9 @@ export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsSidebar, NsSkeleton } from "
 export { PageHeading } from "./tags/PageHeading.js";
 export type { PageHeadingProps } from "./tags/PageHeading.js";
 
+export { Dialog } from "./tags/Dialog.js";
+export type { DialogProps } from "./tags/Dialog.js";
+
 export { Button, ButtonLink } from "./controls/Button.js";
 export type {
   ButtonLinkProps,
@@ -35,4 +38,9 @@ export type { CheckboxProps } from "./controls/Checkbox.js";
 export { Field } from "./controls/Field.js";
 export type { FieldProps } from "./controls/Field.js";
 
-export type { NsToggleDetail, NsNavigateDetail } from "../types.js";
+export type {
+  NsToggleDetail,
+  NsNavigateDetail,
+  NsDialogCloseDetail,
+  NsDialogCloseReason,
+} from "../types.js";

@@ -14,7 +14,25 @@
 */
 import * as React from "react";
 import { useState } from "react";
-import { NsHeader, NsIcon, NsSidebar, NsNavGroup, NsNavItem, NsSkeleton, PageHeading, Card, Button, ButtonLink, Field, Input, Textarea, Select, Checkbox } from "../src/react/index.js";
+import {
+  Button,
+  ButtonLink,
+  Card,
+  Checkbox,
+  Dialog,
+  Field,
+  Input,
+  NsHeader,
+  NsIcon,
+  NsNavGroup,
+  NsNavItem,
+  NsSidebar,
+  NsSkeleton,
+  PageHeading,
+  Select,
+  Textarea,
+} from "../src/react/index.js";
+import type { NsDialogCloseReason } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -31,6 +49,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   // 이 파일에서 검사되게 한다(사이드바에서 한 번만 듣는 것도 여전히 유효한
   // 패턴이다. index.html 의 각 컴포넌트 절 참고).
   const log = (msg: string) => console.log(msg);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
+  const onDialogClose = (reason: NsDialogCloseReason) => {
+    log(`closed by ${reason}`);
+    setDialogOpen(false);
+  };
 
   return (
     <>
@@ -83,6 +109,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <NsIcon name="menu" />
             </Button>
             <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
+            <Dialog
+              open={dialogOpen}
+              title="사용자 승인"
+              onClose={() => setDialogOpen(false)}
+              footer={<Button size="sm" onClick={() => setDialogOpen(false)}>확인</Button>}
+            >
+              <p>승인하시겠습니까?</p>
+            </Dialog>
+            <Button size="sm" onClick={() => onDialogClose("backdrop")}>reason 타입 검사</Button>
           </Card>
         </main>
       </div>

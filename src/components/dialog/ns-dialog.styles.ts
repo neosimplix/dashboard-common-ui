@@ -1,0 +1,100 @@
+import { css } from "lit";
+
+export const styles = css`
+  /* 네이티브 dialog 가 top layer 로 올라가므로 호스트는 자리를 차지하지 않는다. */
+  :host {
+    display: contents;
+  }
+
+  dialog {
+    /*
+      UA 스타일시트의 margin: auto 가 modal dialog 의 유일한 가운데 정렬 수단이다.
+      Tailwind preflight 는 shadow 안에 닿지 않지만 소비자가 전역 dialog 규칙을
+      둘 수 있으므로 명시한다. 참고 구현이 실제로 물린 함정이다.
+    */
+    margin: auto;
+    box-sizing: border-box;
+    width: min(32rem, calc(100vw - var(--space-8)));
+    max-height: calc(100vh - var(--space-8));
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-fg-body);
+    box-shadow: var(--elevation-card);
+    /* 본문만 스크롤되고 헤더·푸터는 고정된다. */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  dialog::backdrop {
+    background: var(--color-overlay);
+  }
+
+  .header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-lg);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+  }
+
+  /*
+    controls.css 는 shadow 안에 도달하지 않으므로 .ns-button 을 쓸 수 없다.
+    --ghost·--icon 조합에 해당하는 최소한만 다시 적는다. 설계 문서 §9 가
+    이 중복을 수용한 유일한 자리로 지목한 곳이다.
+  */
+  .close {
+    flex: none;
+    display: grid;
+    place-items: center;
+    padding: var(--space-1-5);
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    transition: background-color var(--transition-fast) var(--transition-ease),
+      color var(--transition-fast) var(--transition-ease);
+  }
+
+  .close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+  }
+
+  .body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-6);
+  }
+
+  /*
+    footer 는 내용이 있을 때만 보인다. slot 에 배정된 노드가 있는지는 CSS 로
+    알 수 없어 slotchange 로 판정하고 hidden 속성을 건다.
+    display: flex 가 UA 의 [hidden] 규칙을 이기므로 명시적으로 되돌린다.
+  */
+  .footer {
+    flex: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: 0 var(--space-6) var(--space-6);
+  }
+
+  .footer[hidden] {
+    display: none;
+  }
+`;
