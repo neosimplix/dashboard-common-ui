@@ -21,9 +21,9 @@
 
 React 래퍼의 `events` 값은 라이브러리 안에서는 그냥 문자열이라, `EventName<>` 브랜딩이 빠져도 라이브러리 타입 검사는 통과한다. 소비자 쪽에서만 드러난다.
 
-그래서 `docs/consumer-example.tsx` 와 `tsconfig.consumer.json` 이 `check` 에 포함돼 있다. **이벤트를 가진 다섯 래퍼 전부에 핸들러를 붙여 `e.detail` 을 읽어야 한다.** 일부만 붙이면 나머지의 회귀가 조용히 통과한다.
+그래서 `docs/consumer-example.tsx` 와 `tsconfig.consumer.json` 이 `check` 에 포함돼 있다. **이벤트를 가진 일곱 래퍼 전부에 핸들러를 붙여 `e.detail` 을 읽어야 한다.** 일부만 붙이면 나머지의 회귀가 조용히 통과한다.
 
-다섯 중 넷(`ns-toggle`, `ns-navigate` × 3)은 `consumer-example.tsx` 가 직접 검사한다. 다섯 번째 `ns-dialog-close` 는 `NsDialogBase` 가 비공개라 그 파일이 닿을 수 없다 — 대신 `src/react/tags/Dialog.tsx` 의 shim 이 `onNsDialogClose={(e) => onClose(e.detail.reason)}` 로 `e.detail.reason` 을 실제로 읽어 같은 방어를 한다. 메커니즘은 `docs/gotchas.md` 의 "인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다" 에 있다.
+일곱 중 여섯(`ns-toggle`, `ns-navigate` × 3, `ns-table` 의 `ns-sort`·`ns-select-change`, `ns-pagination` 의 `ns-page-change`)은 `consumer-example.tsx` 가 직접 검사한다. 일곱 번째 `ns-dialog-close` 는 `NsDialogBase` 가 비공개라 그 파일이 닿을 수 없다 — 대신 `src/react/tags/Dialog.tsx` 의 shim 이 `onNsDialogClose={(e) => onClose(e.detail.reason)}` 로 `e.detail.reason` 을 실제로 읽어 같은 방어를 한다. 메커니즘은 `docs/gotchas.md` 의 "인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다" 에 있다.
 
 ## 브라우저 확인은 사람이 한다
 

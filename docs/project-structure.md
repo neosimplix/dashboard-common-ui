@@ -29,7 +29,7 @@
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 셋이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 여섯이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 
@@ -56,7 +56,7 @@ common-ui/
 │   ├── components/<name>/
 │   │   ├── ns-<name>.ts               Lit 엘리먼트 + 등록 + 태그 타입 선언
 │   │   └── ns-<name>.styles.ts        shadow CSS (css`` 템플릿, .css 파일 아님)
-│   ├── components/table/ns-table.ts        ReactiveElement. .styles.ts 가 없다(Light DOM)
+│   ├── components/table/ns-table.ts            ReactiveElement. .styles.ts 가 없다(Light DOM)
 │   ├── components/pagination/ns-pagination.ts  LitElement + light DOM 렌더
 │   ├── types.ts                       이벤트 detail 타입 + HTMLElementEventMap 확장
 │   ├── index.ts                       컴포넌트 등록 진입점
@@ -69,7 +69,7 @@ common-ui/
 ├── scripts/
 │   ├── copy-css.mjs                   tokens.css · controls.css → dist/
 │   ├── check-events.mjs               발생 이벤트 ↔ React 래퍼 매핑 대조
-│   ├── check-controls.mjs             클래스 ↔ index.html 문서 양방향 대조
+│   ├── check-controls.mjs             클래스 ↔ index.html 양방향, 요소 선택자는 정방향만 대조
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
