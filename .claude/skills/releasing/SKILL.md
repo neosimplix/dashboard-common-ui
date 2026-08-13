@@ -51,7 +51,7 @@ node --input-type=module -e "import('@neosimplix/common-ui').then(m=>console.log
 cd - && rm -rf /tmp/ns-check
 ```
 
-마지막 줄이 `NsDialog, NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPageHeading, NsSidebar, NsSkeleton` 를 출력해야 한다(`Object.keys().sort()` 라 알파벳 순이다 — `src/index.ts` 의 export 목록과 대조). Node 에는 `window` 도 `customElements` 도 없으므로, **이것이 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사다.** `ReferenceError: HTMLElement is not defined` 가 나면 `register()` 를 고치지 말 것 — 가드는 정상이고 원인은 빌드 설정이다(`docs/gotchas.md` 참고).
+마지막 줄이 `NsDialog, NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPageHeading, NsPagination, NsSidebar, NsSkeleton, NsTable` 를 출력해야 한다(`Object.keys().sort()` 라 알파벳 순이다 — `src/index.ts` 의 export 목록과 대조). Node 에는 `window` 도 `customElements` 도 없으므로, **이것이 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사다.** `ReferenceError: HTMLElement is not defined` 가 나면 `register()` 를 고치지 말 것 — 가드는 정상이고 원인은 빌드 설정이다(`docs/gotchas.md` 참고).
 
 ## 함정
 

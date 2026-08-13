@@ -29,8 +29,9 @@ export function pageWindow(current: number, total: number): (number | "gap")[] {
     /*
       current-1·current·current+1 이 1 이나 total 과 겹칠 수 있다(예: current=1 이면
       current-1=0 이 필터로 빠지고 current=1 이 첫 페이지와 같아진다, current=total
-      이면 current+1 이 total 과 같아진다). 정렬된 배열에 같은 값이 연속으로 남으므로
-      바로 앞 값과 같으면 건너뛴다 — 중복 버튼을 그리지 않기 위해서다.
+      이면 current+1=total+1 이 필터로 빠지고 current=total 이 마지막 페이지와
+      같아진다). 정렬된 배열에 같은 값이 연속으로 남으므로 바로 앞 값과 같으면
+      건너뛴다 — 중복 버튼을 그리지 않기 위해서다.
     */
     if (page === previous) continue;
     // 이전 값과의 간격이 1 을 넘으면 그 사이 페이지들을 생략한다는 표시로 gap 을 낸다.
