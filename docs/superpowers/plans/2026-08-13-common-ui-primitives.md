@@ -1832,6 +1832,19 @@ export type { FieldProps } from "./controls/Field.js";
   </script>
 ```
 
+- [ ] **Step 4b: Task 3 이 미뤄 둔 `.ns-field` 교차 참조를 되살린다**
+
+Task 3 은 `.ns-textarea` 섹션의 산문에서 `.ns-field` 를 가리키려 했으나, 그 시점에 `.ns-field` 가 `controls.css` 에 없어 `check-controls.mjs` 의 역방향 검사(“CSS 에 없는 클래스가 index.html 에 있습니다”)에 걸렸다. 그래서 문구를 우회해 두었다.
+
+이제 `.ns-field` 가 존재하므로 되돌린다. `index.html` 의 `<h2 id="ns-textarea">` 섹션 첫 단락에서 필드 컨테이너를 가리키는 표현을 찾아 `<code>.ns-field</code>` 로 바꾼다. 원래 의도한 문장은 이것이다.
+
+```html
+    여러 줄 입력. <code>.ns-input</code> 과 값을 맞춰 두었다 — <code>.ns-field</code> 안에
+    나란히 놓였을 때 어긋나 보이지 않게 하기 위해서다.
+```
+
+**이 되돌림이 검사를 통과하는지가 이 단계의 확인이다.** `.ns-field` 가 이제 정의돼 있으므로 역방향 검사가 더 이상 걸리지 않아야 한다. 걸린다면 Step 1 의 클래스 이름과 이 참조가 어긋난 것이다.
+
 - [ ] **Step 5: `docs/consumer-example.tsx` 에 `Field` 를 넣는다**
 
 `hint` 와 `error` 두 경로를 모두 쓴다 — `cloneElement` 분기가 양쪽 다 타입 검사되게 한다.
