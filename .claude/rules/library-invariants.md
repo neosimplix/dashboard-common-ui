@@ -30,7 +30,9 @@
 - `:host-context()` 를 쓰지 않는다. Chromium 전용이다.
 - **`invalid` 는 클래스가 아니라 `[aria-invalid="true"]` 로 스타일한다.** `--invalid` 변형 클래스를 만들지 않는다.
 - **`controls.css` 는 `@layer ns-controls` 로 감싼다.** 감싸지 않으면 소비자의 Tailwind 유틸 오버라이드가 막힌다.
-- **shadow 컴포넌트는 `controls.css` 를 재사용할 수 없다.** 전역 스타일시트는 shadow 안에 도달하지 않는다. 필요한 최소한만 그 컴포넌트의 shadow 스타일에 다시 적는다.
+- **shadow 컴포넌트는 `controls.css` 를 재사용할 수 없다.** 전역 스타일시트는 shadow 안에 도달하지 않는다. `tokens.css` 의 요소 선택자(정의 전 레이아웃 예약)도 같다 — 둘 다 문서 트리에만 적용된다. 필요한 최소한만 그 컴포넌트의 shadow 스타일에 다시 적는다.
+- **shadow 경계를 넘겨야 하는 값은 `--ns-` 커스텀 프로퍼티로 내려보낸다.** 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지 도달한다. (`--ns-icon-size`, `--ns-dialog-width`, `--ns-label-display`)
+- **모든 값이 토큰이어야 하는 것은 아니다.** 토큰으로 뽑는 기준은 **두 곳 이상에 나타나거나 테마로 바뀔 값**이다. 한 곳에만 있고 변할 이유가 없는 구조적 상수는 리터럴로 둔다 — hairline `1px`, 체크박스 `1rem`, 비활성 `opacity: .6`. 사용처가 하나인 토큰을 만드는 것은 추측이다.
 
 ## 빌드
 

@@ -35,6 +35,12 @@ export const styles = css`
     background: var(--color-surface-hover);
   }
 
+  /* controls.css 의 :focus-visible 규칙은 전역이라 shadow 안에 닿지 않는다. */
+  .toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
   .title {
     font-weight: var(--weight-semibold);
     color: var(--color-fg);

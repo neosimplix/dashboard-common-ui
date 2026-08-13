@@ -710,6 +710,24 @@
     <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. 기본값인 빈 문자열은 "아직 정하지 않음"으로 보고 조용히 아무것도 그리지 않는다 — 경고가 없다. 값을 줬는데 스프라이트에 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
   </table>
 
+  <h3>크기</h3>
+  <table>
+    <tr><th>커스텀 프로퍼티</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>--ns-icon-size</code></td><td><code>1.25rem</code></td><td>가로·세로에 함께 쓰인다</td></tr>
+  </table>
+  <p>
+    커스텀 프로퍼티인 이유는 shadow 경계다. <code>tokens.css</code> 의
+    <code>ns-icon</code> 요소 선택자는 문서 트리에만 적용되므로
+    <strong>다른 컴포넌트의 shadow 안에 있는 아이콘에는 닿지 않는다</strong> —
+    <code>ns-dialog</code> 의 닫기 버튼이 그래서 한 번 깨졌다. 커스텀 프로퍼티는
+    상속되므로 어디서든 도달한다.
+  </p>
+  <p>
+    문서 트리의 아이콘은 <code>ns-icon { width: 1rem }</code> 로도 덮을 수 있다
+    (문서 선택자가 <code>:host</code> 를 이긴다). 전역으로 바꾸려면
+    <code>:root</code> 에서 <code>--ns-icon-size</code> 를 재정의한다.
+  </p>
+
   <h3>수록된 아이콘</h3>
   <table>
     <tr><th>이름</th><th>용도</th><th>색</th></tr>
@@ -922,6 +940,30 @@
     <tr><td><code>show()</code></td><td>비제어일 때만 연다. 제어 중이면 콘솔 경고만 내고 아무것도 하지 않는다</td></tr>
     <tr><td><code>close()</code></td><td>비제어일 때만 닫는다. 소비자가 부른 것이므로 <code>ns-dialog-close</code> 를 내지 않는다</td></tr>
   </table>
+
+  <h3>크기</h3>
+  <table>
+    <tr><th>커스텀 프로퍼티</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>--ns-dialog-width</code></td><td><code>32rem</code></td><td>원하는 폭. <strong>화면 비율이 아니라 절대 상한</strong>이다 — 큰 모니터에서도 이 값을 넘지 않는다</td></tr>
+    <tr><td><code>--ns-dialog-margin</code></td><td><code>var(--space-8)</code></td><td>화면 가장자리에 남기는 여백. 가로·세로 모두에 쓰인다</td></tr>
+  </table>
+  <p>
+    실제 폭은 <code>min(--ns-dialog-width, 100vw - --ns-dialog-margin)</code> 이다.
+    <strong><code>--ns-dialog-width</code> 를 아무리 키워도 작은 화면에서 넘치지 않는다</strong> —
+    클램프는 컴포넌트가 갖고 있고 소비자는 "얼마나 넓게" 만 정한다.
+  </p>
+  <p>
+    입력칸이 많은 폼 대화상자는 기본 32rem 이 좁다. 인스턴스 단위로 올린다.
+  </p>
+  <script type="text/plain">
+    <ns-dialog heading="프로젝트 등록" style="--ns-dialog-width: 48rem"></ns-dialog>
+  </script>
+  <script type="text/plain">
+    /* React — className 으로 규칙을 걸어도 된다 */
+    <Dialog open={open} title="프로젝트 등록" className="wide" onClose={close} />
+
+    /* .wide { --ns-dialog-width: 48rem } */
+  </script>
 
   <h3>slot</h3>
   <table>

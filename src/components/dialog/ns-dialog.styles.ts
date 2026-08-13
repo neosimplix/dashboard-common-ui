@@ -14,8 +14,13 @@ export const styles = css`
     */
     margin: auto;
     box-sizing: border-box;
-    width: min(32rem, calc(100vw - var(--space-8)));
-    max-height: calc(100vh - var(--space-8));
+    /*
+      폭은 --ns-dialog-width 에서 받고, min() 클램프는 여기 남긴다. 소비자가
+      폼 대화상자를 넓히려고 그 값을 키워도 작은 화면에서 넘치지 않는다.
+      커스텀 프로퍼티라 shadow 경계를 넘어 인스턴스별로 덮을 수 있다.
+    */
+    width: min(var(--ns-dialog-width), calc(100vw - var(--ns-dialog-margin)));
+    max-height: calc(100vh - var(--ns-dialog-margin));
     padding: 0;
     border: 0;
     border-radius: var(--radius-card);
@@ -85,6 +90,15 @@ export const styles = css`
   .close:hover {
     background: var(--color-surface-hover);
     color: var(--color-fg);
+  }
+
+  /*
+    controls.css 의 :focus-visible 규칙은 전역이라 shadow 안에 닿지 않는다.
+    이 버튼은 showModal() 이 자동 포커스하는 첫 요소이므로 특히 필요하다.
+  */
+  .close:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   .body {
