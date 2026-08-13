@@ -7,6 +7,7 @@ import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
 import { NsPageHeading as NsPageHeadingElement } from "../components/page-heading/ns-page-heading.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
+import { NsSkeleton as NsSkeletonElement } from "../components/skeleton/ns-skeleton.js";
 import type { NsToggleDetail, NsNavigateDetail } from "../types.js";
 
 /*
@@ -83,5 +84,12 @@ export const NsPageHeadingBase = createComponent({
   react: React,
   tagName: "ns-page-heading",
   elementClass: NsPageHeadingElement,
+  events: {},
+});
+
+export const NsSkeleton = createComponent({
+  react: React,
+  tagName: "ns-skeleton",
+  elementClass: NsSkeletonElement,
   events: {},
 });

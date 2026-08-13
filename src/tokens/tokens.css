@@ -98,3 +98,4 @@ ns-sidebar:not([open]) { width: var(--sidebar-width-collapsed); }
 ns-icon { display: inline-flex; width: 1.25rem; height: 1.25rem; }
 
 ns-page-heading { display: block; }
+ns-skeleton { display: block; }

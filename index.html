@@ -94,6 +94,7 @@
     <ns-nav-group heading="컴포넌트">
       <ns-nav-item href="#ns-icon" label="ns-icon" badge="IC"></ns-nav-item>
       <ns-nav-item href="#ns-page-heading" label="ns-page-heading" badge="PH"></ns-nav-item>
+      <ns-nav-item href="#ns-skeleton" label="ns-skeleton" badge="SK"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -769,6 +770,59 @@
     import { PageHeading } from "@neosimplix/common-ui/react";
 
     <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />
+  </script>
+
+  <h2 id="ns-skeleton">ns-skeleton</h2>
+  <p>
+    로딩 자리표시자. 크기를 <strong>프로퍼티로</strong> 받는다 — 참고 구현은
+    Tailwind 유틸(<code>h-9 w-40</code>)로 받았지만 순수 HTML 에는 그 유틸이 없어
+    인라인 스타일이 되기 때문이다.
+  </p>
+  <p>
+    <code>prefers-reduced-motion: reduce</code> 에서 맥박 애니메이션을 멈춘다.
+    색은 유지한다 — 자리를 차지한다는 정보는 남아야 한다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-skeleton width="10rem" height="2.25rem"></ns-skeleton>
+    <ns-skeleton width="6rem" height="2.25rem" radius="pill"></ns-skeleton>
+    <ns-skeleton width="6rem" height="6rem" radius="card"></ns-skeleton>
+    <ns-skeleton width="100%" height=".75rem" radius="0"></ns-skeleton>
+  </template>
+  <div class="demo block" id="skeleton-demo" style="display:grid;gap:var(--space-3);justify-items:start;padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>width</code></td><td><code>width</code></td><td>string</td><td><code>100%</code></td><td>CSS 길이</td></tr>
+    <tr><td><code>height</code></td><td><code>height</code></td><td>string</td><td><code>1rem</code></td><td>CSS 길이</td></tr>
+    <tr><td><code>radius</code></td><td><code>radius</code></td><td>string</td><td><code>control</code></td><td><code>badge</code> <code>control</code> <code>panel</code> <code>card</code> <code>pill</code> 중 하나면 해당 토큰. 아니면 원시 CSS 값</td></tr>
+  </table>
+
+  <h3>접근성</h3>
+  <p>
+    shadow 안의 막대에 <code>aria-hidden="true"</code> 가 붙어 있어 화면낭독기가 읽지 않는다.
+    호스트에는 aria 속성을 붙이지 않는다 — 컴포넌트가 소비자가 쓴 속성을 덮어쓰지 않기 위해서다.
+    로딩 중임을 알려야 하면 감싸는 영역에 <code>aria-busy="true"</code> 를 소비자가 붙인다.
+  </p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <div aria-busy="true">
+      <ns-skeleton width="10rem" height="2.25rem"></ns-skeleton>
+      <ns-skeleton width="100%" height=".75rem" radius="0"></ns-skeleton>
+    </div>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsSkeleton } from "@neosimplix/common-ui/react";
+
+    {loading
+      ? <NsSkeleton width="10rem" height="2.25rem" />
+      : <span>{value}</span>}
   </script>
 
   <h2 id="ns-header">ns-header</h2>
