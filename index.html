@@ -1194,6 +1194,12 @@
   <p>
     <code>data-ns-sort-key</code> 가 없는 <code>th</code> 는 정렬되지 않는다. 칼럼별 스위치가 그것뿐이다.
   </p>
+  <p>
+    클릭 영역이 <code>th</code> 전체라는 것에는 따르는 결과가 있다 —
+    <strong>정렬 헤더 안에 놓인 다른 상호작용 요소(링크·정보 아이콘·두 번째 버튼)를
+    눌러도 정렬이 일어난다.</strong> 의도된 동작이지만, 그런 요소를 헤더에 넣을
+    계획이라면 그 칼럼에는 <code>data-ns-sort-key</code> 를 붙이지 않는 편이 낫다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">

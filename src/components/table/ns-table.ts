@@ -61,12 +61,14 @@ export class NsTable extends ReactiveElement {
   @property({ type: String, attribute: "default-sort-key" }) defaultSortKey = "";
 
   /** 비제어 초기 정렬 방향. */
-  @property({ attribute: "default-sort-direction" })
+  @property({ type: String, attribute: "default-sort-direction" })
   defaultSortDirection: NsSortDirection = "none";
 
   /** 비제어일 때의 진실. */
   #innerKey = "";
   #innerDirection: NsSortDirection = "none";
+
+  #observer?: MutationObserver;
 
   get #controlled(): boolean {
     return this.sortKey !== undefined;
@@ -85,10 +87,23 @@ export class NsTable extends ReactiveElement {
     warnIfTokensMissing();
     // 위임이라 소비자가 행을 다시 그려도 리스너를 다시 붙일 필요가 없다.
     this.addEventListener("click", this.#onClick);
+
+    /*
+      updated() 는 반응형 프로퍼티가 바뀔 때만 돈다. 소비자가 정렬과 무관한
+      이유로(칼럼 구성 변경, i18n) <thead> 를 교체하면 새 <th> 에 aria-sort 가
+      쓰이지 않고 다음 클릭까지 조용히 낡는다 — 이 컴포넌트가 스스로 주장하는
+      "aria-sort 의 유일한 작성자" 보증이 그 사이에 깨진다.
+
+      attributes 는 관찰하지 않는다. #syncAriaSort 가 setAttribute 를 쓰므로
+      관찰했다면 자기 쓰기에 다시 깨어나 루프가 된다. childList·subtree 만 본다.
+    */
+    this.#observer = new MutationObserver(() => this.#syncAriaSort());
+    this.#observer.observe(this, { childList: true, subtree: true });
   }
 
   override disconnectedCallback(): void {
     this.removeEventListener("click", this.#onClick);
+    this.#observer?.disconnect();
     super.disconnectedCallback();
   }
 
@@ -107,6 +122,16 @@ export class NsTable extends ReactiveElement {
   }
 
   /*
+    Light DOM 이라 shadow 경계가 없다. 중첩된 <ns-table> 의 <th> 도 바깥 호스트의
+    querySelectorAll·closest 에 그대로 잡히므로, 안쪽 헤더 클릭이 바깥 컴포넌트에서도
+    처리돼 ns-sort 가 두 번 발생하고 두 컴포넌트가 같은 aria-sort 를 두고 다툰다.
+    가장 가까운 ns-table 이 자기인 <th> 만 자기 것이다.
+  */
+  #owns(th: HTMLElement): boolean {
+    return th.closest("ns-table") === this;
+  }
+
+  /*
     활성 <th> 에 aria-sort 를 쓴다. 컴포넌트가 유일한 작성자다 — 소비자는 이
     속성을 쓰지 않으므로 React 와 싸우지 않는다. 삼각형은 controls.css 가
     이 속성을 받아 그린다.
@@ -116,6 +141,7 @@ export class NsTable extends ReactiveElement {
     const direction = this.#direction;
 
     for (const th of this.querySelectorAll<HTMLElement>("th[data-ns-sort-key]")) {
+      if (!this.#owns(th)) continue;
       th.setAttribute("aria-sort", th.dataset.nsSortKey === key ? direction : "none");
     }
   }
@@ -128,7 +154,7 @@ export class NsTable extends ReactiveElement {
   #onClick = (e: Event): void => {
     const target = e.target as Element | null;
     const th = target?.closest<HTMLElement>("th[data-ns-sort-key]");
-    if (!th) return;
+    if (!th || !this.#owns(th)) return;
 
     const key = th.dataset.nsSortKey ?? "";
     // 다른 칼럼을 누르면 오름차순부터 시작한다. 같은 칼럼이면 다음 상태로 돈다.
