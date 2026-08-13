@@ -173,6 +173,56 @@
     border-color: var(--color-danger);
   }
 
+  /*
+    행 전체가 <label> 이다. 클릭 영역이 라벨 글자까지 넓어지고, for/id 배선이
+    필요 없다 — 감싸는 label 은 내부의 labelable 요소를 암묵적으로 가리킨다.
+
+    (.ns-field 는 반대로 label 이 컨트롤을 감싸지 않는다. 그쪽은 hint/error 가
+     accessible name 에 섞여 들어가는 문제가 있어서다. 체크박스는 hint 가
+     짧은 보조 문구뿐이라 그 문제가 없다.)
+
+    input 과 첫 span 은 요소 타입으로 특정되므로 자손 선택자로 잡는다.
+    hint 만 이름을 붙인다 — span 이 둘이라 순서에만 의존하면 깨지기 쉽다.
+  */
+  .ns-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1-5) 0;
+    cursor: pointer;
+  }
+
+  /* 클래스를 토글하는 자바스크립트 없이 disabled 를 반영한다. */
+  .ns-checkbox:has(:disabled) {
+    cursor: default;
+    opacity: .6;
+  }
+
+  .ns-checkbox input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--color-accent);
+    cursor: inherit;
+  }
+
+  .ns-checkbox span {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+    color: var(--color-fg-body);
+  }
+
+  /*
+    자손 선택자로 써야 한다. `.ns-checkbox__hint` 단독은 특정도 (0,1,0) 이고
+    위의 `.ns-checkbox span` 은 (0,1,1) 이라 자손 선택자가 이긴다 — hint 가
+    라벨과 같은 크기·색으로 렌더되고 **에러는 나지 않는다.**
+    `.ns-checkbox .ns-checkbox__hint` 는 (0,2,0) 이라 이긴다.
+  */
+  .ns-checkbox .ns-checkbox__hint {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-xs);
+    color: var(--color-fg-subtle);
+  }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--color-line);

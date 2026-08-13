@@ -26,4 +26,7 @@ export type { TextareaProps } from "./controls/Textarea.js";
 export { Select } from "./controls/Select.js";
 export type { SelectOption, SelectProps } from "./controls/Select.js";
 
+export { Checkbox } from "./controls/Checkbox.js";
+export type { CheckboxProps } from "./controls/Checkbox.js";
+
 export type { NsToggleDetail, NsNavigateDetail } from "../types.js";
