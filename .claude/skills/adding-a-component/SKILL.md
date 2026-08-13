@@ -7,13 +7,37 @@ description: Use when adding a new web component to this library, adding a custo
 
 불변 규칙은 `.claude/rules/library-invariants.md` 에 있다. 이 문서는 **빠뜨리기 쉬운 연결 지점**을 다룬다. 컴포넌트 하나를 추가하면 파일 다섯 곳이 함께 바뀐다.
 
-## 체크리스트
+## 먼저: 태그인가 클래스인가
+
+- **캡슐화할 행동이 있으면 태그.** 포커스 트랩, 정렬 상태, 여닫힘처럼 플랫폼이 안 해주는 것
+- **만들어 줄 마크업이 있으면 태그.** SVG, `h1`+`p`, 제목 레벨처럼 CSS 로 만들 수 없는 것
+- **둘 다 아니면 클래스.** 스타일뿐인 것은 네이티브 요소 + `.ns-*` 클래스다
+
+폼 컨트롤과 버튼은 **클래스여야 한다.** shadow DOM 이 폼 참여·라벨·검증·자동완성을 끊는다. `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 를 읽고 오지 않았다면 태그로 만들지 않는다.
+
+## 태그를 추가할 때
 
 - [ ] `src/components/<name>/ns-<name>.ts` — 로직. `register()` 로 등록하고 `declare global` 로 `HTMLElementTagNameMap` 확장
 - [ ] `src/components/<name>/ns-<name>.styles.ts` — shadow CSS. `css``` 템플릿이지 `.css` 파일이 아니다
 - [ ] `src/index.ts` — 등록 부수효과 import **와** 클래스 재export 둘 다
-- [ ] `src/react/index.ts` — `createComponent` 래퍼
+- [ ] `src/react/elements.ts` — `createComponent` 래퍼, 이벤트 매핑
+- [ ] `src/react/index.ts` — 값과 타입 재export
 - [ ] `index.html` — 문서 섹션
+- [ ] `.claude/skills/releasing/SKILL.md` 의 콜드 설치 스모크 테스트가 기대하는 export 목록 — `src/index.ts` 에 새 클래스를 재export 하면 그 목록도 늘어난다. 이 스모크 테스트가 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사이므로, 새 컴포넌트의 등록 경로는 여기를 고치지 않으면 그 검사 밖에 남는다
+
+## 클래스를 추가할 때
+
+- [ ] `src/controls/controls.css` 의 `@layer ns-controls` 블록 **안**에 규칙. 값은 토큰만, `var()` 폴백 없음
+- [ ] `src/react/controls/<Name>.tsx` — 네이티브 요소에 클래스를 붙이는 컴포넌트
+- [ ] `src/react/index.ts` — 값과 타입 재export
+- [ ] `index.html` — 데모 · **클래스 표** · HTML 예시 · React 예시
+- [ ] `docs/consumer-example.tsx` — 새 컴포넌트를 실제로 사용
+
+`scripts/check-controls.mjs` 가 `controls.css` 의 클래스와 `index.html` 을 양방향으로 대조한다. `--modifier` 변형도 개별로 센다. 문서에 빠뜨리면 `npm run check` 가 막는다.
+
+**상태 변형은 클래스를 만들지 않는다.** `invalid` 는 `[aria-invalid="true"]`, `disabled` 는 `:has(:disabled)` 로 잡는다. 클래스를 토글하는 자바스크립트가 필요 없어 순수 HTML 에서도 동작한다.
+
+**요소 타입으로 특정되면 자손 선택자를 쓴다.** 순수 HTML 사용자가 외워야 하는 이름을 줄인다. 같은 태그가 둘 이상이라 순서에만 의존하게 될 때만 `__이름` 을 붙인다.
 
 ## 새 이벤트를 추가할 때
 
@@ -21,7 +45,7 @@ description: Use when adding a new web component to this library, adding a custo
 
 1. **컴포넌트** — `new CustomEvent("ns-x", { detail, bubbles: true, composed: true })`
 2. **`src/types.ts`** — `detail` 인터페이스와 `HTMLElementEventMap` 확장
-3. **`src/react/index.ts`** — 이벤트 매핑, **`EventName<>` 캐스트 포함**
+3. **`src/react/elements.ts`** — 이벤트 매핑, **`EventName<>` 캐스트 포함**
 
 ```ts
 events: {
@@ -54,6 +78,7 @@ npm run check
 npm run build
 grep -c "ns-<name>" dist/bundle.umd.js      # 등록이 번들에 살아남았는지
 grep -n 'document.addEventListener' index.html   # 출력 없어야 정상
+node scripts/check-controls.mjs             # 클래스 ↔ 문서
 ```
 
 브라우저 확인이 필요한 것은 사람에게 넘긴다. 하지 않은 확인을 했다고 적지 않는다.

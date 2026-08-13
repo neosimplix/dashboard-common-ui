@@ -18,6 +18,23 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 **태그를 반드시 지정한다.** `main` 에는 `dist/` 가 없어서 브랜치를 가리키면 설치는 되지만 import 가 실패한다. 사용할 수 있는 태그는 `git tag -l` 로 확인한다.
 
+CSS 두 개를 모두 불러온다.
+
+```css
+@import "@neosimplix/common-ui/tokens.css";
+@import "@neosimplix/common-ui/controls.css";
+```
+
+`tokens.css` 는 색·치수의 단일 출처이고 `controls.css` 는 네이티브 요소용 `.ns-*` 클래스다. 컴포넌트 스타일이 토큰을 폴백 없이 참조하므로 둘 중 하나라도 빠지면 레이아웃이 무너진다.
+
+**Tailwind 를 쓰면 레이어 순서를 선언해야 한다.** `controls.css` 는 `@layer ns-controls` 로 감싸 배포되므로, 이 한 줄이 없으면 Tailwind preflight 가 클래스 스타일을 지운다.
+
+```css
+/* Tailwind import 보다 위 */
+@layer theme, base, ns-controls, components, utilities;
+@import "tailwindcss";
+```
+
 ## 문서 보기
 
 사용법·프로퍼티·이벤트·라이브 데모는 `index.html` 에 있다. **패키지에 함께 설치되므로 설치한 뒤 바로 열면 된다.** 옆에 `dist/` 가 있어 라이브 데모까지 그대로 동작한다.

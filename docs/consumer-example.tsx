@@ -1,7 +1,7 @@
 /*
   소비자 관점의 타입 검사 파일.
 
-  React 래퍼(src/react/index.ts)의 이벤트 핸들러 타입은 라이브러리 내부의
+  React 래퍼(src/react/elements.ts)의 이벤트 핸들러 타입은 라이브러리 내부의
   npm run check(tsc -p tsconfig.json) 로는 볼 수 없다 — 그 안에서는
   events 값이 그냥 문자열이라 EventName<> 브랜딩이 빠져도 통과한다.
   이 파일은 "@neosimplix/common-ui/react" 를 실제로 설치해 쓰는 소비자
@@ -14,7 +14,25 @@
 */
 import * as React from "react";
 import { useState } from "react";
-import { NsHeader, NsSidebar, NsNavGroup, NsNavItem } from "../src/react/index.js";
+import {
+  Button,
+  ButtonLink,
+  Card,
+  Checkbox,
+  Dialog,
+  Field,
+  Input,
+  NsHeader,
+  NsIcon,
+  NsNavGroup,
+  NsNavItem,
+  NsSidebar,
+  NsSkeleton,
+  PageHeading,
+  Select,
+  Textarea,
+} from "../src/react/index.js";
+import type { NsDialogCloseReason } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -31,6 +49,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   // 이 파일에서 검사되게 한다(사이드바에서 한 번만 듣는 것도 여전히 유효한
   // 패턴이다. index.html 의 각 컴포넌트 절 참고).
   const log = (msg: string) => console.log(msg);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
+  const onDialogClose = (reason: NsDialogCloseReason) => {
+    log(`closed by ${reason}`);
+    setDialogOpen(false);
+  };
 
   return (
     <>
@@ -55,7 +81,44 @@ export function Shell({ children }: { children: React.ReactNode }) {
             />
           </NsNavGroup>
         </NsSidebar>
-        <main>{children}</main>
+        <main>
+          <Card>
+            <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />
+            <NsSkeleton width="10rem" height="2.25rem" radius="pill" />
+            {children}
+            <Input value="" onChange={(e) => log(e.target.value)} invalid />
+            <Field label="이메일" error="@neosimplix.com 계정만 사용할 수 있습니다.">
+              <Input value="" onChange={(e) => log(e.target.value)} />
+            </Field>
+            <Field label="직급" hint="관리자 승인 후 반영됩니다">
+              <Select
+                value=""
+                onChange={(e) => log(e.target.value)}
+                placeholder="직급을 선택하세요"
+                options={[{ value: "senior", label: "선임" }]}
+              />
+            </Field>
+            <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} />
+            <Checkbox
+              label="사용자 목록 조회"
+              hint="부서 기본"
+              checked
+              onChange={(e) => log(String(e.target.checked))}
+            />
+            <Button variant="icon" aria-label="메뉴 열기" onClick={() => log("toggle")}>
+              <NsIcon name="menu" />
+            </Button>
+            <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
+            <Dialog
+              open={dialogOpen}
+              title="사용자 승인"
+              onClose={onDialogClose}
+              footer={<Button size="sm" onClick={() => setDialogOpen(false)}>확인</Button>}
+            >
+              <p>승인하시겠습니까?</p>
+            </Dialog>
+          </Card>
+        </main>
       </div>
     </>
   );

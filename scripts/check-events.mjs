@@ -31,7 +31,7 @@ for (const file of walk("src/components")) {
   }
 }
 
-const wrapper = readFileSync("src/react/index.ts", "utf8");
+const wrapper = readFileSync("src/react/elements.ts", "utf8");
 const mapped = new Set(
   [...wrapper.matchAll(/on[A-Za-z0-9]+:\s*["']([^"']+)["']/g)].map((m) => m[1]),
 );
@@ -39,7 +39,7 @@ const mapped = new Set(
 const missing = [...emitted].filter((name) => !mapped.has(name)).sort();
 if (missing.length > 0) {
   console.error(
-    `React 래퍼(src/react/index.ts)에 등록되지 않은 이벤트: ${missing.join(", ")}`,
+    `React 래퍼(src/react/elements.ts)에 등록되지 않은 이벤트: ${missing.join(", ")}`,
   );
   process.exit(1);
 }
