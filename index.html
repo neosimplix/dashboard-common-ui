@@ -948,7 +948,7 @@
     <Dialog
       open={open}
       title="사용자 승인"
-      onClose={() => setOpen(false)}
+      onClose={(reason) => { console.log(reason); setOpen(false); }}
       footer={
         <>
           <Button variant="outline" size="sm" onClick={() => setOpen(false)}>취소</Button>

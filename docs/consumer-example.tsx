@@ -112,12 +112,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Dialog
               open={dialogOpen}
               title="사용자 승인"
-              onClose={() => setDialogOpen(false)}
+              onClose={onDialogClose}
               footer={<Button size="sm" onClick={() => setDialogOpen(false)}>확인</Button>}
             >
               <p>승인하시겠습니까?</p>
             </Dialog>
-            <Button size="sm" onClick={() => onDialogClose("backdrop")}>reason 타입 검사</Button>
           </Card>
         </main>
       </div>
