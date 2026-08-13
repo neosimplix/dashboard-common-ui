@@ -22,9 +22,18 @@ export function pageWindow(current: number, total: number): (number | "gap")[] {
     .sort((a, b) => a - b);
 
   const out: (number | "gap")[] = [];
+  // 아직 낸 페이지가 없다는 뜻의 sentinel — 0 은 유효한 페이지 번호가 아니므로
+  // 첫 항목 앞에는 gap 이 올 수 없다는 것을 아래 두 조건이 이 값으로 표현한다.
   let previous = 0;
   for (const page of wanted) {
+    /*
+      current-1·current·current+1 이 1 이나 total 과 겹칠 수 있다(예: current=1 이면
+      current-1=0 이 필터로 빠지고 current=1 이 첫 페이지와 같아진다, current=total
+      이면 current+1 이 total 과 같아진다). 정렬된 배열에 같은 값이 연속으로 남으므로
+      바로 앞 값과 같으면 건너뛴다 — 중복 버튼을 그리지 않기 위해서다.
+    */
     if (page === previous) continue;
+    // 이전 값과의 간격이 1 을 넘으면 그 사이 페이지들을 생략한다는 표시로 gap 을 낸다.
     if (previous !== 0 && page - previous > 1) out.push("gap");
     out.push(page);
     previous = page;
@@ -34,6 +43,10 @@ export function pageWindow(current: number, total: number): (number | "gap")[] {
 
 /**
  * 목록 페이지 이동 컨트롤. 표를 모르고 데이터를 모른다 — 어떤 목록에도 붙는다.
+ *
+ * **자식을 받지 않는다.** Lit 이 이 요소의 내용을 통째로 소유한다 — 렌더마다
+ * 갈아 끼우므로 `<ns-pagination>…</ns-pagination>` 사이에 무엇을 써도 첫 렌더에서
+ * 사라진다. slot 이 없다.
  */
 export class NsPagination extends LitElement {
   /*
@@ -69,13 +82,47 @@ export class NsPagination extends LitElement {
   @property({ type: Number, attribute: "default-page" }) defaultPage = 1;
 
   #innerPage = 1;
-  #warned = false;
+
+  /*
+    각각 평생 한 번만 켜진다 — 렌더마다 다시 경고하면 스팸이 된다. 대신 두
+    설정 오류를 별개 플래그로 나눈다: 하나로 합치면 먼저 일어난 쪽이 이후에
+    일어나는 다른 쪽 경고를 막아버린다. 무관한 진단 두 개가 하나로 뭉개지는
+    것이 어느 한쪽만 못 보는 것보다 나쁘다.
+
+    대가로 같은 설정 오류가 값을 바꿔 다시 일어나도(예: page=99 다음 page=150)
+    두 번째는 경고하지 않는다 — 그 트레이드오프는 의도한 것이다. 값마다
+    경고하면 리렌더 스팸이 될 수 있어, 이 완화를 "고치겠다"고 값별 경고로
+    바꾸기 전에 이 트레이드오프를 다시 따져야 한다.
+  */
+  #warnedPage = false;
+  #warnedPerPage = false;
 
   get #controlled(): boolean {
     return this.page !== undefined;
   }
 
   get #pages(): number {
+    /*
+      perPage 가 0 이하이거나 NaN 이면 페이지 수가 Infinity(total > 0) 또는
+      NaN(total 0) 이 된다. 둘 다 조용히 깨진다 — Infinity 면 "Infinity" 가 글자로
+      버튼에 렌더되고 "다음" 이 영원히 활성이며, NaN 이면 NaN 비교가 항상 false 라
+      render() 의 "1 이하면 아무것도 렌더하지 않는다" 가드를 그냥 통과한다.
+
+      !(perPage > 0) 로 쓰는 이유는 0·음수·NaN 을 한 번에 걸러내기 위해서다.
+      perPage <= 0 은 NaN 을 놓친다.
+
+      페이지를 셀 수 없으면 넘길 수도 없다. 0 을 돌려 아무것도 렌더하지 않는
+      경로로 보낸다.
+    */
+    if (!(this.perPage > 0)) {
+      if (!this.#warnedPerPage) {
+        this.#warnedPerPage = true;
+        console.warn(
+          `[ns-pagination] per-page=${this.perPage} 는 1 이상이어야 합니다. 페이징을 렌더하지 않습니다.`,
+        );
+      }
+      return 0;
+    }
     return Math.ceil(this.total / this.perPage);
   }
 
@@ -102,8 +149,8 @@ export class NsPagination extends LitElement {
       범위를 벗어난 page 는 표시용으로만 clamp 하고 경고를 한 번 낸다.
       이벤트로 교정하지 않는다 — 소비자 상태와 서로 밀어내는 루프가 된다.
     */
-    if (!this.#warned) {
-      this.#warned = true;
+    if (!this.#warnedPage) {
+      this.#warnedPage = true;
       console.warn(
         `[ns-pagination] page=${raw} 가 1..${pages} 범위를 벗어났습니다.`,
       );
