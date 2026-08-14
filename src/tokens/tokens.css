@@ -125,13 +125,19 @@
   :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
   정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
   프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
-  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. 정의 이후의 프레임은
-  useLayoutEffect 가 페인트 전에 잡으므로 애초에 예약이 볼 필요가 없다.
+  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. upgrade 이후의 너비는
+  ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
 
   data-ns-open 은 React 소비자를 위한 통로다. createComponent 가 반응형
   프로퍼티만 가로채므로, 반응형이 아닌 이 이름은 서버 마크업에 그대로 실린다.
   src/react/tags/Sidebar.tsx 가 채운다. 순수 HTML 소비자는 마크업에 open 을
   직접 쓰므로 첫 짝이 걸린다.
+
+  이 예약만으로는 튐이 좁아질 뿐 사라지지 않는다. customElements.define 이
+  hydrateRoot 보다 먼저 실행되므로, upgrade 와 hydration 사이에는 :not(:defined)
+  가 이미 떨어져 나갔는데 open 은 아직 설정되지 않은 구간이 남는다. 그 구간을
+  덮는 것은 ns-sidebar.styles.ts 의 :host(:not([open]):not([data-ns-open])) 다.
+  두 파일을 함께 고쳐야 타임라인에 구멍이 안 생긴다.
 */
 ns-header { display: block; height: var(--ns-header-height); }
 

@@ -18,7 +18,23 @@ export const styles = css`
     transition: width 200ms var(--ns-transition-ease);
   }
 
-  :host(:not([open])) {
+  /*
+    접힘 너비. 두 속성을 함께 보는 이유는 타이밍이다.
+
+    customElements.define 은 모듈 평가 시점에 실행되므로 hydrateRoot 보다
+    먼저다. 그 사이 구간에서는 엘리먼트가 이미 upgrade 돼 tokens.css 의
+    :not(:defined) 예약이 떨어져 나갔는데, React 는 아직 open 을 설정하지
+    않았다. [open] 만 보면 이 구간이 4rem 으로 그려지고 하이드레이션 직후
+    벌어진다 — 예약이 없애려던 것과 같은 튐이 창만 좁아진 채 남는다.
+
+    data-ns-open 은 서버 마크업부터 DOM 에 있고 React 가 open 을 끌 때 함께
+    지우므로 두 속성이 어긋나지 않는다. 순수 HTML 소비자는 마크업에 open 을
+    직접 쓰므로 data-ns-open 이 없어도 첫 짝이 걸린다.
+
+    타임라인: upgrade 전에는 tokens.css 의 문서 예약이, upgrade 와 hydration
+    사이에는 data-ns-open 이, hydration 이후에는 open 이 너비를 잡는다.
+  */
+  :host(:not([open]):not([data-ns-open])) {
     width: var(--ns-sidebar-width-collapsed);
   }
 
@@ -33,7 +49,8 @@ export const styles = css`
     --ns-label-display: block;
   }
 
-  :host(:not([open])) ::slotted(ns-nav-group) {
+  /* 너비와 같은 구간을 겪는다. 여기서 [open] 만 보면 라벨이 깜빡인다. */
+  :host(:not([open]):not([data-ns-open])) ::slotted(ns-nav-group) {
     --ns-label-display: none;
   }
 `;
