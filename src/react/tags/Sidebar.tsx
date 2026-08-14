@@ -6,7 +6,18 @@ import type { NsNavigateDetail } from "../../types.js";
 export type SidebarProps = {
   /** 펼침 여부. 소비자가 내려준다 — 컴포넌트가 스스로 바꾸지 않는다. */
   open: boolean;
-  /** 하위 ns-nav-item 의 클릭. composed 라 사이드바에서 한 번만 들으면 된다. */
+  /**
+   * 하위 ns-nav-item 의 클릭. composed 라 사이드바에서 한 번만 들으면 된다.
+   *
+   * **빠뜨리면 그 사이드바의 링크가 전부 죽는다.** ns-nav-item 은 평범한 좌클릭에
+   * preventDefault() 를 부르고 이벤트만 올리므로(라우팅은 소비자 몫이라는 설계),
+   * 듣는 쪽이 없으면 클릭이 아무 일도 하지 않는다. 선택 프롭이라 타입 검사도 통과하고
+   * 콘솔에도 아무것도 남지 않아 화면에서만 드러난다. 수식키·가운데 클릭은 가로채지
+   * 않으므로 새 탭 열기만 동작해 "가끔 되는 것처럼" 보인다.
+   *
+   * 선택으로 두는 이유는 사이드바가 라우팅 없이 쓰이는 경우(정적 예시, 스토리)가
+   * 있기 때문이다. 필수로 바꾸는 것은 0.1.5 부터의 동작 변경이라 여기서 하지 않는다.
+   */
   onNavigate?: (detail: NsNavigateDetail) => void;
   children?: ReactNode;
   className?: string;
