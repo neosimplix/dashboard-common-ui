@@ -10,16 +10,16 @@ export const styles = css`
     box-sizing: border-box;
     height: 100%;
     min-height: 0;
-    width: var(--sidebar-width);
+    width: var(--ns-sidebar-width);
     overflow-x: hidden;
     overflow-y: auto;
-    border-right: 1px solid var(--color-line);
-    background: var(--color-surface);
-    transition: width 200ms var(--transition-ease);
+    border-right: 1px solid var(--ns-color-line);
+    background: var(--ns-color-surface);
+    transition: width 200ms var(--ns-transition-ease);
   }
 
   :host(:not([open])) {
-    width: var(--sidebar-width-collapsed);
+    width: var(--ns-sidebar-width-collapsed);
   }
 
   /*

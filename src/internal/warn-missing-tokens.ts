@@ -6,7 +6,7 @@ const MESSAGE =
   '  HTML:        <link rel="stylesheet" href="…/dist/tokens.css">';
 
 const tokensPresent = () =>
-  getComputedStyle(document.documentElement).getPropertyValue("--color-line").trim() !== "";
+  getComputedStyle(document.documentElement).getPropertyValue("--ns-color-line").trim() !== "";
 
 /**
  * tokens.css 가 로드되지 않았으면 콘솔에 한 번만 경고한다.

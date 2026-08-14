@@ -1,83 +1,87 @@
 /*
   common-ui 디자인 토큰.
 
-  이름은 dashboard-shell/app/globals.css 와 동일하다. 접두사를 붙이지 않는
-  이유는 그 프로젝트의 25개 파일이 이미 var(--space-3) 형태로 이 이름들을
-  직접 참조하고 있기 때문이다.
+  모든 이름에 --ns- 접두사를 붙인다. 붙이지 않던 0.1.5 에서 두 번째 소비자의
+  --color-surface 와 이름만 겹치고 값 체계가 달라, 임포트 순서가 셸 색을
+  결정하는 상태가 됐다. 컴포넌트 스타일은 var() 폴백 없이 이 이름들을 읽으므로
+  이름을 공유하면 라이브러리 렌더링이 소비자 캐스케이드에 종속된다.
+
+  이미 무접두사 이름을 쓰던 프로젝트는 dist/aliases.css 를 임포트한다.
+  그 파일은 이 파일에서 생성된다(scripts/copy-css.mjs).
 
   색 값은 Tailwind v4 기본 팔레트(oklch)에서 그대로 가져왔다. 이 파일은
   Tailwind 에 의존하지 않으므로 순수 HTML 에서도 동작한다.
 */
 :root {
   /* 표면 · 전경 · 경계 */
-  --color-surface: #fff;
-  --color-surface-sunken: oklch(98.5% 0 0);            /* zinc-50 */
-  --color-surface-hover: oklch(96.7% 0.001 286.375);   /* zinc-100 */
-  --color-line: oklch(92% 0.004 286.32);               /* zinc-200 */
-  --color-line-strong: oklch(87.1% 0.006 286.286);     /* zinc-300 */
-  --color-overlay: rgb(0 0 0 / .4);
+  --ns-color-surface: #fff;
+  --ns-color-surface-sunken: oklch(98.5% 0 0);            /* zinc-50 */
+  --ns-color-surface-hover: oklch(96.7% 0.001 286.375);   /* zinc-100 */
+  --ns-color-line: oklch(92% 0.004 286.32);               /* zinc-200 */
+  --ns-color-line-strong: oklch(87.1% 0.006 286.286);     /* zinc-300 */
+  --ns-color-overlay: rgb(0 0 0 / .4);
 
-  --color-fg: oklch(21% 0.006 285.885);                /* zinc-900 */
-  --color-fg-body: oklch(37% 0.013 285.805);           /* zinc-700 */
-  --color-fg-muted: oklch(55.2% 0.016 285.938);        /* zinc-500 */
-  --color-fg-subtle: oklch(70.5% 0.015 286.067);       /* zinc-400 */
+  --ns-color-fg: oklch(21% 0.006 285.885);                /* zinc-900 */
+  --ns-color-fg-body: oklch(37% 0.013 285.805);           /* zinc-700 */
+  --ns-color-fg-muted: oklch(55.2% 0.016 285.938);        /* zinc-500 */
+  --ns-color-fg-subtle: oklch(70.5% 0.015 286.067);       /* zinc-400 */
 
   /* 액센트 — 브랜드 컬러가 정해지면 이 네 줄만 교체한다 */
-  --color-accent: oklch(21% 0.006 285.885);            /* zinc-900 */
-  --color-accent-hover: oklch(27.4% 0.006 286.033);    /* zinc-800 */
-  --color-accent-fg: #fff;
-  --color-disabled: oklch(87.1% 0.006 286.286);        /* zinc-300 */
+  --ns-color-accent: oklch(21% 0.006 285.885);            /* zinc-900 */
+  --ns-color-accent-hover: oklch(27.4% 0.006 286.033);    /* zinc-800 */
+  --ns-color-accent-fg: #fff;
+  --ns-color-disabled: oklch(87.1% 0.006 286.286);        /* zinc-300 */
 
   /* 상태 */
-  --color-danger: oklch(57.7% 0.245 27.325);           /* red-600 */
-  --color-danger-surface: oklch(97.1% 0.013 17.38);    /* red-50 */
-  --color-warn: oklch(55.5% 0.163 48.998);             /* amber-700 */
-  --color-warn-surface: oklch(98.7% 0.022 95.277);     /* amber-50 */
-  --color-success: oklch(59.6% 0.145 163.225);         /* emerald-600 */
-  --color-success-surface: oklch(97.9% 0.021 166.113); /* emerald-50 */
+  --ns-color-danger: oklch(57.7% 0.245 27.325);           /* red-600 */
+  --ns-color-danger-surface: oklch(97.1% 0.013 17.38);    /* red-50 */
+  --ns-color-warn: oklch(55.5% 0.163 48.998);             /* amber-700 */
+  --ns-color-warn-surface: oklch(98.7% 0.022 95.277);     /* amber-50 */
+  --ns-color-success: oklch(59.6% 0.145 163.225);         /* emerald-600 */
+  --ns-color-success-surface: oklch(97.9% 0.021 166.113); /* emerald-50 */
 
   /* 간격 — 4px 스케일 */
-  --space-1: .25rem;
-  --space-1-5: .375rem;
-  --space-2: .5rem;
-  --space-2-5: .625rem;
-  --space-3: .75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
+  --ns-space-1: .25rem;
+  --ns-space-1-5: .375rem;
+  --ns-space-2: .5rem;
+  --ns-space-2-5: .625rem;
+  --ns-space-3: .75rem;
+  --ns-space-4: 1rem;
+  --ns-space-5: 1.25rem;
+  --ns-space-6: 1.5rem;
+  --ns-space-8: 2rem;
 
   /* 반경 — 용도 이름 */
-  --radius-badge: .25rem;
-  --radius-control: .375rem;
-  --radius-panel: .5rem;
-  --radius-card: .75rem;
-  --radius-pill: 9999px;
+  --ns-radius-badge: .25rem;
+  --ns-radius-control: .375rem;
+  --ns-radius-panel: .5rem;
+  --ns-radius-card: .75rem;
+  --ns-radius-pill: 9999px;
 
   /* 타이포 — 크기와 줄간격은 반드시 짝으로 쓴다 */
-  --font-size-2xs: .6875rem; --line-height-2xs: 1rem;
-  --font-size-xs: .75rem;    --line-height-xs: 1rem;
-  --font-size-sm: .875rem;   --line-height-sm: 1.25rem;
-  --font-size-base: 1rem;    --line-height-base: 1.5rem;
-  --font-size-lg: 1.125rem;  --line-height-lg: 1.75rem;
-  --font-size-xl: 1.25rem;   --line-height-xl: 1.75rem;
-  --weight-medium: 500;
-  --weight-semibold: 600;
+  --ns-font-size-2xs: .6875rem; --ns-line-height-2xs: 1rem;
+  --ns-font-size-xs: .75rem;    --ns-line-height-xs: 1rem;
+  --ns-font-size-sm: .875rem;   --ns-line-height-sm: 1.25rem;
+  --ns-font-size-base: 1rem;    --ns-line-height-base: 1.5rem;
+  --ns-font-size-lg: 1.125rem;  --ns-line-height-lg: 1.75rem;
+  --ns-font-size-xl: 1.25rem;   --ns-line-height-xl: 1.75rem;
+  --ns-weight-medium: 500;
+  --ns-weight-semibold: 600;
 
   /* 레이아웃 상수 */
-  --header-height: 3.5rem;
-  --sidebar-width: 15rem;
-  --sidebar-width-collapsed: 4rem;
-  --page-padding-x: var(--space-6);
-  --page-padding-y: var(--space-6);
-  --card-padding: var(--space-8);
-  --control-height-sm: 1.75rem;
-  --control-height-md: 2.5rem;
+  --ns-header-height: 3.5rem;
+  --ns-sidebar-width: 15rem;
+  --ns-sidebar-width-collapsed: 4rem;
+  --ns-page-padding-x: var(--ns-space-6);
+  --ns-page-padding-y: var(--ns-space-6);
+  --ns-card-padding: var(--ns-space-8);
+  --ns-control-height-sm: 1.75rem;
+  --ns-control-height-md: 2.5rem;
 
   /* 기타 */
-  --elevation-card: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
-  --transition-fast: 150ms;
-  --transition-ease: cubic-bezier(.4, 0, .2, 1);
+  --ns-elevation-card: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+  --ns-transition-fast: 150ms;
+  --ns-transition-ease: cubic-bezier(.4, 0, .2, 1);
 
   /*
     패키지 내부 배선이라 --ns- 접두사를 쓴다. 아래 ns-icon 요소 선택자 대신
@@ -97,7 +101,7 @@
     넓은 폼 대화상자는 인스턴스에서 --ns-dialog-width 를 올린다.
   */
   --ns-dialog-width: 32rem;
-  --ns-dialog-margin: var(--space-8);
+  --ns-dialog-margin: var(--ns-space-8);
 }
 
 /* 다크모드는 이번 범위 밖. 나중에 이 블록만 채우면 된다. */
@@ -110,9 +114,9 @@
   크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
   light DOM 선택자라 upgrade 전에도 적용된다.
 */
-ns-header  { display: block; height: var(--header-height); }
-ns-sidebar { display: block; width: var(--sidebar-width); }
-ns-sidebar:not([open]) { width: var(--sidebar-width-collapsed); }
+ns-header  { display: block; height: var(--ns-header-height); }
+ns-sidebar { display: block; width: var(--ns-sidebar-width); }
+ns-sidebar:not([open]) { width: var(--ns-sidebar-width-collapsed); }
 
 /*
   ns-icon 은 값을 --ns-icon-size 에서 받는다. 이 요소 선택자만으로는 문서 트리의

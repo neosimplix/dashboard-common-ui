@@ -10,32 +10,32 @@
   body {
     margin: 0;
     font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
-    color: var(--color-fg);
-    background: var(--color-surface-sunken);
+    color: var(--ns-color-fg);
+    background: var(--ns-color-surface-sunken);
   }
-  main { max-width: 56rem; margin: 0 auto; padding: var(--space-8) var(--space-6) 6rem; }
-  h1 { font-size: var(--font-size-xl); line-height: var(--line-height-xl); }
+  main { max-width: 56rem; margin: 0 auto; padding: var(--ns-space-8) var(--ns-space-6) 6rem; }
+  h1 { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
   h2 {
-    margin-top: var(--space-8);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--color-line);
-    font-size: var(--font-size-lg);
-    line-height: var(--line-height-lg);
+    margin-top: var(--ns-space-8);
+    padding-top: var(--ns-space-6);
+    border-top: 1px solid var(--ns-color-line);
+    font-size: var(--ns-font-size-lg);
+    line-height: var(--ns-line-height-lg);
   }
-  h3, h4 { font-size: var(--font-size-sm); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
-  p, li { font-size: var(--font-size-sm); line-height: 1.7; color: var(--color-fg-body); }
-  code { font-size: var(--font-size-xs); background: var(--color-surface-hover); padding: 0 .25em; border-radius: var(--radius-badge); }
+  h3, h4 { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  p, li { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
+  code { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
 
-  table { width: 100%; border-collapse: collapse; margin: var(--space-4) 0; }
+  table { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
   th, td {
-    border-bottom: 1px solid var(--color-line);
-    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--ns-color-line);
+    padding: var(--ns-space-2) var(--ns-space-3);
     text-align: left;
-    font-size: var(--font-size-xs);
-    line-height: var(--line-height-sm);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-sm);
     vertical-align: top;
   }
-  th { color: var(--color-fg-muted); font-weight: var(--weight-semibold); }
+  th { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
   td code { background: none; padding: 0; }
 
   /* 데모는 반드시 높이를 고정한다. tokens.css 의 ns-sidebar 규칙은 전역
@@ -45,19 +45,19 @@
     display: flex;
     height: 320px;
     overflow: hidden;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface);
+    border: 1px solid var(--ns-color-line);
+    border-radius: var(--ns-radius-panel);
+    background: var(--ns-color-surface);
   }
   .demo.block { display: block; height: auto; }
   pre {
-    margin: var(--space-2) 0 0;
-    padding: var(--space-3);
+    margin: var(--ns-space-2) 0 0;
+    padding: var(--ns-space-3);
     overflow-x: auto;
-    border-radius: var(--radius-panel);
-    background: var(--color-fg);
+    border-radius: var(--ns-radius-panel);
+    background: var(--ns-color-fg);
     color: #fff;
-    font-size: var(--font-size-xs);
+    font-size: var(--ns-font-size-xs);
     line-height: 1.6;
   }
 
@@ -287,8 +287,8 @@
     }
   </script>
 
-  <div class="demo block" style="padding: var(--space-4)">
-    <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--space-2)"></div>
+  <div class="demo block" style="padding: var(--ns-space-4)">
+    <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--ns-space-2)"></div>
   </div>
 
   <h2 id="ns-button">.ns-button</h2>
@@ -316,7 +316,7 @@
     </button>
     <button class="ns-button ns-button--solid ns-button--md ns-button--full">full</button>
   </template>
-  <div class="demo block" id="button-demo" style="display:flex;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-4)"></div>
+  <div class="demo block" id="button-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-3);padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -364,7 +364,7 @@
     <input class="ns-input" value="invalid" aria-invalid="true">
     <input class="ns-input" placeholder="disabled" disabled>
   </template>
-  <div class="demo block" id="input-demo" style="display:grid;gap:var(--space-3);max-width:20rem;padding:var(--space-4)"></div>
+  <div class="demo block" id="input-demo" style="display:grid;gap:var(--ns-space-3);max-width:20rem;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -409,7 +409,7 @@
     <textarea class="ns-textarea" rows="3" aria-invalid="true">invalid</textarea>
     <textarea class="ns-textarea" rows="6" placeholder="rows=6"></textarea>
   </template>
-  <div class="demo block" id="textarea-demo" style="display:grid;gap:var(--space-3);max-width:20rem;padding:var(--space-4)"></div>
+  <div class="demo block" id="textarea-demo" style="display:grid;gap:var(--ns-space-3);max-width:20rem;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -460,7 +460,7 @@
       <option value="" disabled selected>disabled</option>
     </select>
   </template>
-  <div class="demo block" id="select-demo" style="display:grid;gap:var(--space-3);max-width:20rem;padding:var(--space-4)"></div>
+  <div class="demo block" id="select-demo" style="display:grid;gap:var(--ns-space-3);max-width:20rem;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -550,7 +550,7 @@
       <span class="ns-checkbox__hint">부서 기본</span>
     </label>
   </template>
-  <div class="demo block" id="checkbox-demo" style="max-width:22rem;padding:var(--space-4)"></div>
+  <div class="demo block" id="checkbox-demo" style="max-width:22rem;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -616,7 +616,7 @@
       <span class="ns-field__error" id="f-email-error">@neosimplix.com 계정만 사용할 수 있습니다.</span>
     </div>
   </template>
-  <div class="demo block" id="field-demo" style="display:grid;gap:var(--space-4);max-width:22rem;padding:var(--space-4)"></div>
+  <div class="demo block" id="field-demo" style="display:grid;gap:var(--ns-space-4);max-width:22rem;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -689,7 +689,7 @@
       </table>
     </ns-table>
   </template>
-  <div class="demo block" id="table-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="table-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>좁은 컨테이너</h3>
@@ -712,7 +712,7 @@
             <td>담당자 둘</td>
             <td>운영 중</td>
             <td>
-              <span style="display:inline-flex;gap:var(--space-2)">
+              <span style="display:inline-flex;gap:var(--ns-space-2)">
                 <button class="ns-button ns-button--ghost ns-button--sm" type="button">문의</button>
                 <button class="ns-button ns-button--outline ns-button--sm" type="button">수정</button>
                 <button class="ns-button ns-button--ghost ns-button--sm" type="button">삭제</button>
@@ -723,7 +723,7 @@
       </table>
     </ns-table>
   </template>
-  <div class="demo block" id="table-narrow-demo" style="max-width:26rem;padding:var(--space-4)"></div>
+  <div class="demo block" id="table-narrow-demo" style="max-width:26rem;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>정렬 헤더의 모양</h3>
@@ -752,7 +752,7 @@
       </tbody>
     </table>
   </template>
-  <div class="demo block" id="table-sort-states-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="table-sort-states-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
 
   <!--
@@ -812,7 +812,7 @@
       <p style="margin:0">카드 안의 내용</p>
     </div>
   </template>
-  <div class="demo block" id="card-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="card-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>클래스</h3>
@@ -850,10 +850,10 @@
     <ns-icon name="menu"></ns-icon>
     <ns-icon name="close"></ns-icon>
     <ns-icon name="google"></ns-icon>
-    <span style="color: var(--color-danger)"><ns-icon name="close"></ns-icon></span>
-    <span style="color: var(--color-fg-muted)"><ns-icon name="menu" style="width:2rem;height:2rem"></ns-icon></span>
+    <span style="color: var(--ns-color-danger)"><ns-icon name="close"></ns-icon></span>
+    <span style="color: var(--ns-color-fg-muted)"><ns-icon name="menu" style="width:2rem;height:2rem"></ns-icon></span>
   </template>
-  <div class="demo block" id="icon-demo" style="display:flex;align-items:center;gap:var(--space-4);padding:var(--space-4)"></div>
+  <div class="demo block" id="icon-demo" style="display:flex;align-items:center;gap:var(--ns-space-4);padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>프로퍼티</h3>
@@ -946,7 +946,7 @@
     ></ns-page-heading>
     <ns-page-heading heading="설명 없는 제목"></ns-page-heading>
   </template>
-  <div class="demo block" id="page-heading-demo" style="display:grid;gap:var(--space-6);padding:var(--space-4)"></div>
+  <div class="demo block" id="page-heading-demo" style="display:grid;gap:var(--ns-space-6);padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>프로퍼티</h3>
@@ -990,7 +990,7 @@
     <ns-skeleton width="6rem" height="6rem" radius="card"></ns-skeleton>
     <ns-skeleton width="100%" height=".75rem" radius="0"></ns-skeleton>
   </template>
-  <div class="demo block" id="skeleton-demo" style="display:grid;gap:var(--space-3);justify-items:start;padding:var(--space-4)"></div>
+  <div class="demo block" id="skeleton-demo" style="display:grid;gap:var(--ns-space-3);justify-items:start;padding:var(--ns-space-4)"></div>
   <pre></pre>
 
   <h3>프로퍼티</h3>
@@ -1073,7 +1073,7 @@
       </ns-dialog>
     </div>
   </template>
-  <div class="demo block" id="dialog-demo" style="padding:var(--space-4)"></div>
+  <div class="demo block" id="dialog-demo" style="padding:var(--ns-space-4)"></div>
   <pre></pre>
   <p id="dialog-log" style="font-family: monospace">Esc·닫기 버튼(X)·backdrop 클릭으로 닫으면 여기에 이벤트가 찍힌다. 아래 취소/승인 버튼은 close() 를 직접 불러 이벤트를 내지 않는다.</p>
 
@@ -1097,7 +1097,7 @@
   <table>
     <tr><th>커스텀 프로퍼티</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>--ns-dialog-width</code></td><td><code>32rem</code></td><td>원하는 폭. <strong>화면 비율이 아니라 절대 상한</strong>이다 — 큰 모니터에서도 이 값을 넘지 않는다</td></tr>
-    <tr><td><code>--ns-dialog-margin</code></td><td><code>var(--space-8)</code></td><td>화면 가장자리에 남기는 여백. 가로·세로 모두에 쓰인다</td></tr>
+    <tr><td><code>--ns-dialog-margin</code></td><td><code>var(--ns-space-8)</code></td><td>화면 가장자리에 남기는 여백. 가로·세로 모두에 쓰인다</td></tr>
   </table>
   <p>
     실제 폭은 <code>min(--ns-dialog-width, 100vw - --ns-dialog-margin)</code> 이다.
@@ -1240,7 +1240,7 @@
       </table>
     </ns-table>
   </template>
-  <div class="demo block" id="sort-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="sort-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p id="sort-log" style="font-family: monospace">헤더를 누르면 여기에 이벤트가 찍힌다.</p>
   <p>
@@ -1267,7 +1267,7 @@
       </table>
     </ns-table>
   </template>
-  <div class="demo block" id="table-select-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="table-select-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p id="table-select-log" style="font-family: monospace">체크하면 여기에 이벤트가 찍힌다.</p>
   <p>
@@ -1301,7 +1301,7 @@
       </table>
     </ns-table>
   </template>
-  <div class="demo block" id="table-both-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="table-both-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p id="table-both-sort-log" style="font-family: monospace">헤더를 누르면 여기에 <code>ns-sort</code> 가 찍힌다.</p>
   <p id="table-both-select-log" style="font-family: monospace">체크하면 여기에 <code>ns-select-change</code> 가 찍힌다.</p>
@@ -1459,19 +1459,19 @@
   <template class="ex">
     <ns-pagination total="240" per-page="20" default-page="4"></ns-pagination>
   </template>
-  <div class="demo block" id="pagination-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="pagination-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p id="pagination-log" style="font-family: monospace">페이지를 누르면 여기에 이벤트가 찍힌다.</p>
 
   <h3>경계</h3>
   <template class="ex">
-    <div style="display:grid;gap:var(--space-4)">
+    <div style="display:grid;gap:var(--ns-space-4)">
       <ns-pagination total="60" per-page="20" default-page="1"></ns-pagination>
       <ns-pagination total="140" per-page="20" default-page="7"></ns-pagination>
       <ns-pagination total="15" per-page="20"></ns-pagination>
     </div>
   </template>
-  <div class="demo block" id="pagination-edge-demo" style="padding: var(--space-4)"></div>
+  <div class="demo block" id="pagination-edge-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p>
     위에서부터 3페이지(전부 표시) · 7페이지(<code>…</code> 등장) · 1페이지
@@ -1562,7 +1562,7 @@
   <template class="ex">
     <ns-header project-name="대시보드" sidebar-open id="demo-header">
       <div slot="actions">
-        <span style="font-size: var(--font-size-sm)">홍길동</span>
+        <span style="font-size: var(--ns-font-size-sm)">홍길동</span>
         <button>로그아웃</button>
       </div>
     </ns-header>
@@ -1719,7 +1719,7 @@
       <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
     </ns-nav-group>
   </template>
-  <div class="demo block" style="width: var(--sidebar-width)"></div>
+  <div class="demo block" style="width: var(--ns-sidebar-width)"></div>
   <pre></pre>
 
   <h3>프로퍼티</h3>
@@ -1770,7 +1770,7 @@
       <span slot="trailing">3</span>
     </ns-nav-item>
   </template>
-  <div class="demo block" id="nav-item-demo" style="padding: var(--space-2)"></div>
+  <div class="demo block" id="nav-item-demo" style="padding: var(--ns-space-2)"></div>
   <pre></pre>
   <p id="nav-item-log" style="font-family: monospace">클릭하면 여기에 이벤트가 찍힌다.</p>
 
@@ -1835,7 +1835,7 @@
             <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
           </ns-nav-group>
         </ns-sidebar>
-        <div style="flex:1;padding:var(--space-4);background:var(--color-surface-sunken)">
+        <div style="flex:1;padding:var(--ns-space-4);background:var(--ns-color-surface-sunken)">
           <span id="full-log">토글을 누르거나 항목을 클릭해보세요.</span>
         </div>
       </div>
@@ -1991,22 +1991,22 @@
   }
 
   const swatchNames = [
-    "--color-surface", "--color-surface-sunken", "--color-surface-hover",
-    "--color-line", "--color-line-strong",
-    "--color-fg", "--color-fg-body", "--color-fg-muted", "--color-fg-subtle",
-    "--color-accent", "--color-accent-hover", "--color-accent-fg", "--color-disabled",
-    "--color-danger", "--color-danger-surface", "--color-warn", "--color-warn-surface",
-    "--color-success", "--color-success-surface",
+    "--ns-color-surface", "--ns-color-surface-sunken", "--ns-color-surface-hover",
+    "--ns-color-line", "--ns-color-line-strong",
+    "--ns-color-fg", "--ns-color-fg-body", "--ns-color-fg-muted", "--ns-color-fg-subtle",
+    "--ns-color-accent", "--ns-color-accent-hover", "--ns-color-accent-fg", "--ns-color-disabled",
+    "--ns-color-danger", "--ns-color-danger-surface", "--ns-color-warn", "--ns-color-warn-surface",
+    "--ns-color-success", "--ns-color-success-surface",
   ];
   const swatches = document.getElementById("token-swatches");
   if (swatches) {
     const root = getComputedStyle(document.documentElement);
     for (const name of swatchNames) {
       const cell = document.createElement("div");
-      cell.style.cssText = "display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-xs)";
+      cell.style.cssText = "display:flex;align-items:center;gap:var(--ns-space-2);font-size:var(--ns-font-size-xs)";
       cell.innerHTML =
-        `<span style="width:1.5rem;height:1.5rem;flex:none;border-radius:var(--radius-badge);` +
-        `border:1px solid var(--color-line);background:var(${name})"></span>` +
+        `<span style="width:1.5rem;height:1.5rem;flex:none;border-radius:var(--ns-radius-badge);` +
+        `border:1px solid var(--ns-color-line);background:var(${name})"></span>` +
         `<code>${name}</code>`;
       cell.title = root.getPropertyValue(name).trim();
       swatches.append(cell);

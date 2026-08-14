@@ -23,10 +23,10 @@ export const styles = css`
     max-height: calc(100vh - var(--ns-dialog-margin));
     padding: 0;
     border: 0;
-    border-radius: var(--radius-card);
-    background: var(--color-surface);
-    color: var(--color-fg-body);
-    box-shadow: var(--elevation-card);
+    border-radius: var(--ns-radius-card);
+    background: var(--ns-color-surface);
+    color: var(--ns-color-fg-body);
+    box-shadow: var(--ns-elevation-card);
     /* 본문만 스크롤되고 헤더·푸터는 고정된다. */
     display: flex;
     flex-direction: column;
@@ -47,7 +47,7 @@ export const styles = css`
   }
 
   dialog::backdrop {
-    background: var(--color-overlay);
+    background: var(--ns-color-overlay);
   }
 
   .header {
@@ -55,17 +55,17 @@ export const styles = css`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-4);
-    padding: var(--space-5) var(--space-6);
-    border-bottom: 1px solid var(--color-line);
+    gap: var(--ns-space-4);
+    padding: var(--ns-space-5) var(--ns-space-6);
+    border-bottom: 1px solid var(--ns-color-line);
   }
 
   h2 {
     margin: 0;
-    font-size: var(--font-size-lg);
-    line-height: var(--line-height-lg);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
+    font-size: var(--ns-font-size-lg);
+    line-height: var(--ns-line-height-lg);
+    font-weight: var(--ns-weight-semibold);
+    color: var(--ns-color-fg);
   }
 
   /*
@@ -77,19 +77,19 @@ export const styles = css`
     flex: none;
     display: grid;
     place-items: center;
-    padding: var(--space-1-5);
+    padding: var(--ns-space-1-5);
     border: 0;
-    border-radius: var(--radius-control);
+    border-radius: var(--ns-radius-control);
     background: transparent;
-    color: var(--color-fg-muted);
+    color: var(--ns-color-fg-muted);
     cursor: pointer;
-    transition: background-color var(--transition-fast) var(--transition-ease),
-      color var(--transition-fast) var(--transition-ease);
+    transition: background-color var(--ns-transition-fast) var(--ns-transition-ease),
+      color var(--ns-transition-fast) var(--ns-transition-ease);
   }
 
   .close:hover {
-    background: var(--color-surface-hover);
-    color: var(--color-fg);
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg);
   }
 
   /*
@@ -97,7 +97,7 @@ export const styles = css`
     이 버튼은 showModal() 이 자동 포커스하는 첫 요소이므로 특히 필요하다.
   */
   .close:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--ns-color-accent);
     outline-offset: 2px;
   }
 
@@ -105,7 +105,7 @@ export const styles = css`
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: var(--space-6);
+    padding: var(--ns-space-6);
   }
 
   /*
@@ -117,8 +117,8 @@ export const styles = css`
     flex: none;
     display: flex;
     justify-content: flex-end;
-    gap: var(--space-2);
-    padding: 0 var(--space-6) var(--space-6);
+    gap: var(--ns-space-2);
+    padding: 0 var(--ns-space-6) var(--ns-space-6);
   }
 
   .footer[hidden] {

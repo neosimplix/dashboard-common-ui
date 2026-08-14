@@ -6,7 +6,7 @@ export const styles = css`
   }
 
   .bar {
-    background: var(--color-surface-hover);
+    background: var(--ns-color-surface-hover);
     animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
   }
 

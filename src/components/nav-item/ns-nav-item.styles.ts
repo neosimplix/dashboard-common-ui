@@ -8,23 +8,23 @@ export const styles = css`
   .row {
     display: flex;
     align-items: center;
-    gap: var(--space-2-5);
-    margin-bottom: var(--space-1);
-    border-radius: var(--radius-control);
-    padding: var(--space-2);
-    color: var(--color-fg-body);
+    gap: var(--ns-space-2-5);
+    margin-bottom: var(--ns-space-1);
+    border-radius: var(--ns-radius-control);
+    padding: var(--ns-space-2);
+    color: var(--ns-color-fg-body);
     text-decoration: none;
-    transition: background-color var(--transition-fast) var(--transition-ease),
-      color var(--transition-fast) var(--transition-ease);
+    transition: background-color var(--ns-transition-fast) var(--ns-transition-ease),
+      color var(--ns-transition-fast) var(--ns-transition-ease);
   }
 
   .row:hover {
-    background: var(--color-surface-sunken);
+    background: var(--ns-color-surface-sunken);
   }
 
   :host([active]) .row {
-    background: var(--color-surface-hover);
-    color: var(--color-fg);
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg);
   }
 
   /* 접힌 레일에서 유일하게 남는 요소라 flex 축소를 막는다. */
@@ -32,18 +32,18 @@ export const styles = css`
     flex: none;
     display: grid;
     place-items: center;
-    width: var(--control-height-sm);
-    height: var(--control-height-sm);
-    border-radius: var(--radius-badge);
-    background: var(--color-surface-hover);
-    font-size: var(--font-size-2xs);
-    line-height: var(--line-height-2xs);
-    font-weight: var(--weight-semibold);
+    width: var(--ns-control-height-sm);
+    height: var(--ns-control-height-sm);
+    border-radius: var(--ns-radius-badge);
+    background: var(--ns-color-surface-hover);
+    font-size: var(--ns-font-size-2xs);
+    line-height: var(--ns-line-height-2xs);
+    font-weight: var(--ns-weight-semibold);
   }
 
   :host([active]) .badge {
-    background: var(--color-accent);
-    color: var(--color-accent-fg);
+    background: var(--ns-color-accent);
+    color: var(--ns-color-accent-fg);
   }
 
   /*
@@ -62,9 +62,9 @@ export const styles = css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-sm);
-    font-weight: var(--weight-medium);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    font-weight: var(--ns-weight-medium);
   }
 
   .trailing {

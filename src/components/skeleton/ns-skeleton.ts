@@ -28,7 +28,7 @@ export class NsSkeleton extends LitElement {
   }
 
   #radiusValue(): string {
-    return RADIUS_TOKENS.has(this.radius) ? `var(--radius-${this.radius})` : this.radius;
+    return RADIUS_TOKENS.has(this.radius) ? `var(--ns-radius-${this.radius})` : this.radius;
   }
 
   override render() {

@@ -12,20 +12,20 @@ export const styles = css`
     복합 선택자를 받으므로 이 형태가 유일하게 동작한다.
   */
   :host(:not(:first-child)) {
-    margin-top: var(--space-6);
+    margin-top: var(--ns-space-6);
   }
 
   .heading {
     display: var(--ns-label-display, block);
-    padding: var(--space-4) var(--space-4) var(--space-2);
-    font-size: var(--font-size-xs);
-    line-height: var(--line-height-xs);
-    font-weight: var(--weight-semibold);
+    padding: var(--ns-space-4) var(--ns-space-4) var(--ns-space-2);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    font-weight: var(--ns-weight-semibold);
     letter-spacing: 0.05em;
-    color: var(--color-fg-subtle);
+    color: var(--ns-color-fg-subtle);
   }
 
   .list {
-    padding: var(--space-2);
+    padding: var(--ns-space-2);
   }
 `;
