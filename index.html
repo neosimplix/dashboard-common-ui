@@ -181,7 +181,7 @@
     "use client";
     import { useState } from "react";
     import { usePathname, useRouter } from "next/navigation";
-    import { NsHeader, NsSidebar, NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
+    import { NsHeader, Sidebar, NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
 
     export function Shell({ children }) {
       const [open, setOpen] = useState(true);
@@ -195,12 +195,12 @@
             <div slot="actions"><UserMenu /></div>
           </NsHeader>
           <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-            <NsSidebar open={open} onNsNavigate={(e) => router.push(e.detail.href)}>
+            <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
               <NsNavGroup heading="프로젝트">
                 <NsNavItem href="/a" label="프로젝트 A" badge="PA"
                            active={pathname === "/a"} />
               </NsNavGroup>
-            </NsSidebar>
+            </Sidebar>
             <main>{children}</main>
           </div>
         </>
@@ -211,24 +211,25 @@
   <h3>SSR 과 사이드바 너비</h3>
   <p>
     <code>@lit/react</code> 는 엘리먼트 프로퍼티를 <code>useLayoutEffect</code> 안에서만
-    설정한다. 서버 렌더 시점에는 절대 실행되지 않으므로, Next 가 내려주는 HTML 에는
-    <code>&lt;ns-sidebar&gt;&lt;/ns-sidebar&gt;</code> 처럼 <code>open</code> 속성이 아예 없다.
-    이 순간 <code>tokens.css</code> 의 <code>ns-sidebar:not([open])</code> 규칙이 적용되어
-    4rem 레일로 그려지고, 하이드레이션 직후 <code>open</code> 이 참인 페이지라면 15rem 으로
-    벌어진다 — 기본값이 펼침인 사이드바는 매 페이지 로드마다 이 튐을 겪는다.
-    (<code>ns-header</code> 는 예약 높이가 상태에 따라 바뀌지 않으므로 영향이 없다.)
+    설정한다. 서버 렌더 시점에는 실행되지 않으므로 Next 가 내려주는 HTML 에는
+    <code>open</code> 속성이 없다. 그래서 <code>&lt;Sidebar&gt;</code> shim 이
+    <code>data-ns-open</code> 을 함께 내보낸다 — 반응형 프로퍼티가 아닌 이름은
+    <code>createComponent</code> 가 가로채지 않고 서버 마크업에 그대로 실린다.
+    <code>tokens.css</code> 의 <code>ns-sidebar:not(:defined)</code> 예약이 그것을 읽으므로
+    <strong>하이드레이션 전후로 너비가 튀지 않는다.</strong>
   </p>
   <p>
-    우회하려면 <code>&lt;NsSidebar&gt;</code> 를 같은 상태로 너비를 지정한
-    <code>&lt;div&gt;</code> 로 감싸고, 사이드바 자신은 그 안을 채우게 한다.
+    <strong>소비자가 할 일은 없다.</strong> <code>NsSidebar</code> 를 직접 쓰지 않고
+    <code>Sidebar</code> 를 쓰면 된다. 0.1.x 에서 안내하던 래퍼 <code>&lt;div&gt;</code>
+    우회는 더 이상 필요 없다 — 제거해도 되고 두어도 동작한다.
+    (<code>ns-header</code> 는 예약 높이가 상태에 따라 바뀌지 않으므로 원래 영향이 없다.)
   </p>
   <script type="text/plain">
-    <div style={{ width: open ? "15rem" : "4rem", flex: "none" }}>
-      <NsSidebar open={open} style={{ width: "100%" }}
-                 onNsNavigate={(e) => router.push(e.detail.href)}>
-        {/* ... */}
-      </NsSidebar>
-    </div>
+    import { Sidebar } from "@neosimplix/common-ui/react";
+
+    <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
+      {/* ... */}
+    </Sidebar>
   </script>
 
   <h3>React 18 (Vite 등)</h3>
@@ -1655,7 +1656,8 @@
   <h3>프로퍼티</h3>
   <table>
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>open</code></td><td><code>open</code></td><td>boolean</td><td><code>false</code></td><td>펼침 여부. 접히면 <code>--sidebar-width-collapsed</code>(4rem) 레일만 남는다</td></tr>
+    <tr><td><code>open</code></td><td><code>open</code></td><td>boolean</td><td><code>false</code></td><td>펼침 여부. 접히면 <code>--ns-sidebar-width-collapsed</code>(4rem) 레일만 남는다</td></tr>
+    <tr><td>—</td><td><code>data-ns-open</code></td><td>속성 전용</td><td>없음</td><td>SSR 통로. <code>&lt;Sidebar&gt;</code> shim 이 채운다. 정의 전 레이아웃 예약만 읽는다 — 컴포넌트는 보지 않는다</td></tr>
   </table>
 
   <h3>slot</h3>
@@ -1697,13 +1699,13 @@
 
   <h3>React</h3>
   <script type="text/plain">
-    import { NsSidebar, NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
+    import { Sidebar, NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
 
-    <NsSidebar open={open} onNsNavigate={(e) => router.push(e.detail.href)}>
+    <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
       <NsNavGroup heading="프로젝트">
         <NsNavItem href="/a" label="프로젝트 A" badge="PA" active={pathname === "/a"} />
       </NsNavGroup>
-    </NsSidebar>
+    </Sidebar>
   </script>
 
   <h2 id="ns-nav-group">ns-nav-group</h2>

@@ -121,10 +121,24 @@
   커스텀 엘리먼트는 customElements.define 이전까지 display: inline 이고
   크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
   light DOM 선택자라 upgrade 전에도 적용된다.
+
+  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
+  정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
+  프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
+  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. 정의 이후의 프레임은
+  useLayoutEffect 가 페인트 전에 잡으므로 애초에 예약이 볼 필요가 없다.
+
+  data-ns-open 은 React 소비자를 위한 통로다. createComponent 가 반응형
+  프로퍼티만 가로채므로, 반응형이 아닌 이 이름은 서버 마크업에 그대로 실린다.
+  src/react/tags/Sidebar.tsx 가 채운다. 순수 HTML 소비자는 마크업에 open 을
+  직접 쓰므로 첫 짝이 걸린다.
 */
-ns-header  { display: block; height: var(--ns-header-height); }
-ns-sidebar { display: block; width: var(--ns-sidebar-width); }
-ns-sidebar:not([open]) { width: var(--ns-sidebar-width-collapsed); }
+ns-header { display: block; height: var(--ns-header-height); }
+
+ns-sidebar                             { display: block; }
+ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); }
+ns-sidebar:not(:defined)[open],
+ns-sidebar:not(:defined)[data-ns-open] { width: var(--ns-sidebar-width); }
 
 /*
   ns-icon 은 값을 --ns-icon-size 에서 받는다. 이 요소 선택자만으로는 문서 트리의

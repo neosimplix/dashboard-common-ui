@@ -7,7 +7,7 @@
   이 파일은 "@neosimplix/common-ui/react" 를 실제로 설치해 쓰는 소비자
   프로젝트를 흉내 내어, tsconfig.consumer.json 을 통해 별도로 타입 검사된다.
 
-  아래 JSX 의 뼈대(NsHeader / NsSidebar / NsNavGroup / NsNavItem)는 index.html 의
+  아래 JSX 의 뼈대(NsHeader / Sidebar / NsNavGroup / NsNavItem)는 index.html 의
   "환경별 연동 → Next.js (App Router)" 절 예시를 옮긴 것이고, 그 안에 다른 절의
   React 예시(Dialog · Field · Select · Checkbox · Card · NsTable · NsPagination
   등)를 한 셸 안에 모아 넣었다. next/navigation, UserMenu 등 Next 전용 부분만
@@ -36,11 +36,11 @@ import {
   NsNavGroup,
   NsNavItem,
   NsPagination,
-  NsSidebar,
   NsSkeleton,
   NsTable,
   PageHeading,
   Select,
+  Sidebar,
   Textarea,
 } from "../src/react/index.js";
 import type { NsDialogCloseReason, NsSortDetail } from "../src/react/index.js";
@@ -87,7 +87,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </NsHeader>
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-        <NsSidebar open={open} onNsNavigate={(e) => router.push(e.detail.href)}>
+        <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
           <NsNavGroup heading="프로젝트" onNsNavigate={(e) => log(e.detail.label)}>
             <NsNavItem
               href="/a"
@@ -97,7 +97,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               onNsNavigate={(e) => log(e.detail.href)}
             />
           </NsNavGroup>
-        </NsSidebar>
+        </Sidebar>
         <main>
           <Card>
             <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />

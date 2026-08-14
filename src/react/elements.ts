@@ -51,11 +51,15 @@ export const NsIcon = createComponent({
 });
 
 /*
-  ns-navigate 는 composed: true 로 올라오므로 사이드바와 그룹에서도
-  받을 수 있다. 항목마다 핸들러를 다는 대신 사이드바에서 한 번만 듣는
-  쪽이 편해서 세 곳 모두에 매핑해 둔다.
+  ns-navigate 는 composed: true 로 올라오므로 사이드바와 그룹에서도 받을 수
+  있다. 항목마다 핸들러를 다는 대신 사이드바에서 한 번만 듣는 쪽이 편해서
+  세 곳 모두에 매핑해 둔다.
+
+  소비자에게 직접 노출하지 않는다. tags/Sidebar.tsx 가 감싸서 SSR 마크업에
+  data-ns-open 을 싣는다 — createComponent 는 반응형 프로퍼티인 open 을
+  useLayoutEffect 에서만 설정하므로 서버 HTML 에 남지 않는다.
 */
-export const NsSidebar = createComponent({
+export const NsSidebarBase = createComponent({
   react: React,
   tagName: "ns-sidebar",
   elementClass: NsSidebarElement,
