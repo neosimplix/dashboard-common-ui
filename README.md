@@ -4,7 +4,7 @@ Next.js · React 18/19 · 순수 HTML 에서 동일하게 쓰는 대시보드 �
 
 - `ns-header` — 토글 버튼, 프로젝트 이름, 우측 `actions` slot
 - `ns-sidebar` — 접으면 좌측 레일이 남는 사이드바
-- `ns-nav-group` / `ns-nav-item` — 네비게이션 그룹과 항목
+- `ns-nav-group` / `ns-nav-item` — 네비게이션 그룹과 항목. 항목 좌측은 `leading` slot 이라 아이콘을 넣을 수 있고, 비우면 `badge` 가 대신 보인다
 
 ## 설치
 
@@ -50,19 +50,35 @@ CSS 두 개를 모두 불러온다.
 
 ## 다크모드
 
-**소비자가 할 일이 없다.** `tokens.css` 를 불러오면 OS 설정을 따라 셸이 함께 어두워진다. 값은 토큰마다 `light-dark()` 한 쌍으로 들어 있고, 신호는 `color-scheme` 하나다. `color-scheme` 은 상속되므로 컴포넌트 shadow 안까지 도달하고 네이티브 폼 컨트롤·스크롤바도 함께 뒤집힌다.
+**기본값은 OS 를 따르는 것이다.** `tokens.css` 가 `:root` 에 `color-scheme: light dark` 를 선언하고, 값은 토큰마다 `light-dark()` 한 쌍으로 들어 있다. `color-scheme` 은 상속되므로 컴포넌트 shadow 안까지 도달하고 네이티브 폼 컨트롤·스크롤바도 함께 뒤집힌다.
 
-명시 지정이 필요하면 `<html>` 에 `data-theme` 을 세운다. 지우면 다시 OS 설정을 따른다.
+**이 업그레이드에서 소비자 코드 없이 화면이 바뀌는 부분은 여기 하나다.** 라이트 전용으로 만든 앱도 사용자의 OS 가 다크면 셸·폼 컨트롤·스크롤바가 어두워진다 — 앱 본문만 밝은 채로 남는다. 나머지 변경은 고치지 않으면 타입 오류나 무효한 속성으로 드러나지만, 이것은 아무 신호 없이 모양만 달라진다.
+
+모양을 고정하려면 `:root`(`<html>`)에 `data-theme` 을 세운다. **이것이 결정적인 옵트아웃이다** — 속성 선택자라 특정도가 높아 임포트 순서와 무관하게 이긴다.
+
+```html
+<html data-theme="light">   <!-- 항상 라이트. OS 다크모드를 무시한다 -->
+```
 
 ```js
 document.documentElement.dataset.theme = "dark";   // 명시 지정
 delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 ```
 
-## 0.2.0 에서 깨지는 것 둘
+**자기 CSS 에서 `color-scheme` 을 세우고 있다면 지우고 `data-theme` 으로 옮긴다.** 소비자의 `:root { color-scheme: … }` 와 `tokens.css` 의 `:root` 는 특정도가 같아 승자를 임포트 순서가 정한다 — 토큰 이름에서 없앤 그 종속이 이 한 프로퍼티에는 그대로 남아 있다. `color-scheme` 은 이름을 바꿀 수 없는 표준 프로퍼티라 `--ns-` 같은 이름공간을 줄 수 없기 때문이다. 근거는 `docs/gotchas.md` 의 "`color-scheme` 에는 이름공간이 없어 접두사로 막을 수 없다" 에 있다.
 
-- **토큰 이름에 `--ns-` 접두사가 붙는다.** `var(--space-3)` → `var(--ns-space-3)`. 옛 이름을 계속 쓰려면 위의 `aliases.css` 를 임포트한다.
-- **React 의 `NsSidebar` 가 `Sidebar` 로 바뀐다.** `import { Sidebar }` 로 고치고, 프롭은 `onNsNavigate={(e) => …e.detail}` 대신 `onNavigate={(detail) => …}` 다. 이 shim 이 SSR 너비 튐을 없애므로 사이드바를 감싸던 래퍼 `<div>` 와 거기 복제해 둔 너비·트랜지션 값을 지운다.
+## 0.1.5 → 0.2.0 이관
+
+깨지는 변경이 둘, 코드 변경 없이 화면이 바뀌는 것이 하나, 새로 생긴 것이 하나다. 절차와 예시는 `index.html` 의 **0.1.5 → 0.2.0 이관** 절에 있다.
+
+| 무엇 | 성격 | 해야 할 일 |
+|---|---|---|
+| 토큰 이름에 `--ns-` 접두사 | **breaking** | `var(--space-3)` → `var(--ns-space-3)` 로 참조를 고치거나, 옛 이름을 계속 쓰려면 위의 `aliases.css` 를 임포트한다 |
+| React 의 `NsSidebar` → `Sidebar` | **breaking** | `import { Sidebar }` 로 고치고, 프롭은 `onNsNavigate={(e) => …e.detail}` 대신 `onNavigate={(d) => …d}` 다 — 이벤트 객체가 아니라 `detail` 이 그대로 들어온다 |
+| 다크모드 | 화면이 바뀐다 | 없다. 원하지 않으면 위의 `<html data-theme="light">` 로 고정한다 |
+| `ns-nav-item` 의 `leading` slot | 추가 | 없다. 원하면 배지 자리에 아이콘을 넣는다. 기존 `badge` 사용은 그대로 동작한다 |
+
+**사이드바를 감싸던 래퍼 `<div>` 와 거기 복제해 둔 너비·트랜지션 값은 더 이상 필요 없다.** `Sidebar` shim 이 `data-ns-open` 을 서버 마크업에 실어 같은 일을 하기 때문이다. **제거해도 되고 그대로 두어도 동작한다** — 제거하면 라이브러리 내부 상수(`15rem`/`4rem`, 트랜지션 지속시간)를 소비자가 복제해 두는 상태가 함께 없어진다.
 
 ## 문서 보기
 
