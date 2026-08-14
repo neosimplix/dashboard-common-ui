@@ -172,7 +172,7 @@
     :focus 가 아니라 :focus-visible 이라 마우스 클릭에는 링이 뜨지 않는다.
 
     offset 이 양수인 이유: 음수로 테두리 안쪽에 그리면 .ns-button--solid 의
-    배경이 --color-accent 라 같은 색 링이 보이지 않는다. 밖에 그리면 어느
+    배경이 --ns-color-accent 라 같은 색 링이 보이지 않는다. 밖에 그리면 어느
     변형에서든 페이지 표면 위에 놓여 대비가 유지된다.
 
     .ns-table__sort 도 여기 있다 — th 안의 텍스트 버튼이라 배경이 없고,

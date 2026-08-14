@@ -29,7 +29,7 @@
 - **Light DOM 컴포넌트는 조회 지점마다 소유를 확인한다.** `el.closest("ns-x") === this`. 경계가 없어 중첩 인스턴스의 요소가 서로에게 보인다.
 - **소비자 DOM 의 속성을 관리하면 `MutationObserver` 가 필요하다.** `updated()` 는 반응형 프로퍼티 변경만 본다. `{ childList: true, subtree: true }` 를 쓰고 **`attributes` 는 켜지 않는다** — 동기화가 `setAttribute` 를 쓰므로 자기 쓰기에 재발동해 루프가 된다.
 - **SSR 에 보여야 하는 상태는 반응형 프로퍼티가 아닌 이름으로 내보낸다.** `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 `useLayoutEffect` 에서만 설정하므로 서버 마크업에 남지 않는다. shim 이 `data-ns-*` 속성을 함께 렌더한다. (`ns-sidebar` 의 `data-ns-open`)
-- **정의 전 레이아웃 예약은 `:not(:defined)` 로 경계를 긋는다.** 상태 속성만 보면 정의 이후까지 걸려 하이드레이션 튐의 원인이 된다.
+- **`:not(:defined)` 경계는 상태에 따라 달라지는 예약에만 붙인다.** 상태를 보는 예약이 정의 이후까지 계속 걸리면 shadow 의 `:host` 와 다퉈 하이드레이션 튐이 된다. (`ns-sidebar` 의 너비, `ns-dialog` 의 `display: none`) **조건 없는 예약은 그칠 이유가 없으므로 경계를 긋지 않는다** — `ns-header`·`ns-page-heading`·`ns-skeleton` 의 `display`, `ns-icon` 의 크기가 그렇다. 특히 `ns-icon { width: var(--ns-icon-size) }` 는 정의 이후에도 걸려야 소비자의 `ns-icon { width: … }` override 가 `:host` 를 이기는 지점이 된다.
 - **둘 중 하나만 보여야 하는 자리는 슬롯 폴백으로 만든다.** 프로퍼티 두 개로 만들면 소비자가 분기해야 하고, 분기해야 한다는 사실을 문서로만 알릴 수 있다. (`ns-nav-item` 의 `leading` 슬롯과 `badge`)
 
 ## 스타일
@@ -40,7 +40,8 @@
 - **`invalid` 는 클래스가 아니라 `[aria-invalid="true"]` 로 스타일한다.** `--invalid` 변형 클래스를 만들지 않는다.
 - **`controls.css` 는 `@layer ns-controls` 로 감싼다.** 감싸지 않으면 소비자의 Tailwind 유틸 오버라이드가 막힌다.
 - **shadow 컴포넌트는 `controls.css` 를 재사용할 수 없다.** 전역 스타일시트는 shadow 안에 도달하지 않는다. `tokens.css` 의 요소 선택자(정의 전 레이아웃 예약)도 같다 — 둘 다 문서 트리에만 적용된다. 필요한 최소한만 그 컴포넌트의 shadow 스타일에 다시 적는다.
-- **shadow 경계를 넘겨야 하는 값은 `--ns-` 커스텀 프로퍼티로 내려보낸다.** 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지 도달한다. (`--ns-icon-size`, `--ns-dialog-width`, `--ns-label-display`)
+- **shadow 경계를 넘겨야 하는 값은 선택자가 아니라 커스텀 프로퍼티로 내려보낸다.** 문서의 요소 선택자는 shadow 안에 닿지 않지만, 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지 도달한다. (`--ns-icon-size`, `--ns-dialog-width`, `--ns-label-display`)
+- **다크모드 값은 토큰마다 `light-dark()` 한 쌍으로 둔다.** `@media (prefers-color-scheme: dark)` 안에 선언 블록을 복제하지 않는다. 신호는 `:root` 의 `color-scheme` 하나이고, `[data-theme]` 은 그 한 프로퍼티만 덮는다.
 - **모든 값이 토큰이어야 하는 것은 아니다.** 토큰으로 뽑는 기준은 **두 곳 이상에 나타나거나 테마로 바뀔 값**이다. 한 곳에만 있고 변할 이유가 없는 구조적 상수는 리터럴로 둔다 — hairline `1px`, 체크박스 `1rem`, 비활성 `opacity: .6`. 사용처가 하나인 토큰을 만드는 것은 추측이다.
 
 ## 빌드

@@ -56,9 +56,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   // ns-navigate 는 composed 라 그룹에서도, 항목에서도 들을 수 있다 — 아래는
-  // 그 두 지점 모두에서 detail 을 실제로 읽어, 네 래퍼 전부의 이벤트 타입이
-  // 이 파일에서 검사되게 한다(사이드바에서 한 번만 듣는 것도 여전히 유효한
-  // 패턴이다. index.html 의 각 컴포넌트 절 참고).
+  // 그 두 지점 모두에서 detail 을 실제로 읽어 NsNavGroup·NsNavItem 두 래퍼의
+  // 이벤트 타입을 검사한다. 같은 이벤트를 가진 세 번째 래퍼 NsSidebarBase 는
+  // 비공개라 이 파일이 닿을 수 없고, 그쪽은 src/react/tags/Sidebar.tsx 의 shim 이
+  // onNsNavigate={(e) => onNavigate?.(e.detail)} 로 같은 방어를 한다.
+  // (사이드바에서 한 번만 듣는 것도 여전히 유효한 패턴이다. index.html 의 각
+  // 컴포넌트 절 참고.)
   const log = (msg: string) => console.log(msg);
 
   const [dialogOpen, setDialogOpen] = useState(false);

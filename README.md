@@ -38,7 +38,7 @@ CSS 두 개를 모두 불러온다.
 
 **새 프로젝트는 임포트하지 않는다.** 이 파일은 무접두사 이름을 문서 `:root` 에 다시 정의하므로 위에서 없앤 이름 충돌을 의도적으로 되살린다.
 
-브라우저 요구사항은 Chrome 123 · Safari 17.5 · Firefox 120 이상이다. `light-dark()` 가 기준선이다.
+브라우저 요구사항은 **Chrome 123 · Safari 17.5 · Firefox 121** 이상이다. Chrome·Safari 는 `light-dark()`, Firefox 는 `controls.css` 가 쓰는 `:has()` 가 하한을 정한다.
 
 **Tailwind 를 쓰면 레이어 순서를 선언해야 한다.** `controls.css` 는 `@layer ns-controls` 로 감싸 배포되므로, 이 한 줄이 없으면 Tailwind preflight 가 클래스 스타일을 지운다.
 
@@ -46,6 +46,17 @@ CSS 두 개를 모두 불러온다.
 /* Tailwind import 보다 위 */
 @layer theme, base, ns-controls, components, utilities;
 @import "tailwindcss";
+```
+
+## 다크모드
+
+**소비자가 할 일이 없다.** `tokens.css` 를 불러오면 OS 설정을 따라 셸이 함께 어두워진다. 값은 토큰마다 `light-dark()` 한 쌍으로 들어 있고, 신호는 `color-scheme` 하나다. `color-scheme` 은 상속되므로 컴포넌트 shadow 안까지 도달하고 네이티브 폼 컨트롤·스크롤바도 함께 뒤집힌다.
+
+명시 지정이 필요하면 `<html>` 에 `data-theme` 을 세운다. 지우면 다시 OS 설정을 따른다.
+
+```js
+document.documentElement.dataset.theme = "dark";   // 명시 지정
+delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 ```
 
 ## 0.2.0 에서 깨지는 것 둘

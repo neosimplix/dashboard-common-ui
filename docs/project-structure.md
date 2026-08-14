@@ -48,7 +48,7 @@
 ```
 common-ui/
 ├── src/
-│   ├── tokens/tokens.css              디자인 토큰. Tailwind 비의존. 손으로 쓰는 정적 파일
+│   ├── tokens/tokens.css              디자인 토큰 + 다크모드 신호. Tailwind 비의존. 손으로 쓰는 정적 파일
 │   ├── controls/controls.css          .ns-* 클래스. @layer ns-controls. 손으로 쓰는 정적 파일
 │   ├── internal/
 │   │   ├── register.ts                SSR 안전 customElements.define
@@ -104,6 +104,10 @@ dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 **`aliases.css` 는 기본이 아니다.** 무접두사 이름을 문서 `:root` 에 다시 정의하므로, 임포트하면 0.1.5 의 이름 충돌이 그대로 돌아온다. 그게 그 파일의 목적이다 — 이유는 `docs/gotchas.md` 의 "토큰 이름을 소비자와 공유하면 라이브러리가 캐스케이드에 종속된다" 에 있다.
 
 **`tokens.css` 는 어느 환경에서든 반드시 불러와야 한다.** 컴포넌트 스타일은 이 파일이 정의하는 CSS 변수를 폴백 없이 참조한다. 빠지면 레이아웃이 무너지고 콘솔에 경고가 뜬다.
+
+**다크모드는 `tokens.css` 를 불러오는 것으로 끝난다(0.2.0).** 값은 토큰마다 `light-dark()` 한 쌍이고 신호는 `:root` 의 `color-scheme` 하나다. `data-theme` 이 없으면 OS 설정을 따르고, `light`/`dark` 를 세우면 그것이 이긴다. `color-scheme` 은 상속되므로 컴포넌트 shadow 안과 네이티브 폼 컨트롤·스크롤바까지 함께 뒤집힌다. **`@media (prefers-color-scheme: dark)` 선언 블록을 복제하지 않는 이유**는 `docs/gotchas.md` 의 "다크모드를 미디어쿼리 블록으로 만들면 값이 두 벌이 된다" 에 있다.
+
+**브라우저 하한은 Chrome 123 · Safari 17.5 · Firefox 121 이다.** Chrome·Safari 는 `light-dark()`, Firefox 는 `controls.css` 의 `:has()` 가 정한다.
 
 **Tailwind 를 쓰는 소비자는 레이어 순서를 한 줄 선언해야 한다.** `@layer theme, base, ns-controls, components, utilities;` 를 Tailwind import 위에 둔다. 빠지면 preflight 가 클래스 스타일을 지우고, **JS 로 감지할 수 없다.**
 

@@ -22,7 +22,9 @@
   color-scheme 은 상속되므로 컴포넌트 shadow 안까지 도달한다. 네이티브 폼
   컨트롤·스크롤바·기본 배경도 함께 뒤집힌다.
 
-  요구 브라우저: Chrome 123 · Safari 17.5 · Firefox 120 이상.
+  요구 브라우저: Chrome 123 · Safari 17.5 · Firefox 121 이상.
+  light-dark() 자체는 Firefox 120 부터지만, controls.css 가 이미 쓰는 :has() 가
+  Firefox 121 이라 이 패키지의 하한은 121 이다. 다크모드가 하한을 올린 것이 아니다.
 */
 :root                     { color-scheme: light dark; }
 :root[data-theme="light"] { color-scheme: light; }
