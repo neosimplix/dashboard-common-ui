@@ -12,33 +12,49 @@
   색 값은 Tailwind v4 기본 팔레트(oklch)에서 그대로 가져왔다. 이 파일은
   Tailwind 에 의존하지 않으므로 순수 HTML 에서도 동작한다.
 */
+/*
+  다크모드 신호.
+
+  값은 아래 :root 에서 light-dark() 한 줄에 둔다. 미디어쿼리 안팎으로 선언을
+  복제하면 값이 두 곳에 존재하게 되고, 어긋나도 아무도 모른다 — 이 파일이
+  var() 폴백을 금지하는 것과 같은 이유다.
+
+  color-scheme 은 상속되므로 컴포넌트 shadow 안까지 도달한다. 네이티브 폼
+  컨트롤·스크롤바·기본 배경도 함께 뒤집힌다.
+
+  요구 브라우저: Chrome 123 · Safari 17.5 · Firefox 120 이상.
+*/
+:root                     { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
 :root {
   /* 표면 · 전경 · 경계 */
-  --ns-color-surface: #fff;
-  --ns-color-surface-sunken: oklch(98.5% 0 0);            /* zinc-50 */
-  --ns-color-surface-hover: oklch(96.7% 0.001 286.375);   /* zinc-100 */
-  --ns-color-line: oklch(92% 0.004 286.32);               /* zinc-200 */
-  --ns-color-line-strong: oklch(87.1% 0.006 286.286);     /* zinc-300 */
-  --ns-color-overlay: rgb(0 0 0 / .4);
+  --ns-color-surface:        light-dark(#fff, oklch(21% 0.006 285.885));
+  --ns-color-surface-sunken: light-dark(oklch(98.5% 0 0), oklch(14.1% 0.005 285.823));
+  --ns-color-surface-hover:  light-dark(oklch(96.7% 0.001 286.375), oklch(27.4% 0.006 286.033));
+  --ns-color-line:           light-dark(oklch(92% 0.004 286.32), oklch(27.4% 0.006 286.033));
+  --ns-color-line-strong:    light-dark(oklch(87.1% 0.006 286.286), oklch(37% 0.013 285.805));
+  --ns-color-overlay:        light-dark(rgb(0 0 0 / .4), rgb(0 0 0 / .6));
 
-  --ns-color-fg: oklch(21% 0.006 285.885);                /* zinc-900 */
-  --ns-color-fg-body: oklch(37% 0.013 285.805);           /* zinc-700 */
-  --ns-color-fg-muted: oklch(55.2% 0.016 285.938);        /* zinc-500 */
-  --ns-color-fg-subtle: oklch(70.5% 0.015 286.067);       /* zinc-400 */
+  --ns-color-fg:        light-dark(oklch(21% 0.006 285.885), oklch(98.5% 0 0));
+  --ns-color-fg-body:   light-dark(oklch(37% 0.013 285.805), oklch(87.1% 0.006 286.286));
+  --ns-color-fg-muted:  light-dark(oklch(55.2% 0.016 285.938), oklch(70.5% 0.015 286.067));
+  --ns-color-fg-subtle: light-dark(oklch(70.5% 0.015 286.067), oklch(55.2% 0.016 285.938));
 
   /* 액센트 — 브랜드 컬러가 정해지면 이 네 줄만 교체한다 */
-  --ns-color-accent: oklch(21% 0.006 285.885);            /* zinc-900 */
-  --ns-color-accent-hover: oklch(27.4% 0.006 286.033);    /* zinc-800 */
-  --ns-color-accent-fg: #fff;
-  --ns-color-disabled: oklch(87.1% 0.006 286.286);        /* zinc-300 */
+  --ns-color-accent:       light-dark(oklch(21% 0.006 285.885), oklch(98.5% 0 0));
+  --ns-color-accent-hover: light-dark(oklch(27.4% 0.006 286.033), oklch(92% 0.004 286.32));
+  --ns-color-accent-fg:    light-dark(#fff, oklch(21% 0.006 285.885));
+  --ns-color-disabled:     light-dark(oklch(87.1% 0.006 286.286), oklch(37% 0.013 285.805));
 
   /* 상태 */
-  --ns-color-danger: oklch(57.7% 0.245 27.325);           /* red-600 */
-  --ns-color-danger-surface: oklch(97.1% 0.013 17.38);    /* red-50 */
-  --ns-color-warn: oklch(55.5% 0.163 48.998);             /* amber-700 */
-  --ns-color-warn-surface: oklch(98.7% 0.022 95.277);     /* amber-50 */
-  --ns-color-success: oklch(59.6% 0.145 163.225);         /* emerald-600 */
-  --ns-color-success-surface: oklch(97.9% 0.021 166.113); /* emerald-50 */
+  --ns-color-danger:          light-dark(oklch(57.7% 0.245 27.325), oklch(70.4% 0.191 22.216));
+  --ns-color-danger-surface:  light-dark(oklch(97.1% 0.013 17.38), oklch(25.8% 0.092 26.042));
+  --ns-color-warn:            light-dark(oklch(55.5% 0.163 48.998), oklch(82.8% 0.189 84.429));
+  --ns-color-warn-surface:    light-dark(oklch(98.7% 0.022 95.277), oklch(27.9% 0.077 45.635));
+  --ns-color-success:         light-dark(oklch(59.6% 0.145 163.225), oklch(76.5% 0.177 163.223));
+  --ns-color-success-surface: light-dark(oklch(97.9% 0.021 166.113), oklch(26.2% 0.051 172.552));
 
   /* 간격 — 4px 스케일 */
   --ns-space-1: .25rem;
@@ -79,7 +95,9 @@
   --ns-control-height-md: 2.5rem;
 
   /* 기타 */
-  --ns-elevation-card: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+  --ns-elevation-card:
+    0 1px 3px 0 light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4)),
+    0 1px 2px -1px light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4));
   --ns-transition-fast: 150ms;
   --ns-transition-ease: cubic-bezier(.4, 0, .2, 1);
 
@@ -111,9 +129,6 @@
   --ns-dialog-width: 32rem;
   --ns-dialog-margin: var(--ns-space-8);
 }
-
-/* 다크모드는 이번 범위 밖. 나중에 이 블록만 채우면 된다. */
-[data-theme="dark"] { }
 
 /*
   정의 전 레이아웃 예약.

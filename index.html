@@ -275,11 +275,6 @@
     토큰 이름은 <code>dashboard-shell/app/globals.css</code> 와 동일하다. 접두사가 없으므로
     이미 그 이름을 쓰던 코드는 그대로 동작한다.
   </p>
-  <p>
-    <strong>다크 모드는 아직 구현되지 않았다.</strong> <code>tokens.css</code> 는
-    <code>[data-theme="dark"]</code> 블록을 빈 채로 자리만 잡아 두었다 — 값을 채우는 것은
-    이번 범위 밖이다.
-  </p>
   <p>브랜드 색을 바꾸려면 <code>:root</code> 에서 다시 정의한다. 문서 쪽 선언이 항상 이긴다.</p>
   <script type="text/plain">
     :root {
@@ -291,6 +286,26 @@
   <div class="demo block" style="padding: var(--ns-space-4)">
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--ns-space-2)"></div>
   </div>
+
+  <h3>다크모드</h3>
+  <p>
+    값은 <code>light-dark()</code> 한 줄에 둘 다 들어 있고, 신호는
+    <code>color-scheme</code> 하나다. <code>data-theme</code> 이 없으면 OS 설정을 따르고,
+    <code>light</code>/<code>dark</code> 를 세우면 그것이 이긴다.
+    <code>color-scheme</code> 은 상속되므로 컴포넌트 shadow 안까지 도달하고,
+    네이티브 폼 컨트롤·스크롤바도 함께 뒤집힌다.
+  </p>
+  <p>요구 브라우저: Chrome 123 · Safari 17.5 · Firefox 120 이상.</p>
+  <script type="text/plain">
+    document.documentElement.dataset.theme = "dark";   // 명시 지정
+    delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
+  </script>
+  <p>
+    <button class="ns-button ns-button--outline ns-button--sm" id="theme-toggle">
+      테마 전환
+    </button>
+    <span id="theme-log">현재: OS 설정</span>
+  </p>
 
   <h2 id="ns-button">.ns-button</h2>
   <p>
@@ -2026,6 +2041,21 @@
       cell.title = root.getPropertyValue(name).trim();
       swatches.append(cell);
     }
+  }
+
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeLog = document.getElementById("theme-log");
+  if (themeToggle && themeLog) {
+    // OS 설정 → light → dark → OS 설정 …
+    const cycle = [undefined, "light", "dark"];
+    let i = 0;
+    themeToggle.addEventListener("click", () => {
+      i = (i + 1) % cycle.length;
+      const next = cycle[i];
+      if (next) document.documentElement.dataset.theme = next;
+      else delete document.documentElement.dataset.theme;
+      themeLog.textContent = `현재: ${next ?? "OS 설정"}`;
+    });
   }
 
   const fullDemo = document.getElementById("full-demo");
