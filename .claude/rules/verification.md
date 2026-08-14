@@ -36,6 +36,10 @@ grep -c '<script>' index.html                      # 헬퍼 하나 = 1
 grep -n '</script>' index.html \
   | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='   # 출력 없어야 정상
 grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
+grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
+  | sed -E 's/.*id="([^"]*)"/\1/' | sort | uniq -d            # 출력 없어야 정상
 ```
 
 세 번째가 중요하다. 이벤트가 `composed` 라 데모에서 발생한 것도 `document` 까지 올라온다. 리스너는 자기가 소유한 엘리먼트에만 붙인다.
+
+네 번째는 **id 중복**이다. `getElementById` 는 문서 순서상 첫 번째를 주므로, 다른 절이 이미 쓴 이름을 쓰면 엉뚱한 요소를 받고 `querySelector(...).addEventListener` 에서 예외가 난다. 이 파일의 배선은 **`<script>` 하나**라 그 지점부터 아래 전부가 실행되지 않는다. **화면은 멀쩡해 보이므로 육안 확인 경로가 이 결함의 피해자다** — 스스로를 검증할 수 없다. 새 절의 id 에는 절 이름을 접두사로 붙인다(`table-select-demo`).
