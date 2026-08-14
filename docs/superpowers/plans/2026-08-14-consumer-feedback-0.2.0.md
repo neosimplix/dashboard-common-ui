@@ -233,7 +233,7 @@ git commit -m "refactor(tokens): 공개 토큰 47개에 --ns- 접두사를 붙�
 **이 검사가 필요한 이유.** 토큰 참조는 CSS 문자열이라 `tsc` 가 보지 못한다. 다음에 누가 `var(--color-line)` 을 다시 적어도 타입 검사도 빌드도 통과하고, 화면에서는 그 속성만 조용히 무효가 된다.
 
 **두 규칙.**
-1. `src/**/*.ts` 와 `src/controls/controls.css` 의 모든 `var(--x)` 는 `--ns-` 로 시작해야 한다.
+1. `src/**/*.ts`, `src/controls/controls.css`, `src/tokens/tokens.css` 의 모든 `var(--x)` 는 `--ns-` 로 시작해야 한다.
 2. 이름이 리터럴이면 `tokens.css` 에 정의돼 있거나 내부 배선 화이트리스트에 있어야 한다. `ns-skeleton.ts` 의 `` `var(--ns-radius-${this.radius})` `` 처럼 조립되는 이름은 ②를 건너뛴다 — 값을 알 수 없다.
 
 - [ ] **Step 1: 검사 스크립트를 쓴다**
@@ -253,6 +253,12 @@ git commit -m "refactor(tokens): 공개 토큰 47개에 --ns- 접두사를 붙�
 
   ②를 건너뛰는 경우가 하나 있다. ns-skeleton.ts 는 `var(--ns-radius-${this.radius})`
   로 이름을 조립하므로 정적으로 확인할 수 없다. 이름에 ${ 가 있으면 ①만 본다.
+
+  tokens.css 자신도 검사 대상이다. 파생 토큰(--ns-page-padding-x 등)과 정의 전
+  레이아웃 예약 규칙(ns-header 등)이 그 안에서 var() 로 다른 토큰을 참조하므로,
+  대상에서 빠지면 거기서 접두사를 빠뜨려도 잡히지 않는다. tokens.css 는 정의와
+  참조를 동시에 담으므로 규칙 ②는 자기 자신과도 일관돼야 한다 — 참조하는 이름은
+  전부 같은 파일에 정의돼 있어야 한다.
 
   한계: 참조가 규칙을 지키는지만 본다. 그 토큰이 화면에서 옳은 값인지는
   index.html 육안 확인의 몫이다.
@@ -280,7 +286,7 @@ const defined = new Set(
   [...tokens.matchAll(/(?:^|;)\s*(--[a-z0-9-]+)\s*:/gm)].map((m) => m[1]),
 );
 
-const targets = [...walk("src"), "src/controls/controls.css"];
+const targets = [...walk("src"), "src/controls/controls.css", "src/tokens/tokens.css"];
 
 const badPrefix = [];
 const unknown = [];
