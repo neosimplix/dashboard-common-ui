@@ -101,11 +101,14 @@ export class NsPagination extends LitElement {
   #warnedTotal = false;
 
   /*
-    방금 활성화한 컨트롤. 다음 업데이트 뒤에 같은 것으로 포커스를 되돌린다.
-    번호는 그 번호 자신이 정체성이고, 이전·다음은 "prev"/"next" 다.
-    null 이면 되돌릴 것이 없다. updated() 에서 한 번 쓰고 지운다.
+    방금 활성화한 컨트롤과 그것이 **요청한 페이지**. 다음 업데이트 뒤에 같은
+    컨트롤로 포커스를 되돌린다. control 이 번호면 그 번호 자신이 정체성이고,
+    이전·다음은 "prev"/"next" 다. null 이면 되돌릴 것이 없다.
+
+    page 를 함께 들고 있는 이유는 updated() 주석에 있다 — 요청이 실제로
+    반영됐는지 확인하지 않으면 이 의도가 남아 나중에 포커스를 훔친다.
   */
-  #refocus: number | "prev" | "next" | null = null;
+  #refocus: { control: number | "prev" | "next"; page: number } | null = null;
 
   get #controlled(): boolean {
     return this.page !== undefined;
@@ -167,18 +170,34 @@ export class NsPagination extends LitElement {
   }
 
   /*
-    비제어 초기값을 seed 한다. 덮어쓰지 않는다 — Lit 은 첫 업데이트를
-    마이크로태스크로 미루므로, 생성과 같은 태스크에서 프로퍼티를 만진 코드가
-    여기보다 먼저 실행된다.
+    비제어 초기값을 seed 한다. **firstUpdated 가 아니라 willUpdate 다.**
+
+    Lit 의 첫 업데이트 순서는 willUpdate → render → firstUpdated → updated 다.
+    firstUpdated 에서 seed 하면 그때 이미 첫 render 가 끝나 있고, 아무도 두 번째
+    업데이트를 요청하지 않으므로 default-page="4" 인데 화면은 1을 현재로 그린
+    상태가 남는다(내부 상태만 4다 — 첫 "다음" 클릭이 5가 아니라 2로 간다).
+    willUpdate 는 첫 render **앞**이라 첫 페인트부터 4가 현재다. 두 번 그리지
+    않으므로 잘못된 페이지가 스치는 일도 없다.
+
+    ns-table 이 같은 실수를 하지 않는 이유는 그쪽이 render 를 갖지 않기
+    때문이다 — 그 컴포넌트의 DOM 쓰기는 전부 updated() 에서 일어나고 그것은
+    firstUpdated 다음이다. 이 컴포넌트는 render 가 있어 자리가 다르다.
+
+    덮어쓰지 않는다는 원래 근거는 그대로다 — Lit 은 첫 업데이트를 마이크로태스크로
+    미루므로, 생성과 같은 태스크에서 프로퍼티를 만진 코드가 여기보다 먼저 실행된다.
+    willUpdate 도 그 마이크로태스크 안이라 이 성질이 유지된다.
   */
-  protected override firstUpdated(): void {
+  protected override willUpdate(): void {
+    // 첫 업데이트에서만 돈다. hasUpdated 는 firstUpdated 직전에 true 가 된다.
+    if (this.hasUpdated) return;
+
     /*
       default-page="abc" 는 Number("abc") = NaN 이다. 그대로 seed 하면
       (NaN !== 1 이 true 라 통과한다) #innerPage 가 NaN 이 되고, 그 뒤로는
       비제어 상태 전체가 NaN 에 묶인다. 여기서 막는다.
 
-      warn 플래그가 없는 이유는 firstUpdated 가 인스턴스마다 한 번만 돌기
-      때문이다 — 이 자리에서는 경고가 이미 일회성이다.
+      warn 플래그가 없는 이유는 이 블록이 인스턴스마다 한 번만 돌기 때문이다 —
+      이 자리에서는 경고가 이미 일회성이다.
     */
     if (!Number.isInteger(this.defaultPage) || this.defaultPage < 1) {
       console.warn(
@@ -259,8 +278,8 @@ export class NsPagination extends LitElement {
     현재 페이지 재클릭은 DOM 을 바꾸지 않으므로 되돌릴 포커스도 없다 —
     의도를 남기면 한참 뒤의 무관한 업데이트에서 소진되어 포커스를 훔친다.
   */
-  #activate(focus: number | "prev" | "next", page: number): void {
-    if (this.#go(page)) this.#refocus = focus;
+  #activate(control: number | "prev" | "next", page: number): void {
+    if (this.#go(page)) this.#refocus = { control, page };
   }
 
   /*
@@ -272,7 +291,29 @@ export class NsPagination extends LitElement {
   protected override updated(): void {
     const intent = this.#refocus;
     if (intent === null) return;
+    // 활성화 직후의 첫 업데이트에서 소진한다. 남겨 두면 수명이 무한해진다.
     this.#refocus = null;
+
+    /*
+      **요청이 실제로 반영됐을 때만** 되돌린다.
+
+      제어 모드에서 #go 는 이벤트를 내고 true 를 돌려주지만 페이지를 직접 쓰지
+      않는다(쓰면 제어 규칙 위반이다). 소비자가 ns-page-change 를 무시하면 그
+      자리에서는 업데이트가 아예 일어나지 않아 이 의도가 남는다. 그 뒤 total 이
+      바뀌는 것 같은 무관한 업데이트가 이것을 소진하면, 그 사이 사용자가 포커스
+      없는 빈 영역을 클릭해 <body> 에 있을 때 아래 activeElement 가드가 "잃었다"
+      로 읽어 포커스를 페이지네이션으로 끌어가고 화면이 거기로 스크롤된다.
+
+      요청한 페이지가 지금 상태와 같은지 보는 것으로 그 경로가 닫힌다 —
+      비제어는 #go 가 #innerPage 를 썼으므로 항상 같고, 제어는 소비자가
+      반영했을 때만 같다. repeat() 이 노드를 옮겨 포커스가 떨어지는 진짜 페이지
+      이동에서는 양쪽 다 같으므로 복구가 그대로 동작한다.
+
+      #current() 가 아니라 원값을 비교하는 이유: #current() 의 clamp 경고는
+      렌더·이동 경로의 진단이다. 포커스 복구가 그것을 다시 트리거하면 경고의
+      출처가 흐려지고, 여기서 필요한 것은 "요청한 페이지가 상태가 됐는가" 뿐이다.
+    */
+    if ((this.page ?? this.#innerPage) !== intent.page) return;
 
     /*
       포커스가 이 컴포넌트 밖으로 이미 옮겨갔으면 뺏지 않는다. <body> 는
@@ -283,9 +324,9 @@ export class NsPagination extends LitElement {
     if (active !== null && active !== this.ownerDocument.body && !this.contains(active)) return;
 
     const selector =
-      typeof intent === "number"
-        ? `button[data-ns-page="${intent}"]`
-        : `button[data-ns-nav="${intent}"]`;
+      typeof intent.control === "number"
+        ? `button[data-ns-page="${intent.control}"]`
+        : `button[data-ns-nav="${intent.control}"]`;
     this.querySelector<HTMLButtonElement>(selector)?.focus();
   }
 
