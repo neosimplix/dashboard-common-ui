@@ -145,6 +145,22 @@
     @import "@neosimplix/common-ui/tokens.css";
     @import "@neosimplix/common-ui/controls.css";
   </script>
+  <p>
+    <strong>순서는 상관없다.</strong> 토큰 이름이 전부 <code>--ns-</code> 접두사를
+    쓰므로 소비자 문서의 <code>:root</code> 와 겹치지 않는다. 0.1.5 까지는 접두사가
+    없어, 같은 이름을 다른 뜻으로 쓰던 프로젝트가 <code>tokens.css</code> 를 자기
+    CSS 뒤에 두어야만 셸 색이 살아났다.
+  </p>
+  <p>
+    이미 무접두사 이름(<code>var(--space-3)</code> 등)을 직접 참조하는 CSS 가 있는
+    프로젝트만 별칭 파일을 <strong>선택적으로</strong> 함께 불러온다.
+    <strong>새 프로젝트는 임포트하지 않는다</strong> — 그 파일은 위의 이름 충돌을
+    의도적으로 재현한다.
+  </p>
+  <script type="text/plain">
+    /* 선택. 0.1.5 의 무접두사 이름을 --ns- 이름으로 잇는다 */
+    @import "@neosimplix/common-ui/aliases.css";
+  </script>
 
   <h3>Tailwind 를 쓰면 레이어 순서를 선언해야 한다</h3>
   <p>
@@ -168,7 +184,7 @@
     <code>controls.css</code> 에만 있다 — 둘 중 하나라도 빠지면 레이아웃이
     무너진다. <code>tokens.css</code> 가 빠지면 콘솔에 경고가 뜨지만,
     <code>controls.css</code> 가 빠진 것은 <strong>감지되지 않는다</strong> —
-    경고는 <code>--color-line</code> 하나만 확인한다.
+    경고는 <code>--ns-color-line</code> 하나만 확인한다.
   </p>
 
   <h3>Next.js (App Router)</h3>
@@ -219,9 +235,11 @@
     <strong>하이드레이션 전후로 너비가 튀지 않는다.</strong>
   </p>
   <p>
-    <strong>소비자가 할 일은 없다.</strong> <code>NsSidebar</code> 를 직접 쓰지 않고
-    <code>Sidebar</code> 를 쓰면 된다. 0.1.x 에서 안내하던 래퍼 <code>&lt;div&gt;</code>
-    우회는 더 이상 필요 없다 — 제거해도 되고 두어도 동작한다.
+    <strong>소비자가 할 일은 <code>Sidebar</code> 를 쓰는 것뿐이다.</strong>
+    0.1.x 의 <code>NsSidebar</code> 래퍼는 더 이상 export 되지 않는다 —
+    <code>Sidebar</code> 가 그 자리를 대신하고, 프롭은 <code>onNsNavigate</code> 대신
+    <code>onNavigate</code>(인자가 <code>detail</code>)다. 0.1.x 에서 안내하던 래퍼
+    <code>&lt;div&gt;</code> 우회는 더 이상 필요 없다 — 제거해도 되고 두어도 동작한다.
     (<code>ns-header</code> 는 예약 높이가 상태에 따라 바뀌지 않으므로 원래 영향이 없다.)
   </p>
   <script type="text/plain">
@@ -272,14 +290,22 @@
 
   <h2 id="tokens">디자인 토큰</h2>
   <p>
-    토큰 이름은 <code>dashboard-shell/app/globals.css</code> 와 동일하다. 접두사가 없으므로
-    이미 그 이름을 쓰던 코드는 그대로 동작한다.
+    모든 토큰 이름에 <code>--ns-</code> 접두사가 붙는다. 소비자 문서의
+    <code>:root</code> 와 이름이 겹치지 않으므로 <strong>임포트 순서가 결과를
+    바꾸지 않는다.</strong> 0.1.5 까지는 접두사가 없어, 같은 이름을 다른 뜻으로
+    쓰던 프로젝트에서 <code>tokens.css</code> 를 뒤에 임포트해야만 셸 색이 살았다.
+  </p>
+  <p>
+    이미 무접두사 이름을 쓰던 프로젝트는
+    <code>@neosimplix/common-ui/aliases.css</code> 를 함께 임포트한다.
+    <strong>새 프로젝트는 임포트하지 않는다</strong> — 그 파일은 위의 충돌을
+    의도적으로 재현한다.
   </p>
   <p>브랜드 색을 바꾸려면 <code>:root</code> 에서 다시 정의한다. 문서 쪽 선언이 항상 이긴다.</p>
   <script type="text/plain">
     :root {
-      --color-accent: #2563eb;
-      --color-accent-hover: #1d4ed8;
+      --ns-color-accent: #2563eb;
+      --ns-color-accent-hover: #1d4ed8;
     }
   </script>
 
@@ -392,10 +418,10 @@
   <h3>상태</h3>
   <table>
     <tr><th>선택자</th><th>모양</th></tr>
-    <tr><td><code>:focus</code></td><td>테두리가 <code>--color-accent</code></td></tr>
-    <tr><td><code>[aria-invalid="true"]</code></td><td>테두리가 <code>--color-danger</code>. 포커스 중에도 유지</td></tr>
-    <tr><td><code>:disabled</code></td><td>글자가 <code>--color-fg-subtle</code>, 커서 <code>not-allowed</code></td></tr>
-    <tr><td><code>::placeholder</code></td><td><code>--color-fg-subtle</code></td></tr>
+    <tr><td><code>:focus</code></td><td>테두리가 <code>--ns-color-accent</code></td></tr>
+    <tr><td><code>[aria-invalid="true"]</code></td><td>테두리가 <code>--ns-color-danger</code>. 포커스 중에도 유지</td></tr>
+    <tr><td><code>:disabled</code></td><td>글자가 <code>--ns-color-fg-subtle</code>, 커서 <code>not-allowed</code></td></tr>
+    <tr><td><code>::placeholder</code></td><td><code>--ns-color-fg-subtle</code></td></tr>
   </table>
 
   <h3>HTML</h3>
@@ -488,10 +514,10 @@
   <h3>상태</h3>
   <table>
     <tr><th>선택자</th><th>모양</th></tr>
-    <tr><td><code>:has(option[value=""]:checked)</code></td><td>글자가 <code>--color-fg-subtle</code> — 아직 고르지 않음</td></tr>
-    <tr><td><code>:focus</code></td><td>테두리가 <code>--color-accent</code></td></tr>
-    <tr><td><code>[aria-invalid="true"]</code></td><td>테두리가 <code>--color-danger</code></td></tr>
-    <tr><td><code>:disabled</code></td><td>글자가 <code>--color-fg-subtle</code>, 커서 <code>not-allowed</code></td></tr>
+    <tr><td><code>:has(option[value=""]:checked)</code></td><td>글자가 <code>--ns-color-fg-subtle</code> — 아직 고르지 않음</td></tr>
+    <tr><td><code>:focus</code></td><td>테두리가 <code>--ns-color-accent</code></td></tr>
+    <tr><td><code>[aria-invalid="true"]</code></td><td>테두리가 <code>--ns-color-danger</code></td></tr>
+    <tr><td><code>:disabled</code></td><td>글자가 <code>--ns-color-fg-subtle</code>, 커서 <code>not-allowed</code></td></tr>
   </table>
 
   <h3>HTML</h3>
@@ -1806,7 +1832,7 @@
   <h3>slot</h3>
   <table>
     <tr><th>이름</th><th>위치</th><th>용도</th></tr>
-    <tr><td><code>leading</code></td><td>행의 좌측 끝</td><td>아이콘 등. 비우면 <code>badge</code> 가 대신 보인다 — 슬롯 폴백이라 분기 코드가 필요 없다. 접혀도 계속 보인다</td></tr>
+    <tr><td><code>leading</code></td><td>행의 좌측 끝</td><td>아이콘 등. 비우면 <code>badge</code> 가 대신 보인다 — 슬롯 폴백이라 분기 코드가 필요 없다. 접혀도 계속 보인다. <strong>접근성은 넣는 쪽 책임이다</strong> — <code>ns-icon</code> 은 자기 <code>svg</code> 에 <code>aria-hidden</code> 을 두지만, 그 외의 장식 요소는 소비자가 직접 붙인다</td></tr>
     <tr><td><code>trailing</code></td><td>행의 우측 끝</td><td>카운트 배지 등 소비자가 원하는 것. 접히면 함께 숨는다</td></tr>
   </table>
 

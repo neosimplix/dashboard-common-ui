@@ -5,8 +5,7 @@
 ## 이름
 
 - 컴포넌트 태그는 `ns-` 접두사를 쓴다. (`ns-header`, `ns-sidebar`, `ns-nav-group`, `ns-nav-item`)
-- **디자인 토큰 이름에는 접두사를 붙이지 않는다.** `dashboard-shell/app/globals.css` 와 같은 이름을 쓴다. (`--color-line`, `--space-3`)
-- 패키지 내부 배선용 커스텀 프로퍼티만 `--ns-` 를 쓴다. (`--ns-label-display`)
+- **모든 커스텀 프로퍼티는 `--ns-` 를 쓴다.** `tokens.css` 에 정의돼 있으면 공개(소비자가 덮어도 된다), 없으면 내부 신호다. (`--ns-color-line`, `--ns-space-3` / 신호는 `--ns-label-display`) 접두사를 붙이지 않던 0.1.5 가 두 번째 소비자에서 깨진 경위는 `docs/gotchas.md` 에 있다.
 - 이벤트는 `ns-` 접두사에 케밥 케이스, 대응하는 React prop 은 `on` + 파스칼 케이스다. (`ns-navigate` → `onNsNavigate`)
 - **CSS 클래스 이름은 `ns-` 접두사를 쓴다.** 전역 이름공간이라 `.input` 은 소비자 CSS 와 충돌한다. 변형은 `--`, 하위 요소는 `__` 다. (`.ns-button--outline`, `.ns-field__error`)
 - **`title` 을 속성/프로퍼티 이름으로 쓰지 않는다.** 모든 HTML 요소의 전역 속성이라 브라우저가 툴팁을 띄운다. 제목은 `heading` 이다. React 프롭만 `title` 을 유지하고 shim 이 변환한다.
@@ -29,6 +28,9 @@
 - **소비자가 쓰는 훅 속성은 `data-ns-` 접두사를 쓴다.** Light DOM 이라 문서 이름공간에 들어가고, 충돌하면 엉뚱한 요소를 오인해 에러 없이 오동작한다.
 - **Light DOM 컴포넌트는 조회 지점마다 소유를 확인한다.** `el.closest("ns-x") === this`. 경계가 없어 중첩 인스턴스의 요소가 서로에게 보인다.
 - **소비자 DOM 의 속성을 관리하면 `MutationObserver` 가 필요하다.** `updated()` 는 반응형 프로퍼티 변경만 본다. `{ childList: true, subtree: true }` 를 쓰고 **`attributes` 는 켜지 않는다** — 동기화가 `setAttribute` 를 쓰므로 자기 쓰기에 재발동해 루프가 된다.
+- **SSR 에 보여야 하는 상태는 반응형 프로퍼티가 아닌 이름으로 내보낸다.** `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 `useLayoutEffect` 에서만 설정하므로 서버 마크업에 남지 않는다. shim 이 `data-ns-*` 속성을 함께 렌더한다. (`ns-sidebar` 의 `data-ns-open`)
+- **정의 전 레이아웃 예약은 `:not(:defined)` 로 경계를 긋는다.** 상태 속성만 보면 정의 이후까지 걸려 하이드레이션 튐의 원인이 된다.
+- **둘 중 하나만 보여야 하는 자리는 슬롯 폴백으로 만든다.** 프로퍼티 두 개로 만들면 소비자가 분기해야 하고, 분기해야 한다는 사실을 문서로만 알릴 수 있다. (`ns-nav-item` 의 `leading` 슬롯과 `badge`)
 
 ## 스타일
 

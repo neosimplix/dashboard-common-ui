@@ -9,7 +9,7 @@
 | `ns-header` | 좌측 토글 버튼과 프로젝트 이름, 우측 `actions` slot |
 | `ns-sidebar` | 네비게이션 컨테이너. 접으면 좌측에 4rem 레일이 남는다 |
 | `ns-nav-group` | 제목이 붙은 네비게이션 그룹 |
-| `ns-nav-item` | 그룹 하위 항목. 행 우측에 `trailing` slot |
+| `ns-nav-item` | 그룹 하위 항목. 행 좌측에 `leading` slot(비우면 `badge` 폴백), 우측에 `trailing` slot |
 | `ns-icon` | 이름으로 꺼내는 인라인 SVG |
 | `ns-page-heading` | `h1` + 설명 `p` |
 | `ns-skeleton` | 로딩 자리표시자. 크기를 프로퍼티로 받는다 |
@@ -67,9 +67,10 @@ common-ui/
 │   │   ├── elements.ts                @lit/react 래퍼. 이벤트 매핑의 단일 출처
 │   │   └── index.ts                   재export 허브
 ├── scripts/
-│   ├── copy-css.mjs                   tokens.css · controls.css → dist/
+│   ├── copy-css.mjs                   tokens.css · controls.css → dist/, tokens.css → dist/aliases.css 생성
 │   ├── check-events.mjs               발생 이벤트 ↔ React 래퍼 매핑 대조
 │   ├── check-controls.mjs             클래스 ↔ index.html 양방향, 요소 선택자는 정방향만 대조
+│   ├── check-tokens.mjs               var() 참조의 --ns- 접두사·정의 여부, data-ns-* 훅 세 곳 일치
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
@@ -94,10 +95,13 @@ dist/react.js         ES. 'use client' 배너     → React 프로젝트
 dist/bundle.umd.js    UMD. lit 인라인 (27KB)    → 순수 HTML <script src>, file:// 가능
 dist/tokens.css       복사본                    → 모든 환경에서 필수
 dist/controls.css     복사본                    → 순수 HTML 이 직접 링크
+dist/aliases.css      tokens.css 에서 생성      → 무접두사 이름을 쓰던 프로젝트만 (옵트인)
 dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 ```
 
-`package.json` 의 `exports` 가 이것들을 `.`, `./react`, `./tokens.css`, `./controls.css`, `./umd` 로 노출한다.
+`package.json` 의 `exports` 가 이것들을 `.`, `./react`, `./tokens.css`, `./controls.css`, `./aliases.css`, `./umd` 로 노출한다.
+
+**`aliases.css` 는 기본이 아니다.** 무접두사 이름을 문서 `:root` 에 다시 정의하므로, 임포트하면 0.1.5 의 이름 충돌이 그대로 돌아온다. 그게 그 파일의 목적이다 — 이유는 `docs/gotchas.md` 의 "토큰 이름을 소비자와 공유하면 라이브러리가 캐스케이드에 종속된다" 에 있다.
 
 **`tokens.css` 는 어느 환경에서든 반드시 불러와야 한다.** 컴포넌트 스타일은 이 파일이 정의하는 CSS 변수를 폴백 없이 참조한다. 빠지면 레이아웃이 무너지고 콘솔에 경고가 뜬다.
 
@@ -107,8 +111,8 @@ dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 
 | 명령 | 하는 일 |
 |---|---|
-| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 대조 |
-| `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css 생성 |
+| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 ⑤ 토큰 참조 |
+| `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css · aliases.css 생성 |
 | `npm run demo` | 빌드 후 `index.html` 열기 (macOS `open`) |
 | `npm run release -- 0.1.4` | 검사 → 빌드 → 버전 커밋 → dist 포함 태그 생성 |
 
@@ -125,9 +129,13 @@ grep -c '<script>' index.html                      # 헬퍼 하나 = 1
 grep -n '</script>' index.html \
   | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='   # 출력 없어야 정상
 grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
+grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
+  | sed -E 's/.*id="([^"]*)"/\1/' | sort | uniq -d            # 출력 없어야 정상
 ```
 
 세 번째가 중요하다. 이벤트가 `composed` 라 데모에서 발생한 것도 `document` 까지 올라온다. 리스너를 `document` 에 붙이면 데모를 만질 때 문서 페이지가 제멋대로 움직인다. 모든 리스너는 자기가 소유한 엘리먼트에 붙인다.
+
+네 번째는 **중복 id** 다. 배선이 `<script>` 하나라 `getElementById` 가 엉뚱한 요소를 주는 순간 그 아래 전부가 실행되지 않는데, 화면은 멀쩡해 보인다. 새 절의 id 에는 절 이름을 접두사로 붙인다(`table-select-demo`).
 
 ## 관련 문서
 
@@ -135,9 +143,8 @@ grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
 - 설계 배경과 수용된 한계: `docs/superpowers/specs/2026-08-12-common-ui-web-components-design.md`
 - 구현 계획(Task 단위 코드 포함): `docs/superpowers/plans/2026-08-12-common-ui-web-components.md`
 - 사용법·프로퍼티·이벤트·라이브 데모: `index.html` (`npm run demo`)
-- 토큰 원본: `dashboard-shell/app/globals.css`
 
 ## 남은 일
 
-- **`ns-header`·`ns-sidebar` 의 비제어 지원.** 토글을 소비자 코드 없이 동작시키는 것. 지금 소비자 코드가 필요한 이유는 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다는 것이다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다.
-- **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 삭제, Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.
+- **`ns-header`·`ns-sidebar` 의 비제어 지원.** 토글을 소비자 코드 없이 동작시키는 것. 지금 소비자 코드가 필요한 이유는 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다는 것이다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다. (0.2.0 이 해결한 것은 **SSR 너비 튐**이다 — `Sidebar` shim 의 `data-ns-open` 과 `:not(:defined)` 예약으로 소비자 래퍼 `div` 가 필요 없어졌다. 상태를 누가 들고 있느냐는 그대로 남았다.)
+- **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 정리(0.2.0 부터는 이름이 겹치지 않으므로 **삭제가 강제되지 않는다** — 그대로 두거나 `--ns-` 로 옮긴다), Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.
