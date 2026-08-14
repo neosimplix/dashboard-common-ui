@@ -15,15 +15,30 @@ description: Use when adding a new web component to this library, adding a custo
 
 폼 컨트롤과 버튼은 **클래스여야 한다.** shadow DOM 이 폼 참여·라벨·검증·자동완성을 끊는다. `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 를 읽고 오지 않았다면 태그로 만들지 않는다.
 
+## 태그라면: shadow 인가 Light DOM 인가
+
+- **`controls.css` 의 클래스를 재사용해야 하면 Light DOM.** 전역 스타일시트는 shadow 안에 도달하지 않는다
+- **스타일 캡슐화가 필요하면 shadow.** 기본값이다
+
+Light DOM 이면 두 가지가 더 갈린다.
+
+- **소비자 자식을 품는가** → `ReactiveElement` (`ns-table`). `LitElement` 는 템플릿으로 그 자식을 덮어쓴다
+- **자식이 없고 렌더만 하는가** → `LitElement` (`ns-pagination`)
+
+**둘 다 `createRenderRoot() { return this }` 를 재정의한다.** 빠뜨리면 shadow root 가 생겨 자식이 가려지거나, 스타일이 안 먹는다. `docs/gotchas.md` 의 "Light DOM 에서 소비자 자식이 사라지는 두 경로" 를 읽는다.
+
+**Light DOM 컴포넌트에는 `.styles.ts` 를 만들지 않는다.** `static styles` 가 무시된다.
+
 ## 태그를 추가할 때
 
 - [ ] `src/components/<name>/ns-<name>.ts` — 로직. `register()` 로 등록하고 `declare global` 로 `HTMLElementTagNameMap` 확장
-- [ ] `src/components/<name>/ns-<name>.styles.ts` — shadow CSS. `css``` 템플릿이지 `.css` 파일이 아니다
+- [ ] `src/components/<name>/ns-<name>.styles.ts` — shadow CSS. `css``` 템플릿이지 `.css` 파일이 아니다. **Light DOM 컴포넌트라면 이 파일을 만들지 않는다** — 위 절 참고
 - [ ] `src/index.ts` — 등록 부수효과 import **와** 클래스 재export 둘 다
 - [ ] `src/react/elements.ts` — `createComponent` 래퍼, 이벤트 매핑
 - [ ] `src/react/index.ts` — 값과 타입 재export
 - [ ] `index.html` — 문서 섹션
 - [ ] `.claude/skills/releasing/SKILL.md` 의 콜드 설치 스모크 테스트가 기대하는 export 목록 — `src/index.ts` 에 새 클래스를 재export 하면 그 목록도 늘어난다. 이 스모크 테스트가 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사이므로, 새 컴포넌트의 등록 경로는 여기를 고치지 않으면 그 검사 밖에 남는다
+- [ ] `src/controls/controls.css` — Light DOM 컴포넌트라면 요소 선택자로 스타일. `check-controls.mjs` 가 정방향으로 대조한다
 
 ## 클래스를 추가할 때
 
@@ -33,7 +48,7 @@ description: Use when adding a new web component to this library, adding a custo
 - [ ] `index.html` — 데모 · **클래스 표** · HTML 예시 · React 예시
 - [ ] `docs/consumer-example.tsx` — 새 컴포넌트를 실제로 사용
 
-`scripts/check-controls.mjs` 가 `controls.css` 의 클래스와 `index.html` 을 양방향으로 대조한다. `--modifier` 변형도 개별로 센다. 문서에 빠뜨리면 `npm run check` 가 막는다.
+`scripts/check-controls.mjs` 가 `controls.css` 의 클래스와 `index.html` 을 양방향으로 대조한다. `--modifier` 변형도 개별로 센다. 문서에 빠뜨리면 `npm run check` 가 막는다. **요소 선택자(`ns-table` 같은 Light DOM 컴포넌트 스타일)는 정방향만 본다** — CSS 에 있는데 문서에 없으면 막지만, 역방향은 확인하지 않는다.
 
 **상태 변형은 클래스를 만들지 않는다.** `invalid` 는 `[aria-invalid="true"]`, `disabled` 는 `:has(:disabled)` 로 잡는다. 클래스를 토글하는 자바스크립트가 필요 없어 순수 HTML 에서도 동작한다.
 

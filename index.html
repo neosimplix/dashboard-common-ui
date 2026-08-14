@@ -89,6 +89,7 @@
       <ns-nav-item href="#ns-select" label=".ns-select" badge="SL"></ns-nav-item>
       <ns-nav-item href="#ns-checkbox" label=".ns-checkbox" badge="CB"></ns-nav-item>
       <ns-nav-item href="#ns-field" label=".ns-field" badge="FD"></ns-nav-item>
+      <ns-nav-item href="#ns-table" label=".ns-table" badge="TB"></ns-nav-item>
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
@@ -96,6 +97,8 @@
       <ns-nav-item href="#ns-page-heading" label="ns-page-heading" badge="PH"></ns-nav-item>
       <ns-nav-item href="#ns-skeleton" label="ns-skeleton" badge="SK"></ns-nav-item>
       <ns-nav-item href="#ns-dialog" label="ns-dialog" badge="DG"></ns-nav-item>
+      <ns-nav-item href="#ns-table-tag" label="ns-table" badge="TT"></ns-nav-item>
+      <ns-nav-item href="#ns-pagination" label="ns-pagination" badge="PG"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -648,6 +651,155 @@
     </Field>
   </script>
 
+  <h2 id="ns-table">.ns-table</h2>
+  <p>
+    표 표면. 정렬·페이징·선택 <strong>동작</strong>은 <code>ns-table</code> 태그가 맡고
+    (아래 별도 절), 이 클래스는 테두리·패딩·hover 만 갖는다.
+  </p>
+  <p>
+    <strong>스크롤 컨테이너는 <code>ns-table</code> 요소다.</strong> 좁은 화면에서 표가
+    부모를 밀어내지 않게 하고, <code>min-width: max-content</code> 와 짝을 이뤄
+    액션 칸의 버튼이 쥐어짜여 줄바꿈되는 것을 막는다. 요소 선택자로 스타일하므로
+    <strong>JS 없이도 동작한다</strong> — 정의되지 않은 커스텀 엘리먼트에도 적용된다.
+  </p>
+  <p>
+    <strong>대가가 하나 있다. <code>overflow-x: auto</code> 는 세로축까지 클리핑으로 만든다.</strong>
+    CSS 규격상 한 축이 <code>visible</code> 이 아니면 다른 축의 <code>visible</code> 은
+    <code>auto</code> 로 계산되므로, <code>ns-table</code> 은 <strong>양방향</strong> 스크롤
+    컨테이너다. 결과로 두 가지가 표 밖으로 나가지 못한다 — 첫 행 정렬 버튼의
+    <code>outline-offset: 2px</code> 포커스 링 윗변이 잘리고, 셀 안에 절대 위치로 띄운
+    <strong>행 액션 드롭다운·툴팁</strong>이 표 경계에서 잘린다.
+    대시보드 표에서 흔한 조합이라 미리 적어 둔다. 그런 오버레이가 필요하면
+    <code>ns-table</code> 안이 아니라 <strong>바깥(예: <code>ns-dialog</code>, 또는 body 로 띄우는
+    팝오버)</strong>에 두어야 한다. 스크롤 컨테이너를 없애면 좁은 화면에서 표가 부모를
+    밀어내는 문제가 돌아오므로, 둘 중 하나를 고르는 거래다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr><th>이름</th><th>부서</th><th>가입일</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>홍길동</td><td>마케팅팀</td><td>2026-07-15</td></tr>
+          <tr><td>김대기</td><td>플랫폼개발팀</td><td>2026-08-05</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="table-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>좁은 컨테이너</h3>
+  <p>
+    칸이 쥐어짜이는 대신 가로로 스크롤되는지 보는 자리다. 이 조합이 실제로 깨졌던
+    화면(관리자 프로젝트 표)의 축소판이다.
+  </p>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr><th>이름</th><th>주소</th><th>URL</th><th>부서</th><th>담당자</th><th>상태</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>글로벌 인플루언서 마케팅</td>
+            <td>global-influencer-marketing</td>
+            <td>https://dash.example.com/global</td>
+            <td>마케팅팀, 플랫폼개발팀</td>
+            <td>담당자 둘</td>
+            <td>운영 중</td>
+            <td>
+              <span style="display:inline-flex;gap:var(--space-2)">
+                <button class="ns-button ns-button--ghost ns-button--sm" type="button">문의</button>
+                <button class="ns-button ns-button--outline ns-button--sm" type="button">수정</button>
+                <button class="ns-button ns-button--ghost ns-button--sm" type="button">삭제</button>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="table-narrow-demo" style="max-width:26rem;padding:var(--space-4)"></div>
+  <pre></pre>
+
+  <h3>정렬 헤더의 모양</h3>
+  <p>
+    정렬 <strong>동작</strong>은 <code>ns-table</code> 태그가 붙여 준다(별도 절).
+    여기서는 <code>aria-sort</code> 세 상태의 <strong>모양만</strong> 정적으로 보여준다 —
+    삼각형이 <code>border</code> 로 그려지고, 정렬되지 않은 칼럼에서도 자리를 차지해
+    헤더 폭이 흔들리지 않는 것을 확인하는 자리다.
+  </p>
+  <p>
+    이 데모는 <code>ns-table</code> 로 감싸지 않는다 — 그 컴포넌트가
+    <code>aria-sort</code> 의 유일한 작성자라서, 감싸면 손으로 쓴 값을 덮어쓴다.
+  </p>
+  <template class="ex">
+    <table class="ns-table">
+      <thead>
+        <tr>
+          <th aria-sort="ascending"><button class="ns-table__sort" type="button">오름차순</button></th>
+          <th aria-sort="descending"><button class="ns-table__sort" type="button">내림차순</button></th>
+          <th aria-sort="none"><button class="ns-table__sort" type="button">정렬 안 됨</button></th>
+          <th>버튼 없는 칼럼</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>가</td><td>나</td><td>다</td><td>라</td></tr>
+      </tbody>
+    </table>
+  </template>
+  <div class="demo block" id="table-sort-states-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+
+  <!--
+    이 문서의 프로퍼티·이벤트·클래스 표는 맨 <table> 이다. .ns-table 을 붙이지
+    않는다 — 그 클래스는 min-width: max-content 를 갖고 스크롤은 감싸는 <ns-table>
+    요소가 담당하므로, 감싸지 않은 채 클래스만 붙이면 긴 셀이 페이지 전체를 가로로
+    밀어낸다. 문서 표의 테두리·여백은 <head> 의 table/th/td 규칙이 준다.
+    라이브러리 사용 예를 보여주는 데모 표만 <ns-table> + class 를 쓴다.
+  -->
+  <h3>클래스</h3>
+  <table>
+    <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>ns-table</code></td><td>(요소 선택자)</td><td>스크롤 컨테이너. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
+    <tr><td><code>.ns-table</code></td><td><code>table</code></td><td>표면. <code>th</code>·<code>td</code>·hover 는 자손 선택자로 잡혀 클래스가 필요 없다</td></tr>
+    <tr><td><code>.ns-table__sort</code></td><td><code>th</code> 안의 <code>button</code></td><td>정렬 헤더. 삼각형 자리를 늘 잡아 두어 정렬 시 헤더 폭이 흔들리지 않는다</td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-table>
+      <table class="ns-table">
+        <thead><tr><th>이름</th></tr></thead>
+        <tbody><tr><td>홍길동</td></tr></tbody>
+      </table>
+    </ns-table>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsTable } from "@neosimplix/common-ui/react";
+
+    /* 셀 내용에 제약이 없다 — 표는 데이터를 모른다 */
+    <NsTable>
+      <table className="ns-table">
+        <thead><tr><th>이름</th><th /></tr></thead>
+        <tbody>
+          {records.map((r) => (
+            <tr key={r.email}>
+              <td>{r.name}</td>
+              <td><Button size="sm" onClick={() => onEdit(r)}>수정</Button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </NsTable>
+  </script>
+
   <h2 id="ns-card">.ns-card</h2>
   <p>
     카드 표면. 감싸는 <code>div</code> 하나에 스타일뿐이라 클래스다.
@@ -1037,6 +1189,367 @@
     >
       <p>홍길동 님의 가입 신청을 승인하시겠습니까?</p>
     </Dialog>
+  </script>
+
+  <h2 id="ns-table-tag">ns-table</h2>
+  <p>
+    소비자가 쓴 <code>table</code> 을 감싸는 Light DOM 컴포넌트.
+    <strong>셀을 렌더하지 않고 데이터를 모른다.</strong> 정렬 상태와 그 시각 표시만 갖고,
+    데이터를 다시 정렬하는 것은 소비자다.
+  </p>
+  <p>
+    그렇게 나눈 이유는 실사용 셀이 데이터 주입형 API 로 표현되지 않기 때문이다 —
+    조건부 버튼 여섯, 참조 조회로 만든 이름, 조건부 칼럼이 들어 있다.
+    <strong>Lit 엘리먼트는 소비자의 React 렌더 함수를 호출해 자기 안에 React 요소를
+    만들 수 없다.</strong>
+  </p>
+
+  <h3>정렬 헤더는 <code>button</code> 을 품는다</h3>
+  <p>
+    <code>th</code> 자체를 클릭 가능하게만 만들면 <strong>키보드로 도달할 수 없고</strong>
+    화면낭독기가 상호작용 요소로 안내하지 않는다. <code>tabindex</code>/<code>role="button"</code> 을
+    <code>th</code> 에 얹는 것은 표 의미를 깨뜨린다. 컴포넌트가 렌더를 하지 않으므로
+    이것을 대신 만들어 줄 수 없다 — 셀을 소비자에게 남긴 대가다.
+  </p>
+  <p>
+    <code>data-ns-sort-key</code> 가 없는 <code>th</code> 는 정렬되지 않는다. 칼럼별 스위치가 그것뿐이다.
+  </p>
+  <p>
+    클릭 영역이 <code>th</code> 전체라는 것에는 따르는 결과가 있다 —
+    <strong>정렬 헤더 안에 놓인 다른 상호작용 요소(링크·정보 아이콘·두 번째 버튼)를
+    눌러도 정렬이 일어난다.</strong> 의도된 동작이지만, 그런 요소를 헤더에 넣을
+    계획이라면 그 칼럼에는 <code>data-ns-sort-key</code> 를 붙이지 않는 편이 낫다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr>
+            <th data-ns-sort-key="name"><button class="ns-table__sort" type="button">이름</button></th>
+            <th>부서</th>
+            <th data-ns-sort-key="joined"><button class="ns-table__sort" type="button">가입일</button></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>홍길동</td><td>마케팅팀</td><td>2026-07-15</td></tr>
+          <tr><td>김대기</td><td>플랫폼개발팀</td><td>2026-08-05</td></tr>
+          <tr><td>박서준</td><td>데이터분석팀</td><td>2026-06-02</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="sort-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="sort-log" style="font-family: monospace">헤더를 누르면 여기에 이벤트가 찍힌다.</p>
+  <p>
+    "부서" 는 <code>data-ns-sort-key</code> 가 없어 정렬되지 않는다.
+    같은 헤더를 세 번 누르면 <strong>정렬이 해제되어 원래 순서로 돌아온다</strong>.
+  </p>
+
+  <h3>선택 데모</h3>
+  <template class="ex">
+    <ns-table>
+      <table class="ns-table">
+        <thead>
+          <tr>
+            <th><label class="ns-checkbox"><input type="checkbox" data-ns-select-all></label></th>
+            <th>이름</th>
+            <th>부서</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="hong"></label></td><td>홍길동</td><td>마케팅팀</td></tr>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="kim"></label></td><td>김대기</td><td>플랫폼개발팀</td></tr>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="park"></label></td><td>박서준</td><td>데이터분석팀</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="table-select-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="table-select-log" style="font-family: monospace">체크하면 여기에 이벤트가 찍힌다.</p>
+  <p>
+    한 행만 체크하면 전체 선택이 <strong>가로줄(indeterminate)</strong> 이 된다.
+    <code>indeterminate</code> 는 프로퍼티고 대응하는 HTML 속성이 없어
+    <strong>마크업만으로는 만들 수 없다</strong> — 컴포넌트가 이걸 맡는 이유다.
+  </p>
+
+  <h3>정렬 · 선택 · 비제어 초기값을 한 표에서</h3>
+  <p>
+    위의 두 데모는 서로를 배제한다 — 정렬 데모에는 체크박스가 없고, 선택 데모에는
+    <code>data-ns-sort-key</code> 가 없다. 실제 목록 화면은 둘을 함께 쓰고,
+    <strong>둘이 만나는 자리에서만 드러나는 동작</strong>이 있어서 이 데모를 따로 둔다.
+  </p>
+  <template class="ex">
+    <ns-table default-sort-key="name" default-sort-direction="ascending">
+      <table class="ns-table">
+        <thead>
+          <tr>
+            <th><label class="ns-checkbox"><input type="checkbox" data-ns-select-all></label></th>
+            <th data-ns-sort-key="name"><button class="ns-table__sort" type="button">이름</button></th>
+            <th>부서</th>
+            <th data-ns-sort-key="joined"><button class="ns-table__sort" type="button">가입일</button></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="kim" checked></label></td><td>김대기</td><td>플랫폼개발팀</td><td>2026-08-05</td></tr>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="park"></label></td><td>박서준</td><td>데이터분석팀</td><td>2026-06-02</td></tr>
+          <tr><td><label class="ns-checkbox"><input type="checkbox" data-ns-row-id="hong"></label></td><td>홍길동</td><td>마케팅팀</td><td>2026-07-15</td></tr>
+        </tbody>
+      </table>
+    </ns-table>
+  </template>
+  <div class="demo block" id="table-both-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="table-both-sort-log" style="font-family: monospace">헤더를 누르면 여기에 <code>ns-sort</code> 가 찍힌다.</p>
+  <p id="table-both-select-log" style="font-family: monospace">체크하면 여기에 <code>ns-select-change</code> 가 찍힌다.</p>
+  <p>
+    <strong>비제어 초기값 셋이 여기 다 있다.</strong>
+    <code>default-sort-key="name"</code> · <code>default-sort-direction="ascending"</code> 라
+    로드 직후 "이름" 헤더에 삼각형이 올라와 있고, 마크업의 <code>checked</code> 하나 때문에
+    전체 선택이 <strong>로드 직후부터 가로줄</strong>이다. 마크업의 행 순서도 이름 오름차순으로
+    맞춰 두었다 — <strong>데이터를 실제로 정렬하는 것은 소비자이고</strong> 컴포넌트는 초기값에
+    맞춰 행을 옮겨주지 않는다.
+  </p>
+  <p>
+    이 초기 선택으로는 <code>ns-select-change</code> 가 <strong>나가지 않는다</strong>.
+    소비자가 자기 마크업에 쓴 값은 변경이 아니라 시작점이다.
+  </p>
+  <p>
+    "이름" 을 누르면 <code>ascending</code> 다음인 <code>descending</code> 부터 이어진다.
+    다른 칼럼("가입일")을 누르면 <code>ascending</code> 으로 시작한다.
+  </p>
+  <p>
+    <strong>이 데모는 행을 다시 그릴 때 체크 상태를 일부러 옮기지 않는다.</strong>
+    체크된 행이 있는 상태에서 정렬 헤더를 누르면 새 <code>tbody</code> 의 체크박스는 전부 꺼져 있고,
+    <strong>컴포넌트가 그 축소를 감지해 <code>ns-select-change  ids=[]</code> 를 낸다</strong> —
+    두 번째 로그가 그 자리에서 바뀐다. 이 이벤트가 없으면 소비자는 화면에 없는 행을 선택된 것으로
+    알고 "삭제(1건)" 을 켜 둔 채로 남는다. 실제 앱에서는 선택 집합을 소비자가 들고 있다가 다시 그릴 때
+    <code>checked</code> 를 복원하는 편이 낫다 — 그러면 집합이 그대로라 이벤트도 나가지 않는다.
+    같은 헤더를 여러 번 눌러도 집합이 이미 비어 있으면 조용하다.
+  </p>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>sortKey</code></td><td>없음</td><td>string | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>sortDirection</code></td><td>없음</td><td>"ascending" | "descending" | "none" | undefined</td><td><code>undefined</code></td><td><code>sortKey</code> 와 짝</td></tr>
+    <tr><td><code>defaultSortKey</code></td><td><code>default-sort-key</code></td><td>string</td><td><code>""</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>defaultSortDirection</code></td><td><code>default-sort-direction</code></td><td>같음</td><td><code>"none"</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>selected</code></td><td>없음</td><td>string[] | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>비제어 초기 선택은 마크업의 <code>checked</code> 에서 온다</strong></td></tr>
+  </table>
+
+  <h3>소비자가 쓰는 훅</h3>
+  <table>
+    <tr><th>속성</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>data-ns-sort-key</code></td><td><code>th</code></td><td>이 칼럼을 정렬 대상으로 만든다. 값이 <code>ns-sort</code> 의 <code>key</code> 로 실린다</td></tr>
+    <tr><td><code>data-ns-select-all</code></td><td><code>input[type=checkbox]</code></td><td>전체 선택. <strong><code>checked</code>·<code>indeterminate</code> 를 컴포넌트가 쓴다</strong> — 바인딩하지 않는다</td></tr>
+    <tr><td><code>data-ns-row-id</code></td><td><code>input[type=checkbox]</code></td><td>행 식별자. 값이 <code>ns-select-change</code> 의 <code>ids</code> 에 실린다</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-sort</code></td><td><code>{ key: string, direction: "ascending" | "descending" | "none" }</code></td><td>정렬 헤더 클릭. <code>direction</code> 이 <code>"none"</code> 이면 <code>key</code> 는 빈 문자열이다</td></tr>
+    <tr><td><code>ns-select-change</code></td><td><code>{ ids: string[] }</code></td><td>체크박스 변경. <strong>요청되는 다음 전체 집합</strong>이다</td></tr>
+  </table>
+
+  <h3>방향은 3-상태다</h3>
+  <p>
+    <code>none → ascending → descending → none</code>.
+    2-상태로 하면 <strong>서버의 기본 정렬로 돌아갈 방법이 없다.</strong> 그 기본 순서가
+    의도를 담는 경우가 있다 — "오래된 신청이 위" 같은 것이다.
+  </p>
+
+  <h3>전체 선택의 범위는 현재 페이지다</h3>
+  <p>
+    DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 <strong>보이는 20개</strong>를
+    뜻한다. "240개 전부 선택" 은 별개 기능으로 제공하지 않는다.
+  </p>
+  <p>
+    제어 모드(<code>selected</code> 를 설정한 상태)에서는 <strong>행 체크박스의
+    <code>checked</code> 를 컴포넌트가 건드리지 않는다.</strong> 요청되는 다음 집합만
+    이벤트로 올리고, <strong>적용은 소비자가 한다</strong> — 컴포넌트가 쓰면 소비자의 다음
+    렌더에 덮어써져 두 진실이 싸운다. 전체 선택 3-상태만은 <code>selected</code> 를 기준으로
+    컴포넌트가 계속 쓴다.
+  </p>
+  <p>
+    <strong>그래서 제어 모드는 "소비자가 <code>ns-select-change</code> 를 받아 각 행의
+    <code>checked</code> 를 다시 그린다" 를 전제한다.</strong> React 의 렌더 루프가 그것을
+    거저 해 주지만, 순수 HTML 에서 <code>el.selected = [...]</code> 로만 제어하고 되돌려
+    그리는 코드를 두지 않으면 <strong>사용자가 누른 박스가 <code>selected</code> 와 어긋난 채로
+    남는다</strong> — 컴포넌트는 그 박스를 되돌리지 않는다. 되돌려 그릴 생각이 없다면
+    <code>selected</code> 를 설정하지 말고 비제어로 두고 이벤트만 듣는 편이 맞다.
+  </p>
+
+  <h3>접근성</h3>
+  <p>
+    <code>aria-sort</code> 의 <strong>유일한 작성자가 컴포넌트다.</strong> 소비자는 쓰지 않는다.
+    삼각형은 <code>content</code> 문자가 아니라 <code>border</code> 로 그린다 — 생성된 텍스트는
+    일부 브라우저에서 화면낭독기에 읽혀 <code>aria-sort</code> 와 중복 안내가 된다.
+  </p>
+
+  <h3>HTML — 마크업</h3>
+  <script type="text/plain">
+    <ns-table>
+      <table class="ns-table">
+        <thead><tr>
+          <th data-ns-sort-key="name"><button class="ns-table__sort" type="button">이름</button></th>
+          <th>이메일</th>
+        </tr></thead>
+        <tbody><!-- 소비자가 쓴 그대로 --></tbody>
+      </table>
+    </ns-table>
+  </script>
+
+  <h3>HTML — 배선</h3>
+  <script type="text/plain">
+    document.querySelector("ns-table").addEventListener("ns-sort", (e) => {
+      /* 데이터를 다시 정렬하는 것은 소비자다 */
+      redraw(sortRows(rows, e.detail.key, e.detail.direction));
+    });
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsTable } from "@neosimplix/common-ui/react";
+    import type { NsSortDetail } from "@neosimplix/common-ui/react";
+
+    /* as const 로 쓰지 않는다 — direction 이 리터럴 "none" 으로 좁혀져
+       e.detail 을 그대로 넣을 수 없다. 상태 타입은 이벤트 detail 과 같다. */
+    const [sort, setSort] = useState<NsSortDetail>({ key: "", direction: "none" });
+
+    <NsTable
+      sortKey={sort.key}
+      sortDirection={sort.direction}
+      onNsSort={(e) => setSort(e.detail)}
+    >
+      <table className="ns-table">
+        <thead><tr>
+          <th data-ns-sort-key="name"><button className="ns-table__sort" type="button">이름</button></th>
+        </tr></thead>
+        <tbody>{sortRows(records, sort).map(/* … */)}</tbody>
+      </table>
+    </NsTable>
+  </script>
+
+  <h2 id="ns-pagination">ns-pagination</h2>
+  <p>
+    목록 페이지 이동 컨트롤. <strong>표를 모르고 데이터를 모른다</strong> — 어떤 목록에도 붙는다.
+    페이지를 실제로 바꾸는 것은 소비자다.
+  </p>
+  <p>
+    <strong>Light DOM 이라 <code>.ns-button</code> 을 그대로 쓴다.</strong> shadow 였다면
+    버튼 스타일 전부를 다시 적어야 했다 — <code>ns-dialog</code> 닫기 버튼에서 수용한
+    열 줄짜리 중복이 여기서는 훨씬 커진다.
+  </p>
+  <p>
+    <strong>자식을 받지 않는다.</strong> Lit 이 이 요소의 내용을 통째로 소유하고 렌더마다
+    갈아 끼우므로 <code>&lt;ns-pagination&gt;…&lt;/ns-pagination&gt;</code> 사이에 쓴 것은
+    첫 렌더에서 사라진다. slot 이 없다. <strong>React 에서는 조용히 사라지는 것으로 끝나지
+    않는다</strong> — <code>&lt;NsPagination&gt;{x}&lt;/NsPagination&gt;</code> 처럼 자식을 주면
+    React 와 Lit 이 같은 자식을 두고 다투다 <code>removeChild</code> 계열 런타임 에러가 날 수
+    있다. 래퍼의 프롭 타입은 <code>children</code> 을 막지 않으므로 타입 검사로도 걸리지 않는다.
+    항상 <strong>자기 닫는 태그</strong>로 쓴다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-pagination total="240" per-page="20" default-page="4"></ns-pagination>
+  </template>
+  <div class="demo block" id="pagination-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p id="pagination-log" style="font-family: monospace">페이지를 누르면 여기에 이벤트가 찍힌다.</p>
+
+  <h3>경계</h3>
+  <template class="ex">
+    <div style="display:grid;gap:var(--space-4)">
+      <ns-pagination total="60" per-page="20" default-page="1"></ns-pagination>
+      <ns-pagination total="140" per-page="20" default-page="7"></ns-pagination>
+      <ns-pagination total="15" per-page="20"></ns-pagination>
+    </div>
+  </template>
+  <div class="demo block" id="pagination-edge-demo" style="padding: var(--space-4)"></div>
+  <pre></pre>
+  <p>
+    위에서부터 3페이지(전부 표시) · 7페이지(<code>…</code> 등장) · 1페이지
+    (<strong>아무것도 렌더하지 않는다</strong>) 다.
+  </p>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>total</code></td><td><code>total</code></td><td>number</td><td><code>0</code></td><td>전체 <strong>항목</strong> 수. 페이지 수가 아니다</td></tr>
+    <tr><td><code>perPage</code></td><td><code>per-page</code></td><td>number</td><td><code>20</code></td><td></td></tr>
+    <tr><td><code>page</code></td><td>없음</td><td>number | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>defaultPage</code></td><td><code>default-page</code></td><td>number</td><td><code>1</code></td><td>비제어 초기값</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-page-change</code></td><td><code>{ page: number }</code></td><td>다른 페이지 클릭. 현재 페이지를 눌러도 발생하지 않는다</td></tr>
+  </table>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>ns-pagination</code></td><td>(요소 선택자)</td><td>배치. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
+    <tr><td><code>.ns-pagination-gap</code></td><td>컴포넌트가 렌더하는 <code>span</code></td><td><code>…</code> 자리. 나머지 버튼은 전부 <code>.ns-button</code> 재사용이다</td></tr>
+  </table>
+  <p>
+    <code>nav</code> 는 이 컴포넌트가 렌더하는 유일한 자식이라 요소 타입으로 특정되어
+    클래스가 없다. 이 표에 <code>.ns-pagination-gap</code> 이 적혀 있어야
+    <code>check-controls.mjs</code> 가 통과한다 — 데모 템플릿에는 그 클래스가 소스로
+    등장하지 않는다(컴포넌트가 런타임에 만든다).
+  </p>
+
+  <h3>번호 윈도우</h3>
+  <ul>
+    <li>페이지 수 ≤ 7 이면 전부 표시</li>
+    <li>그 외에는 <strong>첫 페이지 · 현재±1 · 마지막 페이지</strong>, 빈 구간에 <code>…</code></li>
+    <li>현재 페이지는 <code>--outline</code> + <code>aria-current="page"</code>. <strong>비활성화하지 않는다</strong> — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다</li>
+    <li>이전·다음은 양 끝에서 <code>aria-disabled="true"</code> 다. <strong><code>disabled</code> 가 아니다</strong> — 포커스된 버튼이 <code>disabled</code> 되면 브라우저가 blur 시켜, "다음" 을 눌러 마지막 페이지에 닿는 순간 포커스가 <code>body</code> 로 떨어진다. 위 항목과 같은 이유다. 눌러도 아무 일도 일어나지 않고, <code>.ns-button</code> 이 <code>:disabled</code> 와 같은 회색·<code>not-allowed</code> 를 준다</li>
+  </ul>
+
+  <h3>경계 처리</h3>
+  <ul>
+    <li><strong>페이지가 1개 이하면 아무것도 렌더하지 않는다.</strong> <code>total = 0</code> 도 같다 — 빈 상태 문구는 소비자 것이다</li>
+    <li><code>page</code> 가 범위를 벗어나면 표시용으로만 clamp 하고 콘솔 경고를 한 번 낸다. <strong>이벤트로 교정하지 않는다</strong> — 소비자 상태와 서로 밀어내는 루프가 된다</li>
+  </ul>
+
+  <h3>제공하지 않는 것</h3>
+  <p>
+    페이지 크기 선택(10/20/50)과 "전체 240개 선택" 은 없다. 전자는 컨트롤이 하나 더
+    늘고 지금 요구가 없으며, 후자는 <code>ns-table</code> 의 선택 범위 결정과 짝인 별개 기능이다.
+  </p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-pagination total="240" per-page="20" default-page="1"></ns-pagination>
+  </script>
+
+  <h3>HTML — 배선</h3>
+  <script type="text/plain">
+    document.querySelector("ns-pagination").addEventListener("ns-page-change", (e) => {
+      load(e.detail.page);   /* 데이터를 가져오는 것은 소비자다 */
+    });
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsPagination } from "@neosimplix/common-ui/react";
+
+    const [page, setPage] = useState(1);
+
+    <NsPagination
+      total={total}
+      perPage={20}
+      page={page}
+      onNsPageChange={(e) => setPage(e.detail.page)}
+    />
   </script>
 
   <h2 id="ns-header">ns-header</h2>
@@ -1530,6 +2043,137 @@
     // 이 데모 컨테이너에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
     dialogDemo.addEventListener("ns-dialog-close", (e) => {
       dialogLog.textContent = `ns-dialog-close  reason=${e.detail.reason}`;
+    });
+  }
+
+  const sortDemo = document.getElementById("sort-demo");
+  const sortLog = document.getElementById("sort-log");
+  if (sortDemo && sortLog) {
+    const sortTable = sortDemo.querySelector("ns-table");
+    const sortBody = sortDemo.querySelector("tbody");
+    // 원래 순서를 보존한다 — 3-상태의 "none" 이 이 순서로 돌아오는 것을 보여준다.
+    const sortRows = [...sortBody.querySelectorAll("tr")].map((tr) => ({
+      name: tr.cells[0].textContent,
+      dept: tr.cells[1].textContent,
+      joined: tr.cells[2].textContent,
+    }));
+
+    const drawSort = (key, direction) => {
+      const list = [...sortRows];
+      if (direction !== "none") {
+        list.sort((a, b) => a[key].localeCompare(b[key], "ko"));
+        if (direction === "descending") list.reverse();
+      }
+      sortBody.replaceChildren(
+        ...list.map((r) => {
+          const tr = document.createElement("tr");
+          for (const value of [r.name, r.dept, r.joined]) {
+            const td = document.createElement("td");
+            td.textContent = value;
+            tr.append(td);
+          }
+          return tr;
+        }),
+      );
+    };
+
+    // 이 데모 컨테이너에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
+    sortTable.addEventListener("ns-sort", (e) => {
+      drawSort(e.detail.key, e.detail.direction);
+      sortLog.textContent =
+        `ns-sort  key=${e.detail.key || "(없음)"}  direction=${e.detail.direction}`;
+    });
+  }
+
+  /*
+    id 는 문서 전체에서 유일해야 한다. 이 절의 컨테이너 이름이 한때
+    "select-demo" 였는데 .ns-select 절이 이미 그 이름을 쓰고 있었다.
+    getElementById 는 문서 순서상 첫 번째를 주므로 여기서 엉뚱한 컨테이너를
+    받았고, 그 안에 <ns-table> 이 없어 querySelector 가 null 을 돌려줘
+    .addEventListener 에서 예외가 났다 — 이 스크립트는 하나뿐이라 그 뒤의
+    모든 배선(여기 아래 페이징 로그 포함)이 통째로 죽었다.
+    화면은 멀쩡해 보여서 육안 확인으로는 드러나지 않는다.
+
+    → 절 이름을 접두사로 붙인다. table-select-…, table-both-… 처럼.
+  */
+  const tableSelectDemo = document.getElementById("table-select-demo");
+  const tableSelectLog = document.getElementById("table-select-log");
+  if (tableSelectDemo && tableSelectLog) {
+    // 비제어 데모다 — 컴포넌트가 행 체크박스와 3-상태를 모두 관리한다.
+    tableSelectDemo.querySelector("ns-table").addEventListener("ns-select-change", (e) => {
+      const ids = e.detail.ids;
+      tableSelectLog.textContent = `ns-select-change  ids=[${ids.join(", ")}]  (${ids.length}개)`;
+    });
+  }
+
+  /*
+    정렬 + 선택 데모. 위의 두 데모가 서로를 배제해 한 표에서 함께 도는 경로
+    (위임 리스너 둘 · 관찰자 콜백의 두 동기화 · 비제어 초기값 seed)가 어디에도
+    렌더되지 않았다.
+
+    행을 다시 그릴 때 체크 상태를 일부러 복원하지 않는다. 비제어 선택 중에
+    소비자가 <tbody> 를 갈아끼우면 선택 집합이 줄어드는데, 컴포넌트가 그것을
+    ns-select-change 로 알리는지 눈으로 볼 수 있는 자리가 여기뿐이다.
+  */
+  const bothDemo = document.getElementById("table-both-demo");
+  const bothSortLog = document.getElementById("table-both-sort-log");
+  const bothSelectLog = document.getElementById("table-both-select-log");
+  if (bothDemo && bothSortLog && bothSelectLog) {
+    const bothTable = bothDemo.querySelector("ns-table");
+    const bothBody = bothDemo.querySelector("tbody");
+    const bothRows = [...bothBody.querySelectorAll("tr")].map((tr) => ({
+      id: tr.querySelector("input[data-ns-row-id]").dataset.nsRowId,
+      name: tr.cells[1].textContent,
+      dept: tr.cells[2].textContent,
+      joined: tr.cells[3].textContent,
+    }));
+
+    const drawBoth = (key, direction) => {
+      const list = [...bothRows];
+      if (direction !== "none") {
+        list.sort((a, b) => a[key].localeCompare(b[key], "ko"));
+        if (direction === "descending") list.reverse();
+      }
+      bothBody.replaceChildren(
+        ...list.map((r) => {
+          const tr = document.createElement("tr");
+          const cell = document.createElement("td");
+          const label = document.createElement("label");
+          label.className = "ns-checkbox";
+          const box = document.createElement("input");
+          box.type = "checkbox";
+          box.dataset.nsRowId = r.id;
+          label.append(box);
+          cell.append(label);
+          tr.append(cell);
+          for (const value of [r.name, r.dept, r.joined]) {
+            const td = document.createElement("td");
+            td.textContent = value;
+            tr.append(td);
+          }
+          return tr;
+        }),
+      );
+    };
+
+    // 이 데모의 컴포넌트에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
+    bothTable.addEventListener("ns-sort", (e) => {
+      drawBoth(e.detail.key, e.detail.direction);
+      bothSortLog.textContent =
+        `ns-sort  key=${e.detail.key || "(없음)"}  direction=${e.detail.direction}`;
+    });
+    bothTable.addEventListener("ns-select-change", (e) => {
+      const ids = e.detail.ids;
+      bothSelectLog.textContent = `ns-select-change  ids=[${ids.join(", ")}]  (${ids.length}개)`;
+    });
+  }
+
+  const paginationDemo = document.getElementById("pagination-demo");
+  const paginationLog = document.getElementById("pagination-log");
+  if (paginationDemo && paginationLog) {
+    // 비제어 데모다 — 컴포넌트가 현재 페이지를 스스로 관리한다.
+    paginationDemo.querySelector("ns-pagination").addEventListener("ns-page-change", (e) => {
+      paginationLog.textContent = `ns-page-change  page=${e.detail.page}`;
     });
   }
 </script>

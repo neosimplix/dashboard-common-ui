@@ -14,6 +14,8 @@
 | `ns-page-heading` | `h1` + 설명 `p` |
 | `ns-skeleton` | 로딩 자리표시자. 크기를 프로퍼티로 받는다 |
 | `ns-dialog` | 네이티브 `dialog` 모달. 제어/비제어 |
+| `ns-table` | 소비자 `table` 을 감싸는 Light DOM. 정렬 상태 · 전체 선택 3-상태. **셀을 렌더하지 않는다** |
+| `ns-pagination` | Light DOM. `.ns-button` 을 재사용한 페이지 이동 컨트롤 |
 
 | 클래스 | 붙이는 요소 |
 |---|---|
@@ -22,10 +24,12 @@
 | `.ns-checkbox` | `label` (내부에 `input[type=checkbox]`) |
 | `.ns-field` | `div`. `__label` `__hint` `__error` 를 함께 쓴다 |
 | `.ns-card` | `div` |
+| `.ns-table` | `table`. `th`/`td` 는 자손 선택자 |
+| `.ns-table__sort` | `th` 안의 `button` |
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 셋이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 여섯이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 
@@ -36,6 +40,8 @@
 **테스트 러너를 두지 않는다.** 같은 시도가 검증 하네스 복잡도 때문에도 폐기됐다. 회귀 확인은 `npm run check` 와 `index.html` 육안 확인이다. 문서 페이지의 헤더와 좌측 네비게이션이 이 라이브러리의 컴포넌트로 만들어져 있어서, 깨지면 문서가 열리지 않는 것으로 즉시 드러난다.
 
 **폼 컨트롤을 웹 컴포넌트로 만들지 않는다.** shadow DOM 이 폼 참여·라벨·검증·자동완성을 끊고, FACE 로 되살려도 "JS 없이 동작한다"는 성질은 돌아오지 않는다. 근거는 `docs/gotchas.md` 에 있다.
+
+**표는 데이터가 아니라 컨트롤을 소유한다.** 실사용 셀에 조건부 버튼 여섯과 참조 조회가 들어 있어 데이터 주입형 API 로 표현되지 않고, Lit 엘리먼트는 소비자의 React 렌더 함수를 호출할 수 없다. 그래서 `ns-table` 은 정렬 · 선택 **상태**만 갖고 셀 마크업은 소비자가 쓴다. 근거는 `docs/superpowers/specs/2026-08-13-ns-table-design.md` §1~2 에 있다.
 
 ## 디렉터리
 
@@ -50,6 +56,8 @@ common-ui/
 │   ├── components/<name>/
 │   │   ├── ns-<name>.ts               Lit 엘리먼트 + 등록 + 태그 타입 선언
 │   │   └── ns-<name>.styles.ts        shadow CSS (css`` 템플릿, .css 파일 아님)
+│   ├── components/table/ns-table.ts            ReactiveElement. .styles.ts 가 없다(Light DOM)
+│   ├── components/pagination/ns-pagination.ts  LitElement + light DOM 렌더
 │   ├── types.ts                       이벤트 detail 타입 + HTMLElementEventMap 확장
 │   ├── index.ts                       컴포넌트 등록 진입점
 │   ├── react/
@@ -61,7 +69,7 @@ common-ui/
 ├── scripts/
 │   ├── copy-css.mjs                   tokens.css · controls.css → dist/
 │   ├── check-events.mjs               발생 이벤트 ↔ React 래퍼 매핑 대조
-│   ├── check-controls.mjs             클래스 ↔ index.html 문서 양방향 대조
+│   ├── check-controls.mjs             클래스 ↔ index.html 양방향, 요소 선택자는 정방향만 대조
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
@@ -131,6 +139,5 @@ grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
 
 ## 남은 일
 
-- **`ns-table`.** 정렬·페이징·선택이 붙는 데이터 주입형 표. 별도 스펙이 필요하다 — 셀 커스터마이징, 서버 페이징 지원 여부, 선택 상태의 제어/비제어, 그리고 shadow 안에서 `.ns-checkbox`·`.ns-button` 을 재사용하는 문제가 얽혀 있다.
 - **`ns-header`·`ns-sidebar` 의 비제어 지원.** 토글을 소비자 코드 없이 동작시키는 것. 지금 소비자 코드가 필요한 이유는 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다는 것이다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다.
 - **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 삭제, Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.

@@ -7,10 +7,19 @@
   이 파일은 "@neosimplix/common-ui/react" 를 실제로 설치해 쓰는 소비자
   프로젝트를 흉내 내어, tsconfig.consumer.json 을 통해 별도로 타입 검사된다.
 
-  아래 JSX 는 index.html 의 "환경별 연동 → Next.js (App Router)" 절 예시를
-  그대로 옮긴 것이다 — 문서가 배포하는 것과 정확히 같은 코드를 검사하기
-  위해서다. next/navigation, UserMenu 등 Next 전용 부분만 최소 스텁으로
-  대체했다(이 패키지는 next 에 의존하지 않는다).
+  아래 JSX 의 뼈대(NsHeader / NsSidebar / NsNavGroup / NsNavItem)는 index.html 의
+  "환경별 연동 → Next.js (App Router)" 절 예시를 옮긴 것이고, 그 안에 다른 절의
+  React 예시(Dialog · Field · Select · Checkbox · Card · NsTable · NsPagination
+  등)를 한 셸 안에 모아 넣었다. next/navigation, UserMenu 등 Next 전용 부분만
+  최소 스텁으로 대체했다(이 패키지는 next 에 의존하지 않는다).
+
+  **이 파일은 index.html 의 스니펫을 통째로 검사하지 않는다.** 문서의
+  <script type="text/plain"> 안은 tsc 가 보지 않고, 여기 옮겨 적힌 것만 검사된다.
+  둘이 갈라지면 문서 쪽만 컴파일되지 않는 상태가 조용히 생긴다 — 실제로
+  ns-table 의 React 예시가 `useState({ direction: "none" as const })` 로 갈라져
+  있다가 소비자의 첫 빌드에서 막히는 형태로 발견됐다. 그래서 정렬 상태는
+  index.html 의 ns-table 절과 **같은 형태**(useState<NsSortDetail> +
+  setSort(e.detail))로 적어 둔다. 예시를 고칠 때는 양쪽을 같이 본다.
 */
 import * as React from "react";
 import { useState } from "react";
@@ -26,13 +35,15 @@ import {
   NsIcon,
   NsNavGroup,
   NsNavItem,
+  NsPagination,
   NsSidebar,
   NsSkeleton,
+  NsTable,
   PageHeading,
   Select,
   Textarea,
 } from "../src/react/index.js";
-import type { NsDialogCloseReason } from "../src/react/index.js";
+import type { NsDialogCloseReason, NsSortDetail } from "../src/react/index.js";
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -51,6 +62,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const log = (msg: string) => console.log(msg);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [sort, setSort] = useState<NsSortDetail>({ key: "", direction: "none" });
+
+  const [rows, setRows] = useState<string[]>([]);
+
+  const [page, setPage] = useState(1);
 
   // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
   const onDialogClose = (reason: NsDialogCloseReason) => {
@@ -117,6 +134,44 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               <p>승인하시겠습니까?</p>
             </Dialog>
+            <NsTable
+              sortKey={sort.key}
+              sortDirection={sort.direction}
+              selected={rows}
+              onNsSort={(e) => setSort(e.detail)}
+              onNsSelectChange={(e) => setRows(e.detail.ids)}
+            >
+              <table className="ns-table">
+                <thead>
+                  <tr>
+                    <th>
+                      <label className="ns-checkbox">
+                        <input type="checkbox" data-ns-select-all />
+                      </label>
+                    </th>
+                    <th data-ns-sort-key="name">
+                      <button className="ns-table__sort" type="button">이름</button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <label className="ns-checkbox">
+                        <input type="checkbox" data-ns-row-id="a" checked={rows.includes("a")} readOnly />
+                      </label>
+                    </td>
+                    <td>{sort.direction}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </NsTable>
+            <NsPagination
+              total={240}
+              perPage={20}
+              page={page}
+              onNsPageChange={(e) => setPage(e.detail.page)}
+            />
           </Card>
         </main>
       </div>

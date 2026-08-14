@@ -7,12 +7,17 @@ import { NsIcon as NsIconElement } from "../components/icon/ns-icon.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
 import { NsPageHeading as NsPageHeadingElement } from "../components/page-heading/ns-page-heading.js";
+import { NsPagination as NsPaginationElement } from "../components/pagination/ns-pagination.js";
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
 import { NsSkeleton as NsSkeletonElement } from "../components/skeleton/ns-skeleton.js";
+import { NsTable as NsTableElement } from "../components/table/ns-table.js";
 import type {
   NsToggleDetail,
   NsNavigateDetail,
   NsDialogCloseDetail,
+  NsSelectChangeDetail,
+  NsSortDetail,
+  NsPageChangeDetail,
 } from "../types.js";
 
 /*
@@ -110,5 +115,31 @@ export const NsDialogBase = createComponent({
   events: {
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsDialogClose: "ns-dialog-close" as EventName<CustomEvent<NsDialogCloseDetail>>,
+  },
+});
+
+/*
+  shim 이 필요 없다. sortKey·sortDirection 어느 것도 HTML 전역 속성과 충돌하지
+  않으므로 평범한 래퍼를 그대로 공개한다. 그래서 EventName<> 검사가 고전적인
+  경로로 동작한다 — docs/consumer-example.tsx 가 e.detail 을 직접 읽는다.
+*/
+export const NsTable = createComponent({
+  react: React,
+  tagName: "ns-table",
+  elementClass: NsTableElement,
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsSort: "ns-sort" as EventName<CustomEvent<NsSortDetail>>,
+    onNsSelectChange: "ns-select-change" as EventName<CustomEvent<NsSelectChangeDetail>>,
+  },
+});
+
+export const NsPagination = createComponent({
+  react: React,
+  tagName: "ns-pagination",
+  elementClass: NsPaginationElement,
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsPageChange: "ns-page-change" as EventName<CustomEvent<NsPageChangeDetail>>,
   },
 });

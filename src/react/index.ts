@@ -5,7 +5,7 @@
   클래스를 붙이는 컴포넌트는 controls/, 커스텀 엘리먼트 래퍼의 프롭 이름을
   맞추는 어댑터는 tags/ 에 있다.
 */
-export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsSidebar, NsSkeleton } from "./elements.js";
+export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPagination, NsSidebar, NsSkeleton, NsTable } from "./elements.js";
 
 export { PageHeading } from "./tags/PageHeading.js";
 export type { PageHeadingProps } from "./tags/PageHeading.js";
@@ -43,4 +43,8 @@ export type {
   NsNavigateDetail,
   NsDialogCloseDetail,
   NsDialogCloseReason,
+  NsSortDetail,
+  NsSortDirection,
+  NsSelectChangeDetail,
+  NsPageChangeDetail,
 } from "../types.js";

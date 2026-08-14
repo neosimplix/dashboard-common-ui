@@ -246,6 +246,149 @@ ns-icon { display: inline-flex; width: 1.25rem; height: 1.25rem; }
 
 이 패턴은 사이드바가 `--ns-label-display` 로 접힘을 내려보내는 것과 같은 수단이다. 그때는 조상을 볼 수 없어서 썼고, 여기서는 선택자가 닿지 않아서 쓴다.
 
+## Light DOM 에서 소비자 자식이 사라지는 두 경로
+
+`ns-table` 은 소비자가 쓴 `<table>` 을 품는다. 그 자식이 사라지는 방법이 둘이고 서로 다르다.
+
+**1. Lit 템플릿을 렌더하면 덮어써진다.** `createRenderRoot() { return this }` 로 light DOM 에 렌더하면 Lit 이 그 요소의 내용을 자기 템플릿으로 교체한다. 빈 템플릿이라도 그렇다.
+
+**2. shadow root 가 생기면 가려진다.** `ReactiveElement` 의 **기본** `createRenderRoot()` 는 shadow root 를 만든다. shadow root 가 있으면 `<slot>` 이 없는 한 light DOM 자식이 렌더되지 않는다.
+
+즉 `ReactiveElement` 를 상속하는 것만으로는 부족하다 — 그것은 1번만 막는다. `createRenderRoot` 재정의가 2번을 막는다.
+
+**둘 다 에러 없이 빈 표가 된다.** `npm run check` 는 타입만 보므로 통과한다.
+
+→ 소비자 자식을 품는 Light DOM 컴포넌트는 `ReactiveElement` 상속 **과** `createRenderRoot` 재정의 둘 다 한다. 자식이 없다면(`ns-pagination`) `LitElement` + 재정의로 충분하다.
+
+## Light DOM 컴포넌트의 `static styles` 는 조용히 무시된다
+
+`createRenderRoot` 를 재정의하면 Lit 의 `adoptStyles` 가 호출되지 않는다. `static styles` 를 적어도 아무 일도 일어나지 않고 경고도 없다.
+
+→ Light DOM 컴포넌트에는 `.styles.ts` 파일을 만들지 않는다. 스타일은 `controls.css` 에 요소 선택자로 적는다. 그것이 오히려 이 컴포넌트들이 Light DOM 인 이유다 — `.ns-button` 을 재사용하려고 캡슐화를 포기한 것이다.
+
+## `check-controls.mjs` 는 요소 선택자를 못 봤다
+
+정규식이 `\.(ns-[a-z0-9_-]+)` 로 **점이 붙은 클래스만** 잡았다. `ns-table { overflow-x: auto }` 같은 요소 선택자는 그냥 빠졌다 — Light DOM 컴포넌트가 처음 들어오면서 드러났다.
+
+정방향만 넓혔다. 역방향은 넣지 않는다 — 태그 이름은 `index.html` 전체에 정당하게 등장하므로(데모 마크업, 프로퍼티 표, 예시 블록) 역방향으로 보면 거짓 양성만 쏟아진다.
+
+→ `controls.css` 에 새 규칙 형태가 들어올 때마다 이 검사가 그것을 보는지 확인한다. 검사가 못 보는 규칙은 문서 대조 밖에 있다.
+
+## Light DOM 은 컴포넌트 인스턴스 사이의 경계도 없앤다
+
+`ns-table` 이 `this.querySelectorAll("th[data-ns-sort-key]")` 로 정렬 헤더를 찾고 `target.closest("th[data-ns-sort-key]")` 로 클릭을 위임했다. shadow 컴포넌트라면 그것으로 충분하다 — 경계가 남의 것을 걸러준다.
+
+**Light DOM 에는 그 경계가 없다.** 중첩된 `<ns-table>` 의 `<th>` 는 바깥 호스트의 `querySelectorAll` 에도 잡히고, 안쪽 헤더 클릭이 위로 버블해 바깥 핸들러의 `closest()` 에도 매치된다. 결과는 `ns-sort` 가 두 번 발생하고, "aria-sort 의 유일한 작성자" 를 자처하는 두 컴포넌트가 같은 속성을 두고 다투는 것이다. 선택 기능도 같다 — 바깥 표가 안쪽 행을 자기 3-상태에 세고 자기 것이 아닌 id 를 이벤트로 올린다.
+
+→ **가장 가까운 호스트가 자기인지 확인한다.** `el.closest("ns-table") === this` 한 줄이고, 조회하는 모든 지점에 붙여야 한다. `closest()` 가 조상 사슬 전체를 걷고 Light DOM 에 그 걸음을 끊는 것이 없으므로, 중첩 아닌 경우 거짓 음성은 구조적으로 불가능하다.
+
+이것이 캡슐화를 포기하고 `controls.css` 재사용을 얻은 거래의 청구서다. shadow 컴포넌트에는 없던 종류의 부담이다.
+
+## `updated()` 는 남의 DOM 변경을 보지 못한다
+
+컴포넌트가 소비자 DOM 의 속성을 관리하면(`aria-sort`, 전체 선택의 `checked`) 그 동기화를 언제 돌릴지가 문제가 된다. `updated()` 는 **반응형 프로퍼티가 바뀔 때만** 돈다.
+
+소비자가 정렬과 무관한 이유로 — 칼럼 구성 변경, i18n, 페이지 이동 — `<thead>` 나 `<tbody>` 를 교체하면 새 노드에 아무것도 쓰이지 않는다. 다음 클릭이나 프로퍼티 변경까지 조용히 낡는다.
+
+→ `MutationObserver` 로 `{ childList: true, subtree: true }` 를 관찰한다. **`subtree` 는 장식이 아니다** — `<thead>` 교체는 `<table>` 의 자식 변경이라 호스트에서 두 단계 아래고, 호스트의 `childList` 만으로는 놓친다.
+
+**`attributes` 를 관찰하면 무한 루프가 된다.** 동기화가 `setAttribute` 를 쓰고, `setAttribute` 는 **값이 같아도** `MutationRecord` 를 큐에 넣는다. 지금은 주석만이 그것을 막는다.
+
+## `<=` 비교는 NaN 을 통과시킨다
+
+`ns-pagination` 이 `Math.ceil(total / perPage)` 로 페이지 수를 셌다. `perPage` 가 `0` 이면 `Infinity` 가 되어 `"Infinity"` 라는 글자가 버튼으로 렌더되고 "다음" 이 영원히 활성이었다. `total` 까지 `0` 이면 `NaN` 이 되는데, **NaN 비교는 항상 false** 라서 `if (pages <= 1) return nothing` 가드를 그냥 통과했다 — 문서가 조건 없이 보증하는 "1페이지 이하면 아무것도 렌더하지 않는다" 가 깨졌다. `#go` 의 no-op 가드도 `NaN === NaN` 이 false 라 실패해 `detail.page = NaN` 인 이벤트가 나갔다.
+
+→ 양수 검사는 `!(x > 0)` 로 쓴다. **`x <= 0` 은 NaN 을 놓친다.**
+
+→ 그리고 경고 플래그를 진단별로 나눈다. 하나를 공유하면 먼저 발생한 오설정이 다른 하나를 영구히 침묵시킨다.
+
+## 한 변수만 고치면 같은 결함이 그대로 남는다 (위 항목의 후속)
+
+위 항목은 처음에 `perPage` 만 막고 끝났다. `total` 은 무검사였고, 같은 나눗셈에 들어가므로 **같은 결함이 그대로 살아 있었다.** `total={parseInt(searchParams.get("total"))}` 가 파라미터를 못 찾으면 NaN 이고, 이것은 App Router 소비자의 가장 흔한 형태다. 결과도 같았다 — 번호 버튼 없이 이전·다음만 둘 다 활성인 nav 가 남고, 어느 쪽을 눌러도 `page: NaN` 이 나갔다.
+
+고쳐진 항목의 문장이 "→ 양수 검사는 `!(x > 0)` 로 쓴다" 로 끝나 **이미 다 고쳐진 것처럼 읽혔다는 점이 더 나빴다.** 이 저장소가 이미 겪은 "코드와 문서가 각각 맞고 합쳐서 틀린" 유형이다.
+
+→ **같은 식에 들어가는 입력은 전부 같이 막는다.** 하나만 막은 가드는 막지 않은 쪽으로 같은 값이 들어온다.
+
+## `Math.min`/`Math.max` 는 NaN 을 정화하지 못한다
+
+범위를 벗어난 페이지를 표시용으로 clamp 하는 코드가 `Math.min(Math.max(raw, 1), Math.max(pages, 1))` 이었다. `raw` 가 NaN 이면 `Math.max(NaN, 1)` 이 이미 NaN 이고 `Math.min(NaN, 5)` 도 NaN 이다 — **clamp 를 통과했는데 값이 그대로 NaN 이다.**
+
+그래서 한 번 `#innerPage` 가 NaN 이 되면 `total` 이 정상값으로 돌아온 뒤에도 상태가 고착됐다. 번호 버튼은 렌더되는데 **어느 것에도 `aria-current` 도 `--outline` 도 붙지 않고**, 이전·다음은 계속 활성이며 계속 NaN 을 냈다.
+
+→ 지금 `ns-pagination` 은 네 지점에서 함께 막는다.
+
+| 지점 | 하는 일 |
+|---|---|
+| `#pages` | `!(perPage > 0)` · `!Number.isFinite(total) \|\| total < 0` 이면 진단별 플래그로 경고 한 번 내고 `0` 을 돌린다 → 아무것도 렌더하지 않는다 |
+| `#current()` | `Number.isInteger(raw) && raw >= 1 && raw <= pages` 로 판정하고, clamp 를 `Number.isFinite(raw) ? … : 1` 로 감싼다. **`#pages >= 1` 이면 언제나 `1..#pages` 의 정수를 돌려준다** |
+| `#go()` | `!Number.isInteger(page) \|\| page < 1 \|\| page > #pages` 면 no-op. `ns-page-change` 의 `page` 가 유한한 정수라는 것을 이 한 지점이 보증한다 |
+| `willUpdate()` | `default-page` 가 1 이상 정수가 아니면 경고하고 seed 하지 않는다 (`default-page="abc"` → `Number("abc") = NaN`, `NaN !== 1` 이 true 라 옛 가드를 통과했다) |
+
+→ **입구를 막고, 읽는 쪽에서 한 번 더 정화한다.** 입구만 막으면 놓친 입구 하나가 상태를 영구 고착시키고, 읽는 쪽만 정화하면 잘못된 값이 계속 저장된다. 정화한 값을 상태에 되쓰지는 않는다 — 렌더 중 상태 쓰기이고, 제어 모드에서 소비자 값과 서로 밀어내는 루프가 된다.
+
+→ 범위 경고는 **모드마다 지목할 프로퍼티가 다르다.** 비제어에서 `raw` 는 소비자가 쓴 `page` 가 아니라 내부 값이므로, `page` 를 탓하면 존재하지도 않는 프로퍼티를 가리킨다. 그때 실제로 어긋난 것은 `total`·`per-page` 로 계산된 페이지 수다.
+
+## `firstUpdated` 에서 seed 하면 첫 페인트가 그 값을 못 본다
+
+`ns-pagination` 의 `default-page="4"` 가 화면에는 1을 현재 페이지로 그렸다. 내부 상태는 4였다. 그래서 첫 "다음" 클릭이 5가 아니라 **2로 갔다** — 렌더 시점의 `current`(=1)를 잡고 있던 클릭 클로저가 2를 요청했고, 중복 클릭 가드가 그 2를 `#current()`(=4)와 비교해 다르다고 판단해 통과시켰다.
+
+Lit 의 첫 업데이트 순서는 `willUpdate` → `render` → `firstUpdated` → `updated` 다. `firstUpdated` 는 이름과 달리 **첫 렌더가 끝난 뒤**에 돈다. 거기서 상태를 seed 해도 아무도 두 번째 업데이트를 요청하지 않으므로 그 값은 다음 렌더까지 화면에 반영되지 않는다.
+
+`ns-table` 과 `ns-dialog` 가 같은 자리에서 seed 하면서도 멀쩡한 것이 헷갈리는 지점이다. 기준은 렌더의 유무가 아니라 **눈에 보이는 결과가 어디서 나오는가**다. 그 둘은 `updated()` 에서 나온다 — `ns-table` 은 DOM 동기화, `ns-dialog` 는 `showModal()` 이고, `updated` 는 `firstUpdated` 다음이라 seed 한 값을 본다. 결과가 `render()` 의 반환값에 있는 컴포넌트만 자리가 다르다.
+
+`willUpdate` 로 옮길 때 첫 업데이트에서만 돌게 `hasUpdated` 로 막는다. 이 플래그는 `firstUpdated` **직전**에 true 가 되므로 첫 `willUpdate` 만 false 를 본다. seed 대상이 반응형 프로퍼티가 아닌 `#private` 필드라 렌더 중 상태 쓰기 경고에도 걸리지 않고, 다시 그리지 않으니 1이 스쳤다 4로 바뀌는 깜빡임도 없다.
+
+`ns-dialog` 의 "첫 업데이트 전에 부른 `show()` 가 조용히 사라진다" 와 같은 뿌리다. 둘 다 **Lit 이 첫 업데이트를 마이크로태스크로 미룬다**는 사실에서 나온다.
+
+→ **비제어 초기값은 `willUpdate` 에서 seed 한다.** 단, 덮어쓰지 않는다 — 생성과 같은 태스크에서 소비자가 만진 프로퍼티가 먼저 와 있을 수 있다. `firstUpdated` 는 렌더가 없는 컴포넌트에서만 안전하다.
+
+## 검사의 대상이 다른 이름공간과 이름을 공유하면 falsify 할 수 없다
+
+`check-controls.mjs` 를 요소 선택자까지 넓히고 `ns-table` 로 깨뜨려 보려 했다. **실패하지 않았다.** 탈출구가 둘이었다. `.ns-table`(클래스)과 `ns-table`(요소)이 이름이 같아, 데모의 `class="ns-table"` 이 이미 문서화 집합을 채웠다. **그리고** 스크립트의 `TAG()` 폴백(`/<ns-table[\s>]|<code>ns-table<\/code>/`)이 있어, 그 클래스 겹침이 없었어도 데모의 실제 `<ns-table>` 마크업과 `<code>ns-table</code>` 언급이 독립적으로 통과시켰을 것이다. 새 판정 경로는 한 번도 실행되지 않았고, 그 사실을 통과가 감췄다.
+
+→ **짝이 없는 합성 이름으로 falsify 한다.** `ns-probe-tag` 가 통하는 이유는 이 둘 중 **어느 쪽 탈출구도 없기** 때문이다 — 같은 이름의 클래스도, 실제 태그 마크업도 문서에 없다. CSS 에만 넣어 실패를 확인하고, 문서에 언급을 더해 통과를 확인하고, 언급만 지워 다시 실패를 확인한다. 가운데 단계가 "정규식이 실제로 뭔가를 매치한다" 를, 양쪽이 "판정이 공허하지 않다" 를 증명한다.
+
+## 빌드 산출물을 private 필드 이름으로 grep 하면 항상 0 이다
+
+esbuild 가 네이티브 `#private` 필드를 익명 `WeakMap`/`WeakSet` 헬퍼로 낮춘다. `grep -c '#innerPage' dist/index.js` 는 코드가 멀쩡해도 0 을 돌려준다.
+
+→ 산출물 확인은 **살아남는 문자열**로 한다 — 경고 문구, 이벤트 이름, 클래스 이름. private 이름과 타입 어노테이션은 남지 않는다.
+
+## 선택자 추출을 줄 기준으로 하면 조용히 새어 나간다
+
+`check-controls.mjs` 의 첫 요소 선택자 정규식이 `/^[ \t]*(ns-[a-z-]+)[ \t]*[,{]/gm` 이었다. 줄 시작에 있고 바로 `,` 나 `{` 가 오는 형태만 잡는다. 그래서 `} ns-table {`(앞 규칙과 같은 줄), `ns-table[data-x] {`, `ns-table:hover {` 가 모두 **문서 대조에서 빠졌다** — 검사를 붙인 목적이 바로 그런 누락을 막는 것인데.
+
+→ 줄이 아니라 **선택자 경계**에 앵커한다. `/(?:^|[};,])\s*(ns-[a-z0-9-]+)(?=[\s,{:[.])/gm`. 넓혀서 과하게 잡히면 "문서화하라" 는 **시끄러운 실패**가 되고, 좁아서 놓치면 **조용한 통과**가 된다. 검사에서는 전자가 안전한 방향이다.
+
+**그래도 못 잡는 형태가 남아 있다.** 앞의 경계 집합이 `줄 시작 } ; ,` 뿐이고 뒤의 lookahead 가 `공백 , { : [ .` 뿐이라 그렇다. 실제로 돌려 확인한 결과는 이렇다.
+
+| 형태 | 예 | |
+|---|---|---|
+| 줄 시작(들여쓰기 포함) · `}` · `;` · `,` 뒤 | `ns-table {` · `} ns-table {` · `a, ns-table {` | 잡힘 |
+| 이름 뒤에 `[` `:` `.` `{` | `ns-table[data-x]` · `ns-table:hover` · `ns-table.foo` · `ns-table{` | 잡힘 |
+| **공백을 둔** 결합자 | `ns-table > div {` · `+` · `~` | 잡힘 (결합자를 알아서가 아니라 **앞의 공백**이 lookahead 를 만족시킨다) |
+| 공백 없는 결합자 | `ns-table>div {` · `ns-table+div` · `ns-table~div` | 놓침 |
+| **자손 위치** — 이름이 선택자의 첫 요소가 아닐 때 | `div ns-table {` · `div > ns-table {` | 놓침 (앞이 경계 문자가 아니다) |
+| **`{` 뒤 같은 줄** | `@media (…) { ns-table {` | 놓침 (`{` 가 경계 집합에 없다) |
+| `:is()` · `:where()` · `:not()` 안 | `:is(ns-table, ns-pagination) {` | 놓침 (`(` 가 경계에 없고 `)` 가 lookahead 에 없다) |
+
+앞의 둘(자손 위치, `{` 뒤 같은 줄)이 결합자보다 **큰 구멍**이다 — 미디어 쿼리 안의 규칙과 `.wrapper ns-table` 류는 실제로 쓸 만한 형태다.
+
+지금 `controls.css` 에는 놓치는 형태가 하나도 없다(20여 개 형태를 직접 넣어 확인했다). 그래서 **현재 상태에서는 무해하고, 새 규칙을 그런 형태로 쓰는 순간 조용히 문서 대조 밖으로 나간다.** 요소 선택자를 새로 쓸 때는 이름을 선택자 맨 앞에 두고 앞뒤에 공백을 둔다.
+
+## `index.html` 의 중복 id 하나가 배선 전체를 죽인다
+
+`ns-table` 절이 데모 컨테이너에 `id="select-demo"` 를 붙였는데, 그 이름을 **이전 브랜치의 `.ns-select` 절**이 이미 쓰고 있었다. `getElementById` 는 문서 순서상 첫 번째를 준다 — `.ns-select` 컨테이너에는 `<ns-table>` 이 없으므로 `querySelector` 가 `null` 을 돌려주고 `.addEventListener` 가 `TypeError` 를 던졌다.
+
+이 파일의 배선은 **클래식 `<script>` 하나**다. 예외 지점부터 아래 문장이 전부 실행되지 않는다. 실제로 `ns-select-change` 로그와 그 아래의 `ns-page-change` 로그가 **둘 다** 죽어 있었다. 새 기능 두 개의 이벤트가 실제로 발생하는지 확인할 방법이 문서에서 사라진 것이다.
+
+**증상이 고약한 이유: 화면은 멀쩡해 보인다.** 데모 복제는 스크립트 맨 앞이라 렌더되고, 3-상태 체크박스도 페이지 버튼도 컴포넌트가 스스로 하는 일이라 정상 동작한다. 콘솔을 열지 않으면 "로그 문구가 안 바뀌네" 뿐이다.
+
+**두 검증 경로 어느 쪽도 이것을 보지 못한다.** `npm run check` 는 `index.html` 의 JS 를 파싱하지 않고(`check-controls.mjs` 는 정규식으로 클래스 이름만 본다), 육안 확인은 **이 결함의 피해자**라 스스로를 검증할 수 없다. per-task 리뷰도 못 본다 — 새 id 는 그 Task 의 diff 안에서 유일하고, 충돌 상대는 다른 브랜치가 만든 절이다.
+
+→ 새 절의 id 에는 **절 이름을 접두사로** 붙인다(`table-select-demo`, `table-both-sort-log`). 그리고 `verification.md` 의 `index.html` grep 목록에 중복 id 검사를 넣었다. 배선이 살아 있는지는 로그 문단이 실제로 바뀌는지로만 확인된다.
+
 ## 검사는 실패시켜 봐야 검사다
 
 이 저장소에서 이 원칙으로 구멍 두 개를 찾았다. `check-events.mjs` 는 가짜 이벤트를 넣어 실패를 확인했고, 소비자 타입 검사는 캐스트를 되돌려 확인했다 — 그 과정에서 네 래퍼 중 둘만 검사하고 있다는 것이 드러났다.
