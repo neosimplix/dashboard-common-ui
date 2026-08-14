@@ -81,6 +81,20 @@ export class NsTable extends ReactiveElement {
   #innerKey = "";
   #innerDirection: NsSortDirection = "none";
 
+  /*
+    비제어 모드에서 ns-select-change 로 **마지막에 보고한 집합**이다.
+    `undefined` 면 아직 기준선이 없다는 뜻이고, 그때는 비교 대신 seed 만 한다.
+
+    관찰자가 이것과 DOM 을 비교해 "이벤트 없이 바뀐 선택" 을 잡는다.
+  */
+  #reported?: string[];
+
+  /*
+    평생 한 번만 켜진다. ns-pagination 의 #warnedPage/#warnedPerPage 와 같은
+    이유로 다른 진단과 플래그를 공유하지 않는다.
+  */
+  #warnedHalfControlled = false;
+
   #observer?: MutationObserver;
 
   get #controlled(): boolean {
@@ -121,6 +135,7 @@ export class NsTable extends ReactiveElement {
     this.#observer = new MutationObserver(() => {
       this.#syncAriaSort();
       this.#syncSelectAll();
+      this.#reportSelectionIfChanged();
     });
     this.#observer.observe(this, { childList: true, subtree: true });
   }
@@ -140,11 +155,39 @@ export class NsTable extends ReactiveElement {
   protected override firstUpdated(): void {
     if (this.defaultSortKey !== "") this.#innerKey = this.defaultSortKey;
     if (this.defaultSortDirection !== "none") this.#innerDirection = this.defaultSortDirection;
+
+    /*
+      비제어 초기 선택은 마크업의 checked 다. 소비자가 자기 손으로 쓴 것이므로
+      보고하지 않고 비교 기준선으로만 잡는다.
+    */
+    if (this.selected === undefined) this.#reported = this.#checkedIds();
   }
 
   protected override updated(): void {
+    this.#warnHalfControlled();
     this.#syncAriaSort();
     this.#syncSelectAll();
+  }
+
+  /*
+    #controlled 는 sortKey 하나로 판정하는데 #direction 게터는
+    `sortDirection ?? #innerDirection` 이다. sortDirection 만 설정하고 sortKey 를
+    두지 않으면 비제어 분기가 #innerDirection 을 갱신해도 게터가 그것을 소비자
+    값으로 덮는다 — nextDirection 의 입력이 그 값에 묶여 ns-sort 가 같은 방향만
+    반복하고 aria-sort 가 거기서 멈춘다.
+
+    코드로 한쪽을 고르지 않는 이유는 어느 쪽이 의도인지 컴포넌트가 알 수 없기
+    때문이다(제어하려 했는데 sortKey 를 빠뜨렸을 수도, 비제어 초기값을 주려다
+    프로퍼티를 잘못 골랐을 수도 있다). ns-pagination 이 잘못된 per-page·page 에
+    하는 것처럼 알리기만 한다.
+  */
+  #warnHalfControlled(): void {
+    if (this.#warnedHalfControlled) return;
+    if (this.sortDirection === undefined || this.sortKey !== undefined) return;
+    this.#warnedHalfControlled = true;
+    console.warn(
+      `[ns-table] sortDirection="${this.sortDirection}" 만 설정하고 sortKey 는 설정하지 않았습니다. 둘은 짝이라 이 상태에서는 정렬 방향이 바뀌지 않습니다. 제어하려면 둘 다 설정하고, 비제어 초기값이 목적이면 default-sort-direction 을 쓰세요.`,
+    );
   }
 
   /*
@@ -223,10 +266,17 @@ export class NsTable extends ReactiveElement {
     "일부 선택" 을 만들 수 없어서, 이것이 컴포넌트가 가져갈 값이 있는 지점이다.
   */
   #syncSelectAll(): void {
-    const all = [...this.querySelectorAll<HTMLInputElement>("input[data-ns-select-all]")].find(
-      (box) => this.#owns(box),
-    );
-    if (!all) return;
+    /*
+      .find 가 아니라 .filter 다. 전체 선택 박스는 하나가 보통이지만 <tfoot> 의
+      두 번째 전체 선택이나 sticky 헤더 복제처럼 정당한 마크업도 있다.
+      #onChange 는 data-ns-select-all 속성으로 판정해 **모든** 박스에 반응하므로,
+      여기서 첫 번째만 갱신하면 두 번째 박스가 "누르면 동작하지만 3-상태는
+      절대 갱신되지 않는" 반쪽이 된다. 두 경로를 대칭으로 맞춘다.
+    */
+    const alls = [
+      ...this.querySelectorAll<HTMLInputElement>("input[data-ns-select-all]"),
+    ].filter((box) => this.#owns(box));
+    if (alls.length === 0) return;
 
     const boxes = this.#rowBoxes();
     const selected = this.selected;
@@ -235,11 +285,77 @@ export class NsTable extends ReactiveElement {
         ? boxes.filter((box) => box.checked).length
         : boxes.filter((box) => selected.includes(this.#rowId(box))).length;
 
-    all.checked = boxes.length > 0 && count === boxes.length;
-    all.indeterminate = count > 0 && count < boxes.length;
+    const checked = boxes.length > 0 && count === boxes.length;
+    const indeterminate = count > 0 && count < boxes.length;
+    for (const all of alls) {
+      all.checked = checked;
+      all.indeterminate = indeterminate;
+    }
+  }
+
+  /** 비제어 모드의 진실 — DOM 이다. 행 순서를 그대로 따른다. */
+  #checkedIds(): string[] {
+    return this.#rowBoxes()
+      .filter((box) => box.checked)
+      .map((box) => this.#rowId(box));
+  }
+
+  /*
+    **내용**으로 비교한다. 배열 정체성으로 보면 매번 새 배열이라 관찰자가 도는
+    족족 "바뀌었다" 가 되어 이벤트를 스팸한다. 순서도 보지 않는다 — 소비자가
+    행을 재정렬하면 같은 집합이 다른 순서로 오는데 그것은 선택 변경이 아니다.
+    (같은 data-ns-row-id 가 둘인 마크업은 정의되지 않은 입력으로 둔다.)
+  */
+  #sameSet(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false;
+    const set = new Set(b);
+    return a.every((id) => set.has(id));
+  }
+
+  /*
+    비제어 모드에서 소비자가 <tbody> 를 교체하면(정렬·페이지 이동·필터) 선택
+    집합이 이벤트 없이 바뀐다. NsSelectChangeDetail 은 그 집합을 "요청되는 다음
+    전체 집합" 이라고 규정하므로, 이벤트 없이 달라지면 소비자는 화면에 없는 행을
+    선택한 채로 남는다("삭제(1건)" 이 켜져 있는데 체크된 행이 없는 상태다).
+    관찰자가 차이를 발견하면 여기서 보고한다.
+
+    제어 모드에서는 하지 않는다 — 그때의 진실은 DOM 이 아니라 selected 이고,
+    소비자가 방금 쓴 값을 되돌려 주면 루프가 된다.
+
+    재진입: 소비자 핸들러가 그 자리에서 DOM 을 또 바꾸면 관찰자가 다시 깨어난다.
+    무한하지 않다 — #emitSelect 가 dispatch **전에** #reported 를 갱신하므로
+    같은 집합으로 다시 그린 경우는 위 비교에서 멈춘다.
+  */
+  #reportSelectionIfChanged(): void {
+    if (this.selected !== undefined) return;
+
+    const ids = this.#checkedIds();
+    const last = this.#reported;
+    if (last !== undefined && this.#sameSet(last, ids)) return;
+
+    /*
+      파서가 행을 넣는 중이면 보고하지 않고 기준선만 다시 잡는다. 정적 HTML 의
+      <ns-table> 은 시작 태그에서 connect 되고 첫 업데이트는 마이크로태스크라
+      행이 다 들어오기 전에 기준선이 [] 로 잡힐 수 있다. 그대로 두면 마크업의
+      checked 가 파싱되는 것만으로 "선택이 바뀌었다" 가 되어 로드만으로 이벤트가
+      나간다 — 소비자가 자기 마크업에 쓴 초기 선택은 변경이 아니다.
+    */
+    if (last === undefined || this.ownerDocument.readyState === "loading") {
+      this.#reported = ids;
+      return;
+    }
+
+    this.#emitSelect(ids);
   }
 
   #emitSelect(ids: string[]): void {
+    /*
+      dispatch 보다 **먼저** 갱신한다. 소비자 핸들러가 그 자리에서 <tbody> 를
+      바꾸면 관찰자가 곧 이 값과 비교하기 때문이다. 나중에 갱신하면 방금 보고한
+      집합을 "아직 보고 안 한 변화" 로 다시 세어 이벤트가 한 번 더 나간다.
+    */
+    this.#reported = ids;
+
     const detail: NsSelectChangeDetail = { ids };
     this.dispatchEvent(
       new CustomEvent("ns-select-change", { detail, bubbles: true, composed: true }),
