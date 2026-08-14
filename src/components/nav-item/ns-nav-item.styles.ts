@@ -27,13 +27,29 @@ export const styles = css`
     color: var(--ns-color-fg);
   }
 
-  /* 접힌 레일에서 유일하게 남는 요소라 flex 축소를 막는다. */
-  .badge {
+  /* 접힌 레일에서 유일하게 남는 자리라 flex 축소를 막는다. */
+  .leading {
     flex: none;
     display: grid;
     place-items: center;
     width: var(--ns-control-height-sm);
     height: var(--ns-control-height-sm);
+  }
+
+  /*
+    슬롯에 들어온 것이 배지와 같은 사각형을 차지하게 한다. 소비자가 넣는 것은
+    보통 <ns-icon> 이고, 그 크기는 --ns-icon-size 를 따른다.
+  */
+  ::slotted([slot="leading"]) {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .badge {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
     border-radius: var(--ns-radius-badge);
     background: var(--ns-color-surface-hover);
     font-size: var(--ns-font-size-2xs);

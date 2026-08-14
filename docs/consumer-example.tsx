@@ -96,6 +96,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               active={pathname === "/a"}
               onNsNavigate={(e) => log(e.detail.href)}
             />
+            <NsNavItem href="/b" label="프로젝트 B" onNsNavigate={(e) => log(e.detail.href)}>
+              <NsIcon slot="leading" name="menu" />
+            </NsNavItem>
           </NsNavGroup>
         </Sidebar>
         <main>

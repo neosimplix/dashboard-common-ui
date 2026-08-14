@@ -15,7 +15,13 @@ export class NsNavItem extends LitElement {
   /** 펼친 상태에서 보이는 라벨. 넘치면 한 줄 말줄임. */
   @property({ type: String }) label = "";
 
-  /** 접힌 레일에서 보이는 두 글자 배지. */
+  /**
+   * `leading` 슬롯이 비었을 때 대신 보이는 짧은 배지.
+   *
+   * **접힘·펼침 양쪽에서 보인다.** 접힌 레일에서 유일하게 남는 요소라 거기서
+   * 두드러질 뿐이고, 펼친 상태에서도 라벨 왼쪽에 그대로 남는다. 라벨과 같은
+   * 글자를 넣으면 "설치 설치" 가 된다.
+   */
   @property({ type: String }) badge = "";
 
   /**
@@ -32,7 +38,11 @@ export class NsNavItem extends LitElement {
   override render() {
     return html`
       <a class="row" href=${this.href} title=${this.label} @click=${this.#onClick}>
-        <span class="badge" aria-hidden="true">${this.badge}</span>
+        <span class="leading">
+          <slot name="leading">
+            <span class="badge" aria-hidden="true">${this.badge}</span>
+          </slot>
+        </span>
         <span class="label">${this.label}</span>
         <span class="trailing"><slot name="trailing"></slot></span>
       </a>
