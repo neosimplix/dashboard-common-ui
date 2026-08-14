@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
+import { repeat } from "lit/directives/repeat.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
@@ -97,6 +98,14 @@ export class NsPagination extends LitElement {
   */
   #warnedPage = false;
   #warnedPerPage = false;
+  #warnedTotal = false;
+
+  /*
+    방금 활성화한 컨트롤. 다음 업데이트 뒤에 같은 것으로 포커스를 되돌린다.
+    번호는 그 번호 자신이 정체성이고, 이전·다음은 "prev"/"next" 다.
+    null 이면 되돌릴 것이 없다. updated() 에서 한 번 쓰고 지운다.
+  */
+  #refocus: number | "prev" | "next" | null = null;
 
   get #controlled(): boolean {
     return this.page !== undefined;
@@ -124,6 +133,31 @@ export class NsPagination extends LitElement {
       }
       return 0;
     }
+
+    /*
+      total 도 똑같이 막는다. perPage 만 막았을 때 total = NaN(예:
+      total={parseInt(searchParams.get("total"))} 가 파라미터를 못 찾은 경우)이면
+      Math.ceil(NaN / 20) = NaN 이 되어 render() 의 "1 이하면 렌더하지 않는다"
+      가드를 그대로 통과했다. 번호 버튼 없이 이전·다음만 둘 다 활성인 nav 가
+      남고 어느 쪽을 눌러도 소비자에게 page: NaN 이 갔다.
+
+      Number.isFinite 로 쓰는 이유는 NaN 과 ±Infinity 를 한 번에 걸러내기
+      위해서다. total < 0 은 그 뒤에 따로 본다 — Math.ceil(-5 / 20) 이 -0 이라
+      지금도 아무것도 렌더하지 않지만, 그것은 우연이고 여기서는 의도로 만든다.
+
+      페이지 수를 셀 수 없으면 0 을 돌려 아무것도 렌더하지 않는 경로로 보낸다.
+      "≤ 1 페이지면 렌더하지 않는다" 는 문서 보증이 이 입력들에도 성립한다.
+    */
+    if (!Number.isFinite(this.total) || this.total < 0) {
+      if (!this.#warnedTotal) {
+        this.#warnedTotal = true;
+        console.warn(
+          `[ns-pagination] total=${this.total} 은 0 이상의 유한한 수여야 합니다. 페이징을 렌더하지 않습니다.`,
+        );
+      }
+      return 0;
+    }
+
     return Math.ceil(this.total / this.perPage);
   }
 
@@ -138,30 +172,75 @@ export class NsPagination extends LitElement {
     여기보다 먼저 실행된다.
   */
   protected override firstUpdated(): void {
+    /*
+      default-page="abc" 는 Number("abc") = NaN 이다. 그대로 seed 하면
+      (NaN !== 1 이 true 라 통과한다) #innerPage 가 NaN 이 되고, 그 뒤로는
+      비제어 상태 전체가 NaN 에 묶인다. 여기서 막는다.
+
+      warn 플래그가 없는 이유는 firstUpdated 가 인스턴스마다 한 번만 돌기
+      때문이다 — 이 자리에서는 경고가 이미 일회성이다.
+    */
+    if (!Number.isInteger(this.defaultPage) || this.defaultPage < 1) {
+      console.warn(
+        `[ns-pagination] default-page=${this.defaultPage} 는 1 이상의 정수여야 합니다. 1 페이지에서 시작합니다.`,
+      );
+      return;
+    }
     if (this.defaultPage !== 1) this.#innerPage = this.defaultPage;
   }
 
+  /**
+   * 지금 보여줄 페이지. **#pages 가 1 이상이면 언제나 1..#pages 의 정수를
+   * 돌려준다** — raw 가 무엇이든 상관없다.
+   */
   #current(): number {
     const raw = this.page ?? this.#innerPage;
     const pages = this.#pages;
-    if (raw >= 1 && raw <= pages) return raw;
+    if (Number.isInteger(raw) && raw >= 1 && raw <= pages) return raw;
 
     /*
-      범위를 벗어난 page 는 표시용으로만 clamp 하고 경고를 한 번 낸다.
+      범위를 벗어난 값은 표시용으로만 clamp 하고 경고를 한 번 낸다.
       이벤트로 교정하지 않는다 — 소비자 상태와 서로 밀어내는 루프가 된다.
+
+      Number.isFinite 로 감싸는 이유: Math.min/Math.max 는 NaN 을 정화하지
+      못한다. Math.min(Math.max(NaN, 1), Math.max(5, 1)) 은 5 가 아니라 NaN 이다.
+      정화하지 않으면 한 번 NaN 이 된 #innerPage 가 total 이 정상으로 돌아온
+      뒤에도 NaN 으로 남아, 어느 버튼에도 aria-current 가 붙지 않고 클릭마다
+      NaN 이 나가는 상태로 고착된다.
     */
+    const clamped = Number.isFinite(raw)
+      ? Math.min(Math.max(Math.round(raw), 1), Math.max(pages, 1))
+      : 1;
+
     if (!this.#warnedPage) {
       this.#warnedPage = true;
+      /*
+        지목할 프로퍼티가 모드마다 다르다. 비제어에서 raw 는 소비자가 쓴
+        page 가 아니라 내부 값이므로 page 를 탓하면 없는 프로퍼티를 가리키게
+        된다. 그때 실제로 어긋난 것은 total·per-page 로 계산된 페이지 수다.
+      */
       console.warn(
-        `[ns-pagination] page=${raw} 가 1..${pages} 범위를 벗어났습니다.`,
+        this.#controlled
+          ? `[ns-pagination] page=${raw} 가 1..${pages} 범위를 벗어났습니다. 표시용으로 ${clamped} 로 보정합니다.`
+          : `[ns-pagination] 현재 페이지 ${raw} 가 total=${this.total} · per-page=${this.perPage} 로 계산된 페이지 수(${pages})를 벗어났습니다. 표시용으로 ${clamped} 로 보정합니다.`,
       );
     }
-    return Math.min(Math.max(raw, 1), Math.max(pages, 1));
+    return clamped;
   }
 
-  #go(page: number): void {
+  /** 이동했으면(= 이벤트를 냈으면) true. */
+  #go(page: number): boolean {
+    /*
+      정상 경로에서는 렌더된 버튼만 이 함수를 부르므로 늘 참인 검사다.
+      그럼에도 두는 이유가 둘이다.
+
+      1. 양 끝의 이전·다음이 disabled 가 아니라 aria-disabled 라(포커스를
+         잃지 않기 위해서다) 활성화가 여기까지 온다. 이 검사가 그 no-op 다.
+      2. ns-page-change 의 page 가 유한한 정수라는 것을 이 한 지점이 보증한다.
+    */
+    if (!Number.isInteger(page) || page < 1 || page > this.#pages) return false;
     // 현재 페이지 클릭은 아무 일도 하지 않는다.
-    if (page === this.#current()) return;
+    if (page === this.#current()) return false;
 
     if (!this.#controlled) {
       this.#innerPage = page;
@@ -172,6 +251,42 @@ export class NsPagination extends LitElement {
     this.dispatchEvent(
       new CustomEvent("ns-page-change", { detail, bubbles: true, composed: true }),
     );
+    return true;
+  }
+
+  /*
+    실제로 이동했을 때만 포커스 의도를 남긴다. 양 끝에서 눌린 이전·다음이나
+    현재 페이지 재클릭은 DOM 을 바꾸지 않으므로 되돌릴 포커스도 없다 —
+    의도를 남기면 한참 뒤의 무관한 업데이트에서 소진되어 포커스를 훔친다.
+  */
+  #activate(focus: number | "prev" | "next", page: number): void {
+    if (this.#go(page)) this.#refocus = focus;
+  }
+
+  /*
+    페이지가 바뀌면 방금 누른 컨트롤로 포커스를 되돌린다. repeat() 의 키가
+    번호 버튼의 정체성을 지켜 주지만, 그 버튼이 윈도우 안에서 자리를 옮기면
+    lit 이 노드를 이동시키고(제거 후 삽입) 브라우저는 그때 포커스를 떨어뜨린다.
+    키만으로는 부족해서 여기서 명시적으로 되돌린다.
+  */
+  protected override updated(): void {
+    const intent = this.#refocus;
+    if (intent === null) return;
+    this.#refocus = null;
+
+    /*
+      포커스가 이 컴포넌트 밖으로 이미 옮겨갔으면 뺏지 않는다. <body> 는
+      "잃었다" 는 뜻이라 되돌릴 대상이다 — 노드가 사라지거나 disabled 되면
+      브라우저가 포커스를 거기로 보낸다.
+    */
+    const active = this.ownerDocument.activeElement;
+    if (active !== null && active !== this.ownerDocument.body && !this.contains(active)) return;
+
+    const selector =
+      typeof intent === "number"
+        ? `button[data-ns-page="${intent}"]`
+        : `button[data-ns-nav="${intent}"]`;
+    this.querySelector<HTMLButtonElement>(selector)?.focus();
   }
 
   protected override render() {
@@ -181,35 +296,60 @@ export class NsPagination extends LitElement {
 
     const current = this.#current();
 
+    /*
+      양 끝에서 disabled 를 쓰지 않는다. 포커스된 요소가 disabled 되면 브라우저가
+      blur 시켜 포커스가 <body> 로 떨어진다 — Tab 으로 "다음" 에 가서 마지막
+      페이지까지 Enter 를 누른 키보드 사용자가 위치를 잃는다. 현재 페이지 버튼을
+      비활성화하지 않는 것과 같은 이유다. aria-disabled 로 "쓸 수 없음" 만 알리고
+      (APG 의 패턴이다) 활성화는 #go 의 범위 검사가 no-op 로 받는다.
+
+      data-ns-page / data-ns-nav 는 updated() 가 포커스를 되돌릴 때 쓰는 훅이다.
+      Light DOM 이라 문서 이름공간에 들어가므로 접두사를 붙인다. Lit 이 이
+      요소의 내용을 통째로 소유하므로 소비자가 쓰는 속성은 아니다.
+    */
     return html`
       <nav aria-label="페이지 이동">
         <button
           class="ns-button ns-button--ghost ns-button--sm"
           type="button"
-          ?disabled=${current === 1}
-          @click=${() => this.#go(current - 1)}
+          data-ns-nav="prev"
+          aria-disabled=${current === 1 ? "true" : nothing}
+          @click=${() => this.#activate("prev", current - 1)}
         >
           이전
         </button>
-        ${pageWindow(current, pages).map((entry) =>
-          entry === "gap"
-            ? html`<span class="ns-pagination-gap" aria-hidden="true">…</span>`
-            : html`<button
-                class=${entry === current
-                  ? "ns-button ns-button--outline ns-button--sm"
-                  : "ns-button ns-button--ghost ns-button--sm"}
-                type="button"
-                aria-current=${entry === current ? "page" : nothing}
-                @click=${() => this.#go(entry)}
-              >
-                ${entry}
-              </button>`,
+        ${repeat(
+          pageWindow(current, pages),
+          /*
+            번호는 그 번호 자신이 정체성이다. 위치로 diff 하면 윈도우가
+            줄어들 때(pageWindow(6,12) 는 7개, pageWindow(12,12) 는 4개)
+            포커스가 있던 노드가 제거되고, 윈도우가 밀릴 때는 노드가 재사용되며
+            라벨만 5 에서 6 으로 바뀐다 — 화면낭독기가 엉뚱한 번호를 읽는다.
+            gap 은 포커스를 받지 않고 위치가 곧 정체성이라 인덱스로 구분한다.
+            문자열 키라 번호 키와 섞이지 않는다.
+          */
+          (entry, index) => (entry === "gap" ? `gap-${index}` : entry),
+          (entry) =>
+            entry === "gap"
+              ? html`<span class="ns-pagination-gap" aria-hidden="true">…</span>`
+              : html`<button
+                  class=${entry === current
+                    ? "ns-button ns-button--outline ns-button--sm"
+                    : "ns-button ns-button--ghost ns-button--sm"}
+                  type="button"
+                  data-ns-page=${entry}
+                  aria-current=${entry === current ? "page" : nothing}
+                  @click=${() => this.#activate(entry, entry)}
+                >
+                  ${entry}
+                </button>`,
         )}
         <button
           class="ns-button ns-button--ghost ns-button--sm"
           type="button"
-          ?disabled=${current === pages}
-          @click=${() => this.#go(current + 1)}
+          data-ns-nav="next"
+          aria-disabled=${current === pages ? "true" : nothing}
+          @click=${() => this.#activate("next", current + 1)}
         >
           다음
         </button>
