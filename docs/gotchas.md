@@ -323,11 +323,25 @@ ns-icon { display: inline-flex; width: 1.25rem; height: 1.25rem; }
 | `#pages` | `!(perPage > 0)` · `!Number.isFinite(total) \|\| total < 0` 이면 진단별 플래그로 경고 한 번 내고 `0` 을 돌린다 → 아무것도 렌더하지 않는다 |
 | `#current()` | `Number.isInteger(raw) && raw >= 1 && raw <= pages` 로 판정하고, clamp 를 `Number.isFinite(raw) ? … : 1` 로 감싼다. **`#pages >= 1` 이면 언제나 `1..#pages` 의 정수를 돌려준다** |
 | `#go()` | `!Number.isInteger(page) \|\| page < 1 \|\| page > #pages` 면 no-op. `ns-page-change` 의 `page` 가 유한한 정수라는 것을 이 한 지점이 보증한다 |
-| `firstUpdated()` | `default-page` 가 1 이상 정수가 아니면 경고하고 seed 하지 않는다 (`default-page="abc"` → `Number("abc") = NaN`, `NaN !== 1` 이 true 라 옛 가드를 통과했다) |
+| `willUpdate()` | `default-page` 가 1 이상 정수가 아니면 경고하고 seed 하지 않는다 (`default-page="abc"` → `Number("abc") = NaN`, `NaN !== 1` 이 true 라 옛 가드를 통과했다) |
 
 → **입구를 막고, 읽는 쪽에서 한 번 더 정화한다.** 입구만 막으면 놓친 입구 하나가 상태를 영구 고착시키고, 읽는 쪽만 정화하면 잘못된 값이 계속 저장된다. 정화한 값을 상태에 되쓰지는 않는다 — 렌더 중 상태 쓰기이고, 제어 모드에서 소비자 값과 서로 밀어내는 루프가 된다.
 
 → 범위 경고는 **모드마다 지목할 프로퍼티가 다르다.** 비제어에서 `raw` 는 소비자가 쓴 `page` 가 아니라 내부 값이므로, `page` 를 탓하면 존재하지도 않는 프로퍼티를 가리킨다. 그때 실제로 어긋난 것은 `total`·`per-page` 로 계산된 페이지 수다.
+
+## `firstUpdated` 에서 seed 하면 첫 페인트가 그 값을 못 본다
+
+`ns-pagination` 의 `default-page="4"` 가 화면에는 1을 현재 페이지로 그렸다. 내부 상태는 4였다. 그래서 첫 "다음" 클릭이 5가 아니라 **2로 갔다** — 렌더 시점의 `current`(=1)를 잡고 있던 클릭 클로저가 2를 요청했고, 중복 클릭 가드가 그 2를 `#current()`(=4)와 비교해 다르다고 판단해 통과시켰다.
+
+Lit 의 첫 업데이트 순서는 `willUpdate` → `render` → `firstUpdated` → `updated` 다. `firstUpdated` 는 이름과 달리 **첫 렌더가 끝난 뒤**에 돈다. 거기서 상태를 seed 해도 아무도 두 번째 업데이트를 요청하지 않으므로 그 값은 다음 렌더까지 화면에 반영되지 않는다.
+
+`ns-table` 과 `ns-dialog` 가 같은 자리에서 seed 하면서도 멀쩡한 것이 헷갈리는 지점이다. 기준은 렌더의 유무가 아니라 **눈에 보이는 결과가 어디서 나오는가**다. 그 둘은 `updated()` 에서 나온다 — `ns-table` 은 DOM 동기화, `ns-dialog` 는 `showModal()` 이고, `updated` 는 `firstUpdated` 다음이라 seed 한 값을 본다. 결과가 `render()` 의 반환값에 있는 컴포넌트만 자리가 다르다.
+
+`willUpdate` 로 옮길 때 첫 업데이트에서만 돌게 `hasUpdated` 로 막는다. 이 플래그는 `firstUpdated` **직전**에 true 가 되므로 첫 `willUpdate` 만 false 를 본다. seed 대상이 반응형 프로퍼티가 아닌 `#private` 필드라 렌더 중 상태 쓰기 경고에도 걸리지 않고, 다시 그리지 않으니 1이 스쳤다 4로 바뀌는 깜빡임도 없다.
+
+`ns-dialog` 의 "첫 업데이트 전에 부른 `show()` 가 조용히 사라진다" 와 같은 뿌리다. 둘 다 **Lit 이 첫 업데이트를 마이크로태스크로 미룬다**는 사실에서 나온다.
+
+→ **비제어 초기값은 `willUpdate` 에서 seed 한다.** 단, 덮어쓰지 않는다 — 생성과 같은 태스크에서 소비자가 만진 프로퍼티가 먼저 와 있을 수 있다. `firstUpdated` 는 렌더가 없는 컴포넌트에서만 안전하다.
 
 ## 검사의 대상이 다른 이름공간과 이름을 공유하면 falsify 할 수 없다
 
