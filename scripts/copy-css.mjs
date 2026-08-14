@@ -5,7 +5,7 @@
                  파일의 변수를 폴백 없이 참조한다.
   controls.css — 네이티브 요소용 클래스. 순수 HTML 소비자가 직접 링크한다.
 */
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 mkdirSync("dist", { recursive: true });
 
@@ -16,3 +16,49 @@ for (const [from, to] of [
   copyFileSync(from, to);
   console.log(`복사 완료: ${to}`);
 }
+
+/*
+  aliases.css 를 tokens.css 에서 생성한다.
+
+  0.1.5 까지 토큰 이름에는 접두사가 없었다. 이미 var(--space-3) 형태로 이
+  이름들을 직접 참조하던 프로젝트(dashboard-shell 의 25개 파일)를 위해 옵트인
+  별칭을 제공한다.
+
+  **이 파일은 임포트하는 순간 0.1.5 의 이름 충돌을 그대로 재현한다. 그게
+  목적이다.** 새 프로젝트는 임포트하지 않는다.
+
+  손으로 쓰지 않는 이유: 두 파일이 어긋나면 별칭이 존재하지 않는 토큰을
+  가리키고, 그 이름은 화면에서 조용히 빈다. 생성하면 어긋날 방법이 없다.
+
+  @no-alias 주석 이후의 정의는 건너뛴다. --ns-icon-size 등은 0.1.5 에서도
+  --ns- 였으므로 무접두사 원본이 존재하지 않는다.
+*/
+const tokens = readFileSync("src/tokens/tokens.css", "utf8");
+const aliasable = tokens.split("@no-alias")[0];
+
+/* 경계는 줄 머리 또는 세미콜론 뒤다. 타이포 블록은 한 줄에 정의가 둘이다. */
+const names = [...aliasable.matchAll(/(?:^|;)\s*--ns-([a-z0-9-]+)\s*:/gm)].map((m) => m[1]);
+
+if (names.length === 0) {
+  console.error("aliases.css: tokens.css 에서 토큰을 하나도 찾지 못했습니다");
+  process.exit(1);
+}
+
+const aliases = [
+  "/*",
+  "  0.1.5 의 무접두사 토큰 이름 → 0.2.0 의 --ns- 이름.",
+  "",
+  "  **이미 무접두사 이름을 쓰던 프로젝트만 임포트한다.** 이 파일은 소비자",
+  "  문서의 :root 와 같은 이름공간에 값을 정의하므로, 새 프로젝트가 임포트하면",
+  "  0.1.5 에서 겪은 충돌이 그대로 돌아온다.",
+  "",
+  "  scripts/copy-css.mjs 가 tokens.css 에서 생성한다. 손으로 고치지 않는다.",
+  "*/",
+  ":root {",
+  ...names.map((n) => `  --${n}: var(--ns-${n});`),
+  "}",
+  "",
+].join("\n");
+
+writeFileSync("dist/aliases.css", aliases);
+console.log(`생성 완료: dist/aliases.css (${names.length} 개)`);

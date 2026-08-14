@@ -18,6 +18,7 @@
     },
     "./tokens.css": "./dist/tokens.css",
     "./controls.css": "./dist/controls.css",
+    "./aliases.css": "./dist/aliases.css",
     "./umd": "./dist/bundle.umd.js"
   },
   "files": [

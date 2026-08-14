@@ -84,10 +84,18 @@
   --ns-transition-ease: cubic-bezier(.4, 0, .2, 1);
 
   /*
-    패키지 내부 배선이라 --ns- 접두사를 쓴다. 아래 ns-icon 요소 선택자 대신
-    커스텀 프로퍼티인 이유는 shadow 경계다 — 요소 선택자는 문서 트리에만
-    적용되므로 ns-dialog 의 shadow 안에 있는 <ns-icon> 에 닿지 못한다.
-    커스텀 프로퍼티는 상속되므로 중첩 shadow 까지 도달한다.
+    @no-alias
+
+    아래는 0.1.5 에서도 --ns- 였던 것들이다. 무접두사 원본이 없으므로
+    aliases.css 생성에서 제외한다. scripts/copy-css.mjs 가 이 표시를 읽는다.
+    표시는 이 주석 하나뿐이고, 여기부터 :root 블록 끝까지가 대상이다.
+  */
+
+  /*
+    ns-icon 의 크기. 요소 선택자 대신 커스텀 프로퍼티인 이유는 shadow 경계다 —
+    요소 선택자는 문서 트리에만 적용되므로 ns-dialog 의 shadow 안에 있는
+    <ns-icon> 에 닿지 못한다. 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지
+    도달한다.
   */
   --ns-icon-size: 1.25rem;
 
