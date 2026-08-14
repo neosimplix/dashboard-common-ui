@@ -56,6 +56,7 @@ common-ui/
 │   ├── components/<name>/
 │   │   ├── ns-<name>.ts               Lit 엘리먼트 + 등록 + 태그 타입 선언
 │   │   └── ns-<name>.styles.ts        shadow CSS (css`` 템플릿, .css 파일 아님)
+│   ├── components/icon/icons.ts                아이콘 이름 → 인라인 SVG 스프라이트
 │   ├── components/table/ns-table.ts            ReactiveElement. .styles.ts 가 없다(Light DOM)
 │   ├── components/pagination/ns-pagination.ts  LitElement + light DOM 렌더
 │   ├── types.ts                       이벤트 detail 타입 + HTMLElementEventMap 확장
@@ -64,6 +65,7 @@ common-ui/
 │   │   ├── cx.ts                      조건부 클래스 합치기(내부 전용)
 │   │   ├── controls/*.tsx             네이티브 요소에 클래스를 붙이는 컴포넌트 7종
 │   │   ├── tags/*.tsx                 커스텀 엘리먼트 래퍼의 프롭 이름을 맞추는 shim
+│   │   │   └── Sidebar.tsx            open 을 data-ns-open 으로도 내보내는 SSR shim
 │   │   ├── elements.ts                @lit/react 래퍼. 이벤트 매핑의 단일 출처
 │   │   └── index.ts                   재export 허브
 ├── scripts/
@@ -80,6 +82,7 @@ common-ui/
 ├── .claude/
 │   ├── rules/                         항상 지켜야 하는 제약 (commit, library-invariants, verification)
 │   └── skills/                        작업별 절차 (releasing, adding-a-component)
+├── CLAUDE.md                          매 세션 로드되는 최소 규약. 규칙은 .claude/rules/ 로 뺀다
 ├── index.html                         문서 겸 플레이그라운드. 셸 자체가 우리 컴포넌트
 ├── vite.config.ts                     --mode 로 세 벌 빌드
 ├── tsconfig.json                      타입 검사용(noEmit)
