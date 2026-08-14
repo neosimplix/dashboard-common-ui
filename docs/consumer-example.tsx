@@ -141,7 +141,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       </label>
                     </th>
                     <th data-ns-sort-key="name">
-                      <button className="ns-table-sort" type="button">이름</button>
+                      <button className="ns-table__sort" type="button">이름</button>
                     </th>
                   </tr>
                 </thead>

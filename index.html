@@ -729,9 +729,9 @@
     <table class="ns-table">
       <thead>
         <tr>
-          <th aria-sort="ascending"><button class="ns-table-sort" type="button">오름차순</button></th>
-          <th aria-sort="descending"><button class="ns-table-sort" type="button">내림차순</button></th>
-          <th aria-sort="none"><button class="ns-table-sort" type="button">정렬 안 됨</button></th>
+          <th aria-sort="ascending"><button class="ns-table__sort" type="button">오름차순</button></th>
+          <th aria-sort="descending"><button class="ns-table__sort" type="button">내림차순</button></th>
+          <th aria-sort="none"><button class="ns-table__sort" type="button">정렬 안 됨</button></th>
           <th>버튼 없는 칼럼</th>
         </tr>
       </thead>
@@ -748,7 +748,7 @@
     <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
     <tr><td><code>ns-table</code></td><td>(요소 선택자)</td><td>스크롤 컨테이너. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
     <tr><td><code>.ns-table</code></td><td><code>table</code></td><td>표면. <code>th</code>·<code>td</code>·hover 는 자손 선택자로 잡혀 클래스가 필요 없다</td></tr>
-    <tr><td><code>.ns-table-sort</code></td><td><code>th</code> 안의 <code>button</code></td><td>정렬 헤더. 삼각형 자리를 늘 잡아 두어 정렬 시 헤더 폭이 흔들리지 않는다</td></tr>
+    <tr><td><code>.ns-table__sort</code></td><td><code>th</code> 안의 <code>button</code></td><td>정렬 헤더. 삼각형 자리를 늘 잡아 두어 정렬 시 헤더 폭이 흔들리지 않는다</td></tr>
   </table>
 
   <h3>HTML</h3>
@@ -1208,9 +1208,9 @@
       <table class="ns-table">
         <thead>
           <tr>
-            <th data-ns-sort-key="name"><button class="ns-table-sort" type="button">이름</button></th>
+            <th data-ns-sort-key="name"><button class="ns-table__sort" type="button">이름</button></th>
             <th>부서</th>
-            <th data-ns-sort-key="joined"><button class="ns-table-sort" type="button">가입일</button></th>
+            <th data-ns-sort-key="joined"><button class="ns-table__sort" type="button">가입일</button></th>
           </tr>
         </thead>
         <tbody>
@@ -1312,7 +1312,7 @@
     <ns-table>
       <table class="ns-table">
         <thead><tr>
-          <th data-ns-sort-key="name"><button class="ns-table-sort" type="button">이름</button></th>
+          <th data-ns-sort-key="name"><button class="ns-table__sort" type="button">이름</button></th>
           <th>이메일</th>
         </tr></thead>
         <tbody><!-- 소비자가 쓴 그대로 --></tbody>
@@ -1341,7 +1341,7 @@
     >
       <table className="ns-table">
         <thead><tr>
-          <th data-ns-sort-key="name"><button className="ns-table-sort" type="button">이름</button></th>
+          <th data-ns-sort-key="name"><button className="ns-table__sort" type="button">이름</button></th>
         </tr></thead>
         <tbody>{sortRows(records, sort).map(/* … */)}</tbody>
       </table>

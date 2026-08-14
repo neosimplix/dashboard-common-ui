@@ -156,14 +156,14 @@
     배경이 --color-accent 라 같은 색 링이 보이지 않는다. 밖에 그리면 어느
     변형에서든 페이지 표면 위에 놓여 대비가 유지된다.
 
-    .ns-table-sort 도 여기 있다 — th 안의 텍스트 버튼이라 배경이 없고,
+    .ns-table__sort 도 여기 있다 — th 안의 텍스트 버튼이라 배경이 없고,
     링이 없으면 정렬 헤더에 키보드로 도달했는지 알 수 없다.
   */
   .ns-button:focus-visible,
   .ns-input:focus-visible,
   .ns-textarea:focus-visible,
   .ns-select:focus-visible,
-  .ns-table-sort:focus-visible {
+  .ns-table__sort:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
@@ -361,7 +361,7 @@
     th 의 글꼴·색을 상속하는 텍스트 버튼이다 — .ns-button 을 쓰지 않는 이유는
     크기·정렬·삼각형 자리가 다르기 때문이다.
   */
-  .ns-table-sort {
+  .ns-table__sort {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1-5);
@@ -374,7 +374,7 @@
     cursor: pointer;
   }
 
-  .ns-table-sort:hover {
+  .ns-table__sort:hover {
     color: var(--color-fg);
   }
 
@@ -387,7 +387,7 @@
     자리는 정렬 여부와 무관하게 늘 잡아 둔다. 안 그러면 정렬할 때마다 헤더
     폭이 흔들린다.
   */
-  .ns-table-sort::after {
+  .ns-table__sort::after {
     content: "";
     width: 0;
     height: 0;
@@ -396,11 +396,11 @@
     opacity: 0;
   }
 
-  .ns-table th[aria-sort="ascending"] .ns-table-sort::after {
+  .ns-table th[aria-sort="ascending"] .ns-table__sort::after {
     opacity: 1;
   }
 
-  .ns-table th[aria-sort="descending"] .ns-table-sort::after {
+  .ns-table th[aria-sort="descending"] .ns-table__sort::after {
     opacity: 1;
     rotate: 180deg;
   }

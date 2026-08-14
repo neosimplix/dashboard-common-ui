@@ -25,7 +25,7 @@
 | `.ns-field` | `div`. `__label` `__hint` `__error` 를 함께 쓴다 |
 | `.ns-card` | `div` |
 | `.ns-table` | `table`. `th`/`td` 는 자손 선택자 |
-| `.ns-table-sort` | `th` 안의 `button` |
+| `.ns-table__sort` | `th` 안의 `button` |
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
