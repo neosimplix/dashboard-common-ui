@@ -40,7 +40,7 @@
 … (tokens.css 의 :root 블록 전부)
 ```
 
-`src/components/*/*.styles.ts` 와 `src/controls/controls.css` 의 참조를 전부 따라 고친다. 두 곳이 참조하는 서로 다른 이름은 **51개**이고 그중 4개(`--ns-icon-size` · `--ns-dialog-width` · `--ns-dialog-margin` · `--ns-label-display`)는 이미 접두사가 있으므로 **47개를 고친다.** `tokens.css` 의 `:root` 정의는 56개다 — 차이는 `controls.css` 소비자만 쓰는 토큰이다.
+`src/components/*/*.styles.ts` 와 `src/controls/controls.css` 의 참조를 전부 따라 고친다. 두 곳이 참조하는 서로 다른 이름은 **51개**이고 그중 4개(`--ns-icon-size` · `--ns-dialog-width` · `--ns-dialog-margin` · `--ns-label-display`)는 이미 접두사가 있으므로 **47개를 고친다.** `tokens.css` 의 `:root` 정의는 62개다(타이포 블록 여섯 줄이 한 줄에 정의를 둘씩 담고 있어 줄 수로 세면 56으로 나온다 — 세는 쪽이 틀리기 쉬운 지점이다). 참조보다 정의가 많은 차이는 `controls.css` 소비자만 쓰는 토큰이다.
 
 ### 뒤집히는 규칙
 
