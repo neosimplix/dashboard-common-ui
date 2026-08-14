@@ -333,7 +333,7 @@ protected override createRenderRoot(): HTMLElement {
 
 ## 13. 이번 범위 밖
 
-- **`dashboard-shell` 표 9곳 이관.** 별도 스펙. 이관 모양은 §4.2 에 있다 — `<Table>` → `<ns-table>` + `class="ns-table"`, 정렬할 `<th>` 에 `data-ns-sort-key` 와 `<button class="ns-table-sort">` 추가. 셀 내용은 그대로
+- **`dashboard-shell` 표 9곳 이관.** 별도 스펙. 이관 모양은 §4.2 에 있다 — `<Table>` → `<ns-table>` + `class="ns-table"`, 정렬할 `<th>` 에 `data-ns-sort-key` 와 `<button class="ns-table__sort">` 추가. 셀 내용은 그대로
 - **페이지 크기 선택(10/20/50).** 컨트롤이 하나 더 늘고 지금 요구가 없다
 - **"전체 240개 선택".** §6.4 의 페이지 범위 결정과 짝인 별개 기능
 - 열 리사이즈 · 열 고정 · 가상 스크롤 · 행 확장 · 드래그 정렬
