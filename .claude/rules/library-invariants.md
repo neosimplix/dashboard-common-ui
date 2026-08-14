@@ -7,7 +7,7 @@
 - 컴포넌트 태그는 `ns-` 접두사를 쓴다. (`ns-header`, `ns-sidebar`, `ns-nav-group`, `ns-nav-item`)
 - **모든 커스텀 프로퍼티는 `--ns-` 를 쓴다.** `tokens.css` 에 정의돼 있으면 공개(소비자가 덮어도 된다), 없으면 내부 신호다. (`--ns-color-line`, `--ns-space-3` / 신호는 `--ns-label-display`) 접두사를 붙이지 않던 0.1.5 가 두 번째 소비자에서 깨진 경위는 `docs/gotchas.md` 에 있다.
 - 이벤트는 `ns-` 접두사에 케밥 케이스, 대응하는 React prop 은 `on` + 파스칼 케이스다. (`ns-navigate` → `onNsNavigate`)
-- **CSS 클래스 이름은 `ns-` 접두사를 쓴다.** 전역 이름공간이라 `.input` 은 소비자 CSS 와 충돌한다. 변형은 `--`, 하위 요소는 `__` 다. (`.ns-button--outline`, `.ns-field__error`)
+- **문서 트리에 나가는 CSS 클래스 이름은 `ns-` 접두사를 쓴다.** 전역 이름공간이라 `.input` 은 소비자 CSS 와 충돌한다. 변형은 `--`, 하위 요소는 `__` 다. (`.ns-button--outline`, `.ns-field__error`) **shadow 안에서만 쓰는 클래스에는 붙이지 않는다** — 캡슐화 경계가 이미 이름공간이라 충돌할 상대가 없다. (`.row`, `.header`, `.title`) 판단 기준은 이름의 모양이 아니라 **그 클래스가 문서 이름공간에 들어가는가** 하나다. Light DOM 컴포넌트가 쓰는 클래스는 문서에 나가므로 접두사를 쓴다.
 - **`title` 을 속성/프로퍼티 이름으로 쓰지 않는다.** 모든 HTML 요소의 전역 속성이라 브라우저가 툴팁을 띄운다. 제목은 `heading` 이다. React 프롭만 `title` 을 유지하고 shim 이 변환한다.
 - **shim 이 있는 태그는 이름이 셋이다.** Lit 클래스 별칭 `Ns<X>Element`, 내부 `createComponent` 래퍼 `Ns<X>Base`(비공개), 공개 shim `<X>`. shim 이 없는 태그는 래퍼가 평범한 이름을 갖는다.
 - **컴포넌트 유형이 셋이다.** shadow + 렌더(기본), Light DOM + 렌더(`ns-pagination`), Light DOM + 렌더 없음(`ns-table`). 판단은 "캡슐화가 필요한가 / 소비자 자식을 품는가" 두 축이다.
@@ -22,6 +22,7 @@
 - **호스트의 속성을 쓰지 않는다.** `setAttribute` 로 소비자가 쓴 속성을 덮으면 문서화된 override 가 조용히 죽는다. 숨길 것은 shadow 안의 요소에 붙인다.
 - **shadow 스타일이 UA 기본값을 덮으면 되돌릴 규칙을 함께 둔다.** author 선언은 특정도와 무관하게 origin 으로 UA 를 이긴다.
 - **React shim 은 이벤트 `detail` 을 실제로 읽는다.** 인자 0개 핸들러는 `EventName<>` 캐스트 누락을 감춘다.
+- **shim 은 필드가 하나인 `detail` 만 벗긴다.** 단일 필드는 그 필드를 인자로 주고(`onClose(reason)`), 필드가 여럿이면 레코드째 넘긴다(`onNavigate(detail)`). 여럿을 벗으면 한 필드를 근거 없이 특권화하게 되고, **필드를 하나 더하는 것이 breaking 이 된다.**
 - **공통 컨트롤 스타일을 재사용해야 하는 컴포넌트는 Light DOM 을 쓴다.** shadow root 를 갖는 이유는 스타일 캡슐화 하나이고, `controls.css` 를 쓰려는 컴포넌트에는 그 캡슐화가 방해다. `createRenderRoot()` 를 재정의해 `this` 를 반환한다.
 - **Light DOM 컴포넌트는 `static styles` 를 갖지 않는다.** `createRenderRoot` 재정의로 `adoptStyles` 가 호출되지 않아 조용히 무시된다. **"로직과 스타일을 파일 두 개로 나눈다" 규칙의 예외다** — 스타일이 전부 `controls.css` 에 있으므로 `.styles.ts` 파일이 없다.
 - **소비자 자식을 품는 Light DOM 컴포넌트는 `ReactiveElement` 를 상속한다.** `LitElement` 는 템플릿을 렌더해 그 자식을 덮어쓴다. 렌더가 필요하고 자식이 없는 경우에만 `LitElement` + `createRenderRoot` 재정의를 쓴다.
