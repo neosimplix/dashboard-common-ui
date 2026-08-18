@@ -502,9 +502,18 @@
   }
 
   /*
-    ns-tabs 는 소비자가 쓴 버튼에 행동만 얹는다(ns-table 과 같다). 자식이 전부
-    버튼이므로 요소 타입으로 특정된다 — 소비자가 외울 클래스는 .ns-tabs__count
-    하나뿐이다.
+    ns-tabs 는 소비자가 쓴 버튼에 행동만 얹는다(ns-table 과 같다). 소비자가 외울
+    클래스는 .ns-tabs__count 하나뿐이다.
+
+    **탭을 [data-ns-tab] 으로 고른다 — JS 와 같은 기준이다.** 요소 타입(button)으로
+    고르면 둘이 갈라진다: 탭 줄에 놓인 탭 아닌 버튼이 탭처럼 보이는데 눌러도 아무
+    일도 일어나지 않고, 반대로 소비자가 탭을 button 이 아닌 것으로 쓰면 동작만 하고
+    스타일이 없다. "자식이 전부 버튼" 은 소비자 마크업에 대한 가정일 뿐 강제되는
+    사실이 아니다.
+
+    소유 확인(closest("ns-tabs") === this)까지는 CSS 로 표현할 수 없다. 중첩된
+    ns-tabs 의 탭은 바깥 규칙에도 잡히지만 선언이 같으므로 보이는 결과가 같다 —
+    남는 차이는 동작이 아니라 이 한 겹의 중복뿐이다.
 
     요소 선택자라 정의되지 않은 커스텀 엘리먼트에도 적용된다. 스타일은 즉시,
     동작은 JS 로드 시 붙는다.
@@ -522,7 +531,7 @@
     overflow-x: auto;
   }
 
-  ns-tabs button {
+  ns-tabs [data-ns-tab] {
     display: inline-flex;
     align-items: center;
     gap: var(--ns-space-2);
@@ -542,20 +551,20 @@
       border-color var(--ns-transition-fast) var(--ns-transition-ease);
   }
 
-  ns-tabs button:hover {
+  ns-tabs [data-ns-tab]:hover {
     color: var(--ns-color-fg-body);
   }
 
   /*
     안쪽에 그린다. 이 컨테이너가 overflow-x: auto 라 바깥에 그린 링은 잘린다.
   */
-  ns-tabs button:focus-visible {
+  ns-tabs [data-ns-tab]:focus-visible {
     outline: 2px solid var(--ns-color-accent);
     outline-offset: -2px;
     border-radius: var(--ns-radius-control);
   }
 
-  ns-tabs button[aria-selected="true"] {
+  ns-tabs [data-ns-tab][aria-selected="true"] {
     color: var(--ns-color-fg);
     font-weight: var(--ns-weight-semibold);
     border-bottom-color: var(--ns-color-accent);
@@ -580,7 +589,7 @@
     font-weight: var(--ns-weight-semibold);
   }
 
-  ns-tabs button[aria-selected="true"] .ns-tabs__count {
+  ns-tabs [data-ns-tab][aria-selected="true"] .ns-tabs__count {
     background: var(--ns-color-accent);
     color: var(--ns-color-accent-fg);
   }
