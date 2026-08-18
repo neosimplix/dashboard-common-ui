@@ -10,6 +10,7 @@ import "./components/sidebar/ns-sidebar.js";
 import "./components/skeleton/ns-skeleton.js";
 import "./components/table/ns-table.js";
 import "./components/tabs/ns-tabs.js";
+import "./components/toast/ns-toast.js";
 
 export { NsDialog } from "./components/dialog/ns-dialog.js";
 export { NsHeader } from "./components/header/ns-header.js";
@@ -24,6 +25,10 @@ export { NsSidebar } from "./components/sidebar/ns-sidebar.js";
 export { NsSkeleton } from "./components/skeleton/ns-skeleton.js";
 export { NsTable } from "./components/table/ns-table.js";
 export { NsTabs, tabIdFor } from "./components/tabs/ns-tabs.js";
+export { NsToast } from "./components/toast/ns-toast.js";
+export type { NsToastTone } from "./components/toast/ns-toast.js";
+export { nsToast } from "./components/toast/toast.js";
+export type { NsToastOptions } from "./components/toast/toast.js";
 
 /*
   스프라이트 등록. svg 를 함께 내보내는 이유는 lit 이 이 패키지의 의존성이라

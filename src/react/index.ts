@@ -62,6 +62,15 @@ export type { MessageProps } from "./controls/Message.js";
 export { Chip } from "./controls/Chip.js";
 export type { ChipProps } from "./controls/Chip.js";
 
+/*
+  명령형 API 다. React 컴포넌트가 아니라 함수라 래퍼가 필요 없다 — 이벤트
+  핸들러에서 그대로 부른다. 이 파일에는 'use client' 배너가 붙으므로 서버
+  컴포넌트에서 import 하면 빌드가 막는다.
+*/
+export { nsToast } from "../components/toast/toast.js";
+export type { NsToastOptions } from "../components/toast/toast.js";
+export type { NsToastTone } from "../components/toast/ns-toast.js";
+
 export type {
   NsToggleDetail,
   NsNavigateDetail,

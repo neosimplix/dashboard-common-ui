@@ -117,6 +117,7 @@
       <ns-nav-item href="#ns-pagination" label="ns-pagination" badge="PG"></ns-nav-item>
       <ns-nav-item href="#ns-tabs" label="ns-tabs" badge="TS"></ns-nav-item>
       <ns-nav-item href="#ns-multi-select" label="ns-multi-select" badge="MS"></ns-nav-item>
+      <ns-nav-item href="#overlays" label="toast · alert · confirm" badge="OV"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -2490,6 +2491,66 @@
     </li>
   </ul>
 
+  <h2 id="overlays">toast · alert · confirm</h2>
+  <p>
+    셋 다 <strong>함수로 부르는 명령형 API</strong> 다. 이 라이브러리의 다른 것들은
+    "상태는 소비자가 갖고 컴포넌트는 이벤트만 올린다" 로 일관돼 있는데,
+    <strong>이 셋은 그 규약의 의도된 예외다</strong> — 호출 지점에서 답이 필요한
+    것들이라 선언형으로 만들면 쓰는 쪽이 <code>useState</code> 와 렌더 분기를 매번
+    다시 쓰게 된다.
+  </p>
+  <p>
+    셋 다 <strong>문자열만 받는다.</strong> <code>textContent</code> 로 넣으므로 HTML
+    주입 경로가 없고, 순수 HTML 과 React 에서 쓰는 법이 같다. 폼이 들어가는 모달은
+    이 API 로 만들지 않고 <code>ns-dialog</code> 로 직접 만든다.
+  </p>
+  <p>
+    이름이 <code>alert</code>/<code>confirm</code> 이 아닌 이유는
+    <code>import { confirm }</code> 이 그 모듈 안에서 전역 <code>confirm</code> 을
+    가리기 때문이다.
+  </p>
+
+  <h3 id="overlays-toast">nsToast</h3>
+  <p>
+    우하단에 쌓인다. <strong>마우스가 올라가 있거나 안쪽에 포커스가 있는 동안 자동
+    소멸이 멈춘다</strong> — 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는
+    중에 사라진다.
+  </p>
+  <div class="demo block" id="toast-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-3);padding:var(--ns-space-4)">
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-neutral">기본</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-success">success</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-danger">danger</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-warn">warn</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-sticky">duration=0 (안 사라짐)</button>
+  </div>
+
+  <h4>인자</h4>
+  <table>
+    <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>message</code></td><td>—</td><td>문자열만. <code>textContent</code> 로 들어간다</td></tr>
+    <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 왼쪽 색 띠로만 표현한다</td></tr>
+    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td>밀리초. <strong><code>0</code> 이면 자동으로 사라지지 않는다</strong></td></tr>
+  </table>
+  <p>돌려주는 함수를 부르면 즉시 닫힌다. 두 번 불러도 안전하다.</p>
+
+  <h4>JS</h4>
+  <script type="text/plain">
+    import { nsToast } from "@neosimplix/common-ui";
+
+    nsToast("저장했습니다", { tone: "success" });
+
+    const close = nsToast("업로드 중…", { duration: 0 });
+    // …끝나면
+    close();
+  </script>
+
+  <h4>주의</h4>
+  <ul>
+    <li><code>&lt;ns-toast&gt;</code> 를 직접 마크업에 쓰지 않는다. <code>nsToast()</code> 가 문서당 하나를 만들어 <code>body</code> 에 붙인다.</li>
+    <li><code>danger</code> 만 <code>role="alert"</code> 로 즉시 읽힌다. 나머지는 리전의 <code>aria-live="polite"</code> 를 탄다.</li>
+    <li>서버에서 부르면 아무 일도 하지 않는다 — 이벤트 핸들러에서만 부른다.</li>
+  </ul>
+
   <h2 id="ns-header">ns-header</h2>
   <p>
     좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
@@ -3239,6 +3300,23 @@
       { value: "jung", label: "정하늘", meta: "세일즈팀" },
     ];
     multiSelectDemo.defaultValue = ["kim", "park"];
+  }
+
+  /*
+    토스트 데모. 데모 컨테이너의 버튼에만 리스너를 붙인다 — 이 절은 이벤트를
+    쓰지 않지만 규약은 같다.
+  */
+  const toastDemo = document.getElementById("toast-demo");
+  const toastTones = { neutral: "저장했습니다", success: "승인했습니다", danger: "삭제하지 못했습니다", warn: "일부만 반영됐습니다" };
+  if (toastDemo) {
+    for (const tone of Object.keys(toastTones)) {
+      toastDemo.querySelector(`#toast-demo-${tone}`).addEventListener("click", () => {
+        NsCommonUi.nsToast(toastTones[tone], { tone });
+      });
+    }
+    toastDemo.querySelector("#toast-demo-sticky").addEventListener("click", () => {
+      NsCommonUi.nsToast("직접 닫아야 사라진다", { duration: 0 });
+    });
   }
 </script>
 

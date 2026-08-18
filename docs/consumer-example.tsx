@@ -47,6 +47,7 @@ import {
   Select,
   Sidebar,
   Textarea,
+  nsToast,
   registerIcons,
   svg,
   tabIdFor,
@@ -201,6 +202,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </Button>
             <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
             <Button variant="danger" size="sm" onClick={() => log("delete")}>삭제</Button>
+            {/*
+              명령형 API 다. 래퍼가 없으므로 이벤트 핸들러에서 그대로 부른다 —
+              소비자 관점에서 import 경로와 인자 타입이 맞는지가 여기서 검사된다.
+            */}
+            <Button size="sm" onClick={() => nsToast("저장했습니다", { tone: "success" })}>
+              저장
+            </Button>
             <Dialog
               open={dialogOpen}
               title="사용자 승인"
