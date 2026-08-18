@@ -1956,14 +1956,18 @@ export class NsMultiSelect extends LitElement {
 
   @state() private query = "";
 
-  #innerValue: string[] = [];
+  /**
+   * 비제어 선택. **처음에는 `undefined` 다** — 사용자가 아직 아무것도 만지지
+   * 않았다는 뜻이고, 그동안은 `defaultValue` 가 보인다.
+   */
+  #innerValue?: string[];
 
   get #controlled(): boolean {
     return this.value !== undefined;
   }
 
   get #selected(): string[] {
-    return this.value ?? this.#innerValue;
+    return this.value ?? this.#innerValue ?? this.defaultValue;
   }
 
   override connectedCallback(): void {
@@ -1977,23 +1981,47 @@ export class NsMultiSelect extends LitElement {
   }
 
   /*
-    비제어 초기값을 seed 한다. **firstUpdated 가 아니라 willUpdate 다** —
-    ns-pagination 과 같은 이유다. 첫 업데이트 순서는 willUpdate → render →
-    firstUpdated → updated 라, firstUpdated 에서 seed 하면 첫 render 가 이미
-    끝나 있고 아무도 두 번째 업데이트를 요청하지 않는다.
-  */
-  protected override willUpdate(): void {
-    if (this.hasUpdated) return;
-    if (this.defaultValue.length > 0) this.#innerValue = [...this.defaultValue];
-  }
+    **비제어 초기값을 seed 하지 않는다.** ns-pagination 은 willUpdate 에서
+    hasUpdated 를 보고 한 번만 seed 하는데, 그 방식이 거기서 안전한 이유는
+    default-page 가 **속성**이라 upgrade 시점에 이미 있기 때문이다.
 
-  #toggle(item: string): void {
+    배열은 속성으로 쓸 수 없어 여기서는 프로퍼티다. 그래서 같은 방식을 쓰면
+    "첫 업데이트가 흐른 뒤의 대입은 조용히 버려진다" 가 된다 — 마크업에 쓴
+    엘리먼트를 나중 스크립트가 getElementById 로 잡아 .defaultValue 를 넣는,
+    가장 흔한 순수 HTML 배선이 정확히 그 모양이다.
+
+    그래서 seed 대신 **지연 폴백**을 쓴다. #innerValue 는 사용자가 처음 만질
+    때까지 undefined 로 남고 그동안 #selected 가 defaultValue 로 떨어진다.
+    대입 시점 의존이 사라지고, 한 번 만진 뒤에는 defaultValue 가 무시된다 —
+    "기본값" 의 뜻이 그것이다. ?? 는 null/undefined 에서만 떨어지므로 사용자가
+    전부 해제한 빈 배열([])도 defaultValue 에 되살아나지 않는다.
+  */
+
+  /**
+   * `source` 는 이 변경을 낸 체크박스다. 칩의 × 는 넘기지 않는다.
+   */
+  #toggle(item: string, source?: HTMLInputElement): void {
     const current = this.#selected;
     const next = current.includes(item)
       ? current.filter((v) => v !== item)
       : [...current, item];
 
-    if (!this.#controlled) {
+    if (this.#controlled) {
+      /*
+        **제어 모드에서 체크박스를 되돌린다.** 브라우저가 이미 native input 을
+        뒤집어 놓았는데, 소비자가 변경을 거부하면 다음 렌더의 .checked 계산값이
+        직전에 커밋한 값과 같아진다. lit-html 은 PropertyPart 를 dirty-check
+        하므로 그 쓰기를 통째로 건너뛰고, 체크박스는 영구히 어긋난 채 남는다 —
+        이후 어떤 렌더도 고치지 못한다(바인딩 값이 다시는 안 바뀐다).
+
+        ns-table 이 이 문제를 안 겪는 이유는 그쪽 체크박스를 Lit 이 아니라
+        React 가 소유해 checked 를 강제로 되돌리기 때문이다.
+
+        소비자 상태를 건드리는 것이 아니다 — 이 컴포넌트가 믿고 있는 값으로
+        DOM 을 되돌릴 뿐이라 "제어 중이면 그 값을 바꾸지 않는다" 를 지킨다.
+      */
+      if (source !== undefined) source.checked = current.includes(item);
+    } else {
       this.#innerValue = next;
       this.requestUpdate();
     }
@@ -2069,7 +2097,7 @@ export class NsMultiSelect extends LitElement {
                   <input
                     type="checkbox"
                     .checked=${selected.includes(o.value)}
-                    @change=${() => this.#toggle(o.value)}
+                    @change=${(e: Event) => this.#toggle(o.value, e.target as HTMLInputElement)}
                   />
                   <span>${o.label}</span>
                   ${o.meta === undefined
