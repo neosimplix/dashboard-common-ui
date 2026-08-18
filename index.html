@@ -1114,6 +1114,12 @@
   </template>
   <div class="demo block" id="table-row-click-demo" style="padding:var(--ns-space-4)"></div>
   <pre></pre>
+  <p id="table-row-click-log" style="font-family: monospace">행을 누르면 여기에 찍힌다.</p>
+  <p>
+    <strong>누적 횟수를 함께 찍는 이유</strong>는 이 절의 핵심이 "몇 번 도는가" 이기 때문이다.
+    버튼에 포커스를 두고 <code>Enter</code> 를 한 번 누르면 누적이 <strong>1 만 늘어야 한다</strong>.
+    2 씩 늘면 버튼에도 핸들러가 붙은 것이다.
+  </p>
 
   <h3>행 클릭 배선</h3>
   <script type="text/plain">
@@ -3162,6 +3168,30 @@
       for (const item of fullItems) item.active = item.href === e.detail.href;
       fullLog.textContent = `ns-navigate  href=${e.detail.href}`;
     });
+  }
+
+  /*
+    행 클릭 데모. **핸들러를 <tr> 에만 붙인다** — .ns-table__row-button 에도 붙이면
+    버튼에서 난 click 이 버튼 핸들러를 태우고 <tr> 로 버블링해 행 핸들러를 또 태운다.
+    클릭 한 번에 두 번 도는 그 함정이 이 절이 존재하는 이유이므로, 데모가 올바른
+    모양이어야 한다.
+
+    누적 횟수를 찍는 것은 그 성질을 눈으로 셀 수 있게 하려는 것이다. 마우스 클릭과
+    버튼 위의 Enter·Space 가 모두 1 씩만 올려야 한다.
+
+    이 데모 컨테이너 안에서만 찾는다. document 에 붙이면 다른 데모의 클릭까지 잡는다.
+  */
+  const rowClickDemo = document.getElementById("table-row-click-demo");
+  const rowClickLog = document.getElementById("table-row-click-log");
+  if (rowClickDemo && rowClickLog) {
+    let rowClicks = 0;
+    for (const row of rowClickDemo.querySelectorAll("tbody tr")) {
+      row.addEventListener("click", () => {
+        rowClicks += 1;
+        rowClickLog.textContent =
+          `행 열기 → ${row.cells[0].textContent.trim()}  (누적 ${rowClicks}회)`;
+      });
+    }
   }
 
   const dialogDemo = document.getElementById("dialog-demo");
