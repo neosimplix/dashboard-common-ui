@@ -51,7 +51,17 @@ node --input-type=module -e "import('@neosimplix/common-ui').then(m=>console.log
 cd - && rm -rf /tmp/ns-check
 ```
 
-마지막 줄이 `NsDialog, NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPageHeading, NsPagination, NsSidebar, NsSkeleton, NsTable` 를 출력해야 한다(`Object.keys().sort()` 라 알파벳 순이다 — `src/index.ts` 의 export 목록과 대조). Node 에는 `window` 도 `customElements` 도 없으므로, **이것이 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사다.** `ReferenceError: HTMLElement is not defined` 가 나면 `register()` 를 고치지 말 것 — 가드는 정상이고 원인은 빌드 설정이다(`docs/gotchas.md` 참고).
+마지막 줄이 이것을 출력해야 한다.
+
+```
+NsDialog, NsHeader, NsIcon, NsMultiSelect, NsNavGroup, NsNavItem, NsPageHeading, NsPagination, NsSidebar, NsSkeleton, NsTable, NsTabs, NsToast, nsAlert, nsConfirm, nsToast, registerIcons, svg, tabIdFor
+```
+
+`Object.keys().sort()` 는 코드포인트 순이라 **대문자로 시작하는 이름이 전부 앞에 오고 소문자가 뒤에 온다** — 사람이 읽는 알파벳 순이 아니다. `src/index.ts` 의 export 목록과 대조한다. 이 목록에는 엘리먼트 클래스만 있는 것이 아니다 — 명령형 API 셋(`nsToast`·`nsAlert`·`nsConfirm`), 헬퍼(`tabIdFor`·`registerIcons`·`svg`) 가 함께 나온다.
+
+**기대 목록을 손으로 늘리지 않는다.** 컴포넌트를 더한 뒤에는 위 명령을 다시 돌려 나온 줄을 그대로 붙여 넣는다. 손으로 추측하면 목록이 소스와 어긋나고, 어긋난 기대값은 검사가 아니다.
+
+Node 에는 `window` 도 `customElements` 도 없으므로, **이것이 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사다.** `ReferenceError: HTMLElement is not defined` 가 나면 `register()` 를 고치지 말 것 — 가드는 정상이고 원인은 빌드 설정이다(`docs/gotchas.md` 참고).
 
 ## 함정
 

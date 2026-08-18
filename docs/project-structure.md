@@ -16,6 +16,9 @@
 | `ns-dialog` | 네이티브 `dialog` 모달. 제어/비제어 |
 | `ns-table` | 소비자 `table` 을 감싸는 Light DOM. 정렬 상태 · 전체 선택 3-상태. **셀을 렌더하지 않는다** |
 | `ns-pagination` | Light DOM. `.ns-button` 을 재사용한 페이지 이동 컨트롤 |
+| `ns-tabs` | 소비자가 쓴 버튼에 ARIA·roving tabindex·화살표 키를 얹는다. **버튼을 렌더하지 않는다** |
+| `ns-multi-select` | Light DOM. 칩 줄 · 검색 · 체크박스 목록. `.ns-chip`·`.ns-input`·`.ns-checkbox` 를 재사용 |
+| `ns-toast` | 토스트 리전. shadow. **직접 쓰지 않는다** — `nsToast()` 가 만든다 |
 
 | 클래스 | 붙이는 요소 |
 |---|---|
@@ -26,10 +29,15 @@
 | `.ns-card` | `div` |
 | `.ns-table` | `table`. `th`/`td` 는 자손 선택자 |
 | `.ns-table__sort` | `th` 안의 `button` |
+| `.ns-accordion` | `details` (+ `--card` / `--plain` 중 하나를 반드시 함께) |
+| `.ns-message` | `div`. 안의 `p` 는 자손 선택자 |
+| `.ns-chip` | `button`(토글) · `span`(제거·읽기 전용). `__remove` 를 함께 쓴다 |
+| `.ns-button--danger` | `.ns-button` 의 변형 |
+| `.ns-table__row-button` | `td` 안의 `button`. `.ns-table--rows-clickable` 과 짝 |
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 여섯이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 여덟이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 
@@ -40,6 +48,8 @@
 **테스트 러너를 두지 않는다.** 같은 시도가 검증 하네스 복잡도 때문에도 폐기됐다. 회귀 확인은 `npm run check` 와 `index.html` 육안 확인이다. 문서 페이지의 헤더와 좌측 네비게이션이 이 라이브러리의 컴포넌트로 만들어져 있어서, 깨지면 문서가 열리지 않는 것으로 즉시 드러난다.
 
 **폼 컨트롤을 웹 컴포넌트로 만들지 않는다.** shadow DOM 이 폼 참여·라벨·검증·자동완성을 끊고, FACE 로 되살려도 "JS 없이 동작한다"는 성질은 돌아오지 않는다. 근거는 `docs/gotchas.md` 에 있다.
+
+**명령형 API 가 셋 있다.** `nsToast` · `nsAlert` · `nsConfirm` 은 함수로 부르고 Promise 를 돌려준다. 나머지가 전부 "상태는 소비자가 갖고 컴포넌트는 이벤트만 올린다" 인 것과 어긋나는데, **의도된 예외다** — 호출 지점에서 답이 필요한 것들이라 선언형으로 만들면 호출부가 `useState` 와 렌더 분기를 매번 다시 쓴다. 셋 다 문자열만 받으므로 HTML 주입 경로가 없고, 폼이 들어가는 모달은 이 API 로 만들지 않고 `ns-dialog` 로 직접 만든다.
 
 **표는 데이터가 아니라 컨트롤을 소유한다.** 실사용 셀에 조건부 버튼 여섯과 참조 조회가 들어 있어 데이터 주입형 API 로 표현되지 않고, Lit 엘리먼트는 소비자의 React 렌더 함수를 호출할 수 없다. 그래서 `ns-table` 은 정렬 · 선택 **상태**만 갖고 셀 마크업은 소비자가 쓴다. 근거는 `docs/superpowers/specs/2026-08-13-ns-table-design.md` §1~2 에 있다.
 
@@ -56,9 +66,14 @@ common-ui/
 │   ├── components/<name>/
 │   │   ├── ns-<name>.ts               Lit 엘리먼트 + 등록 + 태그 타입 선언
 │   │   └── ns-<name>.styles.ts        shadow CSS (css`` 템플릿, .css 파일 아님)
-│   ├── components/icon/icons.ts                아이콘 이름 → 인라인 SVG 스프라이트
-│   ├── components/table/ns-table.ts            ReactiveElement. .styles.ts 가 없다(Light DOM)
-│   ├── components/pagination/ns-pagination.ts  LitElement + light DOM 렌더
+│   ├── components/icon/icons.ts                       아이콘 이름 → 인라인 SVG 스프라이트
+│   ├── components/table/ns-table.ts                   ReactiveElement. .styles.ts 가 없다(Light DOM)
+│   ├── components/pagination/ns-pagination.ts         LitElement + light DOM 렌더
+│   ├── components/tabs/ns-tabs.ts                     ReactiveElement. 소비자 자식에 ARIA·키보드
+│   ├── components/multi-select/ns-multi-select.ts     LitElement + light DOM 렌더
+│   ├── components/toast/ns-toast.ts                   shadow 리전. .styles.ts 를 갖는다
+│   ├── components/toast/toast.ts                      nsToast 명령형 파사드. 엘리먼트가 아니라 함수를 내보낸다
+│   ├── components/dialog/confirm.ts                   nsAlert · nsConfirm. 같은 파사드 종류다
 │   ├── types.ts                       이벤트 detail 타입 + HTMLElementEventMap 확장
 │   ├── index.ts                       컴포넌트 등록 진입점
 │   ├── react/
@@ -91,6 +106,8 @@ common-ui/
 ├── tsconfig.build.json                선언 방출 전용
 └── tsconfig.consumer.json             소비자 관점 검사용
 ```
+
+**`toast.ts` 와 `confirm.ts` 는 이 저장소에 없던 종류의 파일이다.** 컴포넌트 디렉터리 안에 있지만 엘리먼트가 아니라 함수를 내보낸다 — 필요할 때 짝이 되는 엘리먼트를 만들어 문서에 붙이는 **명령형 파사드**다(`nsToast` 는 `ns-toast` 리전을, `nsAlert`·`nsConfirm` 은 `ns-dialog` 를 만든다). 새 컴포넌트의 기본 모양은 여전히 `ns-<name>.ts` + `ns-<name>.styles.ts` 둘이고, 파사드는 지금 이 둘뿐이다. 왜 이 셋만 명령형인지는 위 "왜 이런 구조인가" 에 있다.
 
 ## 산출물과 진입점
 

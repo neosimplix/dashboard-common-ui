@@ -609,3 +609,31 @@ upgrade 후 : ::slotted 가 걸려 자식이 20 이 된다.
 → 보고된 것은 `ns-dialog` 의 `open` 하나였지만 **같은 결함이 다섯이다.** `ns-pagination` 의 `page`, `ns-table` 의 `sortKey`·`sortDirection`·`selected`. `ns-table` 의 주석에는 같은 문장이 복사돼 있기까지 했다. 그래서 컴포넌트마다 조건을 적는 대신 `src/internal/warn-property-only.ts` 하나가 `연결 시점에 속성 이름 → 대신 쓸 것` 을 받아 처리한다. **하나를 보고받았을 때 그 클래스를 세는 것이 두 번째로 옳은 일이다** — preflight 때 `ns-sidebar` 만 보고받고 `ns-nav-group` 을 함께 찾은 것과 같다.
 
 → 붙여 쓴 표기도 함께 본다. HTML 속성 이름은 대소문자를 구분하지 않으므로, TS 의 `sortKey` 를 그대로 옮겨 적은 `sortkey` 가 `sort-key` 만큼 흔한 오타 경로다.
+
+## `ns-tabs` 만 호스트에 속성을 쓴다
+
+불변 규칙은 "호스트의 속성을 쓰지 않는다" 다. 위의 "컴포넌트가 호스트에 속성을 찍으면 문서화된 override 가 죽는다" 가 그 근거다 — `setAttribute` 로 소비자가 쓴 값을 덮으면 문서화된 override 가 에러 없이 죽는다.
+
+`ns-tabs` 는 호스트에 `role="tablist"` 를 쓴다. **둘 곳이 거기밖에 없다** — ARIA 의 tablist↔tab 소유 관계는 DOM 부모여야 하고, 탭 버튼들의 부모는 호스트다. 이 컴포넌트는 버튼을 렌더하지 않으므로 호스트 말고는 그 관계를 성립시킬 요소 자체가 존재하지 않는다.
+
+규칙이 실제로 막으려던 것은 **소비자가 쓴 값을 덮는 것**이므로, 이미 `role` 이 있으면 건드리지 않는 조건부 쓰기로 그 성질을 지킨다.
+
+```ts
+if (!this.hasAttribute("role")) this.setAttribute("role", "tablist");
+```
+
+`aria-label` 은 아예 관리하지 않는다. 소비자가 `<ns-tabs aria-label="…">` 로 직접 쓰고, 우리는 읽지도 쓰지도 않는다.
+
+**`aria-controls` 가 shadow 경계를 못 넘는다는 것은 이 결정의 근거가 아니다.** 설명 초안에 그렇게 적혀 있었는데 사실이 아니다 — 이 컴포넌트는 버튼을 렌더하지 않으므로, `<slot>` 을 둔 shadow root 였다면 탭 버튼은 문서 트리에 그대로 남고 IDREF 도 그대로 해결된다. 슬롯 배정은 요소를 옮기지 않는다.
+
+Light DOM 인 진짜 이유는 셋이다.
+
+| 시도 | 무슨 일이 나나 |
+|---|---|
+| `LitElement` + 템플릿 | 렌더가 소비자가 쓴 버튼을 덮어쓴다 |
+| `<slot>` 없는 shadow root | 그 버튼이 어디에도 배정되지 않아 감춰진다 |
+| shadow 안에 무언가를 그림 | 전역 스타일시트인 `controls.css` 가 shadow 안에 닿지 않아 스타일을 다시 적어야 한다 |
+
+앞의 둘은 **에러 없이 빈 탭 줄**이 된다. `ReactiveElement` 를 상속하고 `createRenderRoot()` 가 `this` 를 반환하는 것이 그 둘을 각각 막는다.
+
+**이 예외를 다른 컴포넌트로 넓히지 않는다.** 판단 기준은 "그 속성이 호스트에 있어야만 의미가 성립하는가" 하나이고, 지금 그것을 만족하는 것은 tablist 하나뿐이다. `ns-table` 도 `ns-pagination` 도 `ns-multi-select` 도 호스트에 아무것도 쓰지 않는다.
