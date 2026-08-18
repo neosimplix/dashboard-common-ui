@@ -18,6 +18,15 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 **태그를 반드시 지정한다.** `main` 에는 `dist/` 가 없어서 브랜치를 가리키면 설치는 되지만 import 가 실패한다. 사용할 수 있는 태그는 `git tag -l` 로 확인한다.
 
+설치가 의도한 태그를 잡았는지 두 줄로 확인한다.
+
+```sh
+node -p "require('@neosimplix/common-ui/package.json').version"   # 0.2.1
+ls node_modules/@neosimplix/common-ui/dist/tokens.css             # 있어야 정상
+```
+
+두 번째가 없으면 `dist/` 가 없는 커밋을 잡은 것이다 — 태그가 아니라 브랜치를 가리켰거나, npm 이 옛 git 캐시를 재사용한 경우다. 후자는 `npm cache clean --force` 뒤 재설치한다. 첫 줄은 **0.2.1 부터만** 동작한다. `exports` 맵에 `./package.json` 이 없던 0.2.0 이하에서는 `ERR_PACKAGE_PATH_NOT_EXPORTED` 가 나므로 두 번째 줄로 확인한다.
+
 CSS 두 개를 모두 불러온다.
 
 ```css
@@ -66,6 +75,30 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 ```
 
 **자기 CSS 에서 `color-scheme` 을 세우고 있다면 지우고 `data-theme` 으로 옮긴다.** 소비자의 `:root { color-scheme: … }` 와 `tokens.css` 의 `:root` 는 특정도가 같아 승자를 임포트 순서가 정한다 — 토큰 이름에서 없앤 그 종속이 이 한 프로퍼티에는 그대로 남아 있다. `color-scheme` 은 이름을 바꿀 수 없는 표준 프로퍼티라 `--ns-` 같은 이름공간을 줄 수 없기 때문이다. 근거는 `docs/gotchas.md` 의 "`color-scheme` 에는 이름공간이 없어 접두사로 막을 수 없다" 에 있다.
+
+## 0.2.0 → 0.2.1 이관
+
+**소비자가 할 일은 없다.** 태그만 올린다. 고친 것과 더한 것은 넷이다.
+
+| 무엇 | 성격 |
+|---|---|
+| `ns-sidebar` 의 오른쪽 경계선 | **fix** — `:host` 에 있어 Tailwind preflight 의 `* { border: 0 solid }` 에 지워지고 있었다. 0.1.5 부터의 결함이고 Tailwind 소비자에게만 나타났다. `globals.css` 에 `ns-sidebar { border-right: … }` 로 되살려 둔 것이 있으면 **지운다** |
+| `ns-nav-group` 사이 간격 | **fix** — 같은 원인. 그룹이 둘 이상일 때만 보이므로 보고되지 않았다 |
+| `registerIcons()` | **추가** — 스프라이트에 아이콘을 더한다. `slot="leading"` 에 `<svg>` 를 직접 넣던 우회가 필요 없어진다 |
+| `exports` 의 `./package.json` | **추가** — `require("@neosimplix/common-ui/package.json")` 로 버전을 읽을 수 있다 |
+
+```ts
+import { registerIcons, svg } from "@neosimplix/common-ui/react"; // 또는 "@neosimplix/common-ui"
+
+registerIcons({
+  chart: {
+    viewBox: "0 0 20 20",
+    content: svg`<path d="M3 17V9m5 8V4m5 13v-6m4 6V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />`,
+  },
+});
+```
+
+**앱 진입점 모듈에서 한 번 부른다.** 이미 그려진 `<ns-icon>` 을 다시 그리게 하지 않으므로 첫 렌더보다 늦으면 그 아이콘이 빈 채로 남는다. `svg` 를 이 패키지에서 받는 이유는 `lit` 이 우리 의존성이지 소비자 의존성이 아니기 때문이다 — `import { svg } from "lit"` 은 pnpm 설치에서 해석되지 않는다.
 
 ## 0.1.5 → 0.2.0 이관
 
