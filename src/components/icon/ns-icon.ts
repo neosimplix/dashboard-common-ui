@@ -34,7 +34,8 @@ export class NsIcon extends LitElement {
       if (this.name !== this.#warned) {
         this.#warned = this.name;
         console.warn(
-          `[ns-icon] 없는 아이콘: "${this.name}". 사용 가능: ${Object.keys(icons).join(", ")}`,
+          `[ns-icon] 없는 아이콘: "${this.name}". 사용 가능: ${Object.keys(icons).join(", ")}. ` +
+            `registerIcons() 로 더할 수 있다 — 첫 렌더보다 앞서 불러야 한다.`,
         );
       }
       return nothing;

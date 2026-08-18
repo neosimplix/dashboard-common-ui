@@ -19,6 +19,16 @@ export { NsPagination } from "./components/pagination/ns-pagination.js";
 export { NsSidebar } from "./components/sidebar/ns-sidebar.js";
 export { NsSkeleton } from "./components/skeleton/ns-skeleton.js";
 export { NsTable } from "./components/table/ns-table.js";
+
+/*
+  스프라이트 등록. svg 를 함께 내보내는 이유는 lit 이 이 패키지의 의존성이라
+  소비자 package.json 에 없기 때문이다 — 소비자가 "lit" 을 직접 import 하면
+  pnpm 처럼 호이스팅하지 않는 설치에서 해석되지 않는다.
+*/
+export { registerIcons } from "./components/icon/icons.js";
+export type { IconDef } from "./components/icon/icons.js";
+export { svg } from "lit";
+
 export type {
   NsToggleDetail,
   NsNavigateDetail,

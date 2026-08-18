@@ -7,6 +7,15 @@
 */
 export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPagination, NsSkeleton, NsTable } from "./elements.js";
 
+/*
+  스프라이트 등록. 루트 진입점에도 같은 이름으로 있지만 여기도 내보낸다 —
+  React 소비자는 이 경로 하나만 import 하므로, 없으면 아이콘 하나 때문에
+  두 번째 진입점을 알아야 한다. svg 를 함께 내보내는 이유는 루트와 같다.
+*/
+export { registerIcons } from "../components/icon/icons.js";
+export type { IconDef } from "../components/icon/icons.js";
+export { svg } from "lit";
+
 export { PageHeading } from "./tags/PageHeading.js";
 export type { PageHeadingProps } from "./tags/PageHeading.js";
 

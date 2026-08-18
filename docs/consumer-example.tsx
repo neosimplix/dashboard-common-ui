@@ -42,8 +42,32 @@ import {
   Select,
   Sidebar,
   Textarea,
+  registerIcons,
+  svg,
 } from "../src/react/index.js";
 import type { NsDialogCloseReason, NsSortDetail } from "../src/react/index.js";
+
+/*
+  스프라이트 등록. 소비자가 실제로 쓰는 형태 그대로 — 이 경로 하나만
+  import 하고, lit 을 직접 의존하지 않으며, svg 도 여기서 받는다.
+  IconDef 의 두 필드가 갖춰졌는지는 tsc 가 본다.
+
+  모듈 최상단에 두는 것이 규약이다. 컴포넌트 안에서 부르면 첫 렌더보다
+  늦어 그 렌더의 아이콘이 빈 채로 남는다.
+*/
+registerIcons({
+  chart: {
+    viewBox: "0 0 20 20",
+    content: svg`
+      <path
+        d="M3 17V9m5 8V4m5 13v-6m4 6V7"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+      />
+    `,
+  },
+});
 
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
@@ -100,7 +124,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
               onNsNavigate={(e) => log(e.detail.href)}
             />
             <NsNavItem href="/b" label="프로젝트 B" onNsNavigate={(e) => log(e.detail.href)}>
-              <NsIcon slot="leading" name="menu" />
+              {/* 위에서 registerIcons 로 더한 이름. 스프라이트 기본 셋에는 없다. */}
+              <NsIcon slot="leading" name="chart" />
             </NsNavItem>
           </NsNavGroup>
         </Sidebar>
