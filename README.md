@@ -90,7 +90,7 @@ import { House, Settings } from "lucide-react";
 <NsNavItem href="/" label="개요"><NsIcon slot="leading"><House /></NsIcon></NsNavItem>
 ```
 
-크기는 `ns-icon` 이 정한다. 넣은 것이 자기 `width`/`height` 를 갖고 와도(lucide 계열은 24 를 찍는다) `::slotted(*)` 규칙이 `--ns-icon-size` 상자에 맞춘다 — 프레젠테이션 속성은 어떤 CSS 규칙에도 지기 때문이다. 다르게 하려면 그 요소에 인라인 `style` 을 준다.
+크기는 `ns-icon` 이 정한다. 넣은 것이 자기 `width`/`height` 를 갖고 와도(lucide 계열은 24 를 찍는다) `--ns-icon-size` 상자에 맞춰진다 — 프레젠테이션 속성은 어떤 CSS 규칙에도 지기 때문이다. 다르게 하려면 그 요소에 인라인 `style` 을 준다. **정규화는 upgrade 전에도 걸린다** — 같은 선언이 shadow 의 `::slotted(*)` 와 `tokens.css` 의 `ns-icon > *` 두 벌로 있어서, 하이드레이션 때 24 → 20 으로 줄어드는 튐이 없다.
 
 접근성은 넣는 쪽 책임이다. 스프라이트로 그릴 때 붙는 `aria-hidden` 은 우리 shadow 안의 `svg` 에 있는 것이라 슬롯으로 들어온 것에는 없다. lucide-react 는 스스로 붙인다.
 

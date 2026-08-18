@@ -170,6 +170,26 @@ ns-sidebar:not(:defined)[data-ns-open] { width: var(--ns-sidebar-width); }
 */
 ns-icon { display: inline-flex; width: var(--ns-icon-size); height: var(--ns-icon-size); }
 
+/*
+  슬롯에 들어온 자식의 크기. shadow 의 ::slotted(*) 와 같은 선언을 문서 트리에도
+  둔다 — 둘 다 필요하고 대상이 다르다.
+
+  ::slotted 는 shadow root 가 생긴 뒤에만 존재한다. 그런데 소비자가 넣는 아이콘은
+  대개 자기 크기를 갖고 온다(lucide 계열은 width="24" height="24" 를 찍는다).
+  upgrade 전에는 호스트만 --ns-icon-size 로 예약돼 있고 자식은 24 로 그려지다가,
+  upgrade 직후 ::slotted 가 걸리면서 20 으로 줄어든다 — ns-sidebar 에서 없앤 것과
+  같은 종류의 튐이 아이콘 크기로 되돌아온다.
+
+  이 규칙이 그 구간을 덮는다. 정의 이후에도 계속 걸리는 것이 맞다 — 조건 없는
+  예약이라 그칠 이유가 없고, 소비자가 자식에 인라인 style 로 다른 크기를 주는
+  override 경로도 그대로 남는다(인라인이 둘 다 이긴다).
+
+  ::slotted 쪽을 지울 수 없는 이유는 이 선택자가 문서 트리에만 닿기 때문이다.
+  다른 컴포넌트의 shadow 안에 있는 ns-icon 의 자식에는 위 ns-icon 규칙과 마찬가지로
+  도달하지 못한다.
+*/
+ns-icon > * { display: block; width: 100%; height: 100%; }
+
 ns-page-heading { display: block; }
 ns-skeleton { display: block; }
 
