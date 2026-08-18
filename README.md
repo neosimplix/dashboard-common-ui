@@ -5,6 +5,7 @@ Next.js · React 18/19 · 순수 HTML 에서 동일하게 쓰는 대시보드 �
 - `ns-header` — 토글 버튼, 프로젝트 이름, 우측 `actions` slot
 - `ns-sidebar` — 접으면 좌측 레일이 남는 사이드바
 - `ns-nav-group` / `ns-nav-item` — 네비게이션 그룹과 항목. 항목 좌측은 `leading` slot 이라 아이콘을 넣을 수 있고, 비우면 `badge` 가 대신 보인다
+- `ns-icon` — 아무 아이콘이나 감싸 크기·색을 통일한다. `<ns-icon><House /></ns-icon>` 처럼 자식으로 넣는 것이 기본이고, `name` 은 내장 셋(`menu`·`close`·`google`)과 `registerIcons()` 로 등록한 것에만 쓴다
 
 ## 설치
 
@@ -21,7 +22,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 설치가 의도한 태그를 잡았는지 두 줄로 확인한다.
 
 ```sh
-node -p "require('@neosimplix/common-ui/package.json').version"   # 0.2.1
+node -p "require('@neosimplix/common-ui/package.json').version"   # 위 태그와 같아야 한다
 ls node_modules/@neosimplix/common-ui/dist/tokens.css             # 있어야 정상
 ```
 
