@@ -196,6 +196,8 @@
   .ns-input:focus-visible,
   .ns-textarea:focus-visible,
   .ns-select:focus-visible,
+  .ns-chip:focus-visible,
+  .ns-chip__remove:focus-visible,
   .ns-table__sort:focus-visible {
     outline: 2px solid var(--ns-color-accent);
     outline-offset: 2px;
@@ -578,5 +580,90 @@
     font-size: var(--ns-font-size-sm);
     line-height: var(--ns-line-height-sm);
     color: var(--ns-color-fg-subtle);
+  }
+
+  /*
+    누르거나 지우는 선택 토큰. StatusPill 같은 **읽는** 배지가 아니다.
+
+    세 갈래를 마크업으로 가른다 —
+      토글      <button class="ns-chip" role="checkbox" aria-checked="…">
+      제거      <span class="ns-chip"> … <button class="ns-chip__remove">
+      읽기 전용 <span class="ns-chip">
+
+    **토글과 제거를 함께 쓰지 않는다.** 버튼 안에 버튼이 들어가 마크업이 무효가
+    된다. 마크업이 갈라져 있으므로 이 조합은 애초에 쓸 수 없고, React 쪽은
+    타입이 막는다.
+
+    선택 상태는 [aria-checked="true"] 로 잡는다. --selected 변형 클래스를 만들지
+    않는다 — invalid 를 [aria-invalid="true"] 로 잡는 것과 같은 규칙이다. 붙여야
+    마땅한 속성을 붙이면 스타일이 따라온다.
+  */
+  .ns-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ns-space-1-5);
+    border: 1px solid var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-pill);
+    padding: var(--ns-space-1-5) var(--ns-space-3);
+    background: var(--ns-color-surface);
+    color: var(--ns-color-fg-body);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    /* <button> 갈래는 UA 컨트롤 글꼴을 쓴다. <span> 갈래와 달라 보이지 않게 한다. */
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+
+  /*
+    커서·전이·hover 는 <button> 갈래에만 준다. <span> 은 상호작용하지 않으므로
+    커서를 주면 거짓말이 된다.
+  */
+  button.ns-chip {
+    cursor: pointer;
+    transition: background-color var(--ns-transition-fast) var(--ns-transition-ease),
+      border-color var(--ns-transition-fast) var(--ns-transition-ease);
+  }
+
+  button.ns-chip:hover:not(:disabled) {
+    background: var(--ns-color-surface-hover);
+  }
+
+  .ns-chip[aria-checked="true"] {
+    background: var(--ns-color-accent);
+    border-color: var(--ns-color-accent);
+    color: var(--ns-color-accent-fg);
+  }
+
+  .ns-chip[aria-checked="true"]:hover:not(:disabled) {
+    background: var(--ns-color-accent-hover);
+  }
+
+  /* 토글 갈래는 자신이 disabled 되고, 제거 갈래는 안쪽 버튼이 disabled 된다. */
+  .ns-chip:disabled,
+  .ns-chip:has(:disabled) {
+    cursor: default;
+    opacity: .6;
+  }
+
+  .ns-chip__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ns-space-4);
+    height: var(--ns-space-4);
+    /* 칩 오른쪽 패딩 안으로 당긴다 — × 가 테두리에서 너무 떨어져 보이지 않게. */
+    margin-right: calc(var(--ns-space-1) * -1);
+    border: 0;
+    border-radius: var(--ns-radius-pill);
+    background: none;
+    color: var(--ns-color-fg-subtle);
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .ns-chip__remove:hover:not(:disabled) {
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg-body);
   }
 }

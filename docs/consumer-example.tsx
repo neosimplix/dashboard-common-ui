@@ -29,6 +29,7 @@ import {
   ButtonLink,
   Card,
   Checkbox,
+  Chip,
   Dialog,
   Field,
   Input,
@@ -174,6 +175,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               checked
               onChange={(e) => log(String(e.target.checked))}
             />
+            <Chip selected onClick={() => log("toggle")}>마케팅팀</Chip>
+            <Chip onRemove={() => log("remove")} removeLabel="박승인 제거">박승인</Chip>
+            <Chip>공지</Chip>
             <Button variant="icon" aria-label="메뉴 열기" onClick={() => log("toggle")}>
               <NsIcon name="menu" />
             </Button>

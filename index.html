@@ -106,6 +106,7 @@
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
       <ns-nav-item href="#ns-accordion" label=".ns-accordion" badge="AC"></ns-nav-item>
       <ns-nav-item href="#ns-message" label=".ns-message" badge="MG"></ns-nav-item>
+      <ns-nav-item href="#ns-chip" label=".ns-chip" badge="CH"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
       <ns-nav-item href="#ns-icon" label="ns-icon" badge="IC"></ns-nav-item>
@@ -1236,6 +1237,76 @@
 
     <Message>왼쪽에서 프로젝트를 선택하세요.</Message>
   </script>
+
+  <h2 id="ns-chip">.ns-chip</h2>
+  <p>
+    누르거나 지우는 선택 토큰. <strong>세 갈래를 마크업으로 가른다</strong> —
+    토글은 <code>&lt;button role="checkbox"&gt;</code>, 제거는 <code>&lt;span&gt;</code> 안에
+    × 버튼, 읽기 전용은 <code>&lt;span&gt;</code> 하나다.
+  </p>
+  <p>
+    <strong>토글과 제거를 함께 쓰지 않는다.</strong> 버튼 안에 버튼이 들어가 마크업이
+    무효가 된다. 선택 상태는 클래스가 아니라 <code>aria-checked="true"</code> 로 표시한다 —
+    <code>.ns-input</code> 의 <code>aria-invalid</code> 와 같은 규칙이다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <button class="ns-chip" type="button" role="checkbox" aria-checked="true">마케팅팀</button>
+    <button class="ns-chip" type="button" role="checkbox" aria-checked="false">데이터분석팀</button>
+    <button class="ns-chip" type="button" role="checkbox" aria-checked="true" disabled>세일즈팀</button>
+    <button class="ns-chip" type="button" role="checkbox" aria-checked="false" disabled>경영지원팀</button>
+    <span class="ns-chip">
+      박승인
+      <button class="ns-chip__remove" type="button" aria-label="박승인 제거">×</button>
+    </span>
+    <span class="ns-chip">
+      임담당
+      <button class="ns-chip__remove" type="button" aria-label="임담당 제거" disabled>×</button>
+    </span>
+    <span class="ns-chip">공지</span>
+  </template>
+  <div class="demo block" id="chip-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-2);padding:var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-chip</code></td><td><code>button</code> · <code>span</code></td><td>토큰 몸통. <code>button</code> 일 때만 커서·hover 가 붙는다</td></tr>
+    <tr><td><code>.ns-chip__remove</code></td><td><code>span.ns-chip</code> 안의 <code>button</code></td><td>× 버튼. <code>aria-label</code> 을 <strong>칩마다 다르게</strong> 채운다</td></tr>
+  </table>
+
+  <h3>상태</h3>
+  <table>
+    <tr><th>표시</th><th>결과</th></tr>
+    <tr><td><code>aria-checked="true"</code></td><td>액센트 배경. 토글 갈래에서만 쓴다</td></tr>
+    <tr><td><code>disabled</code></td><td><code>opacity: .6</code>. 제거 갈래는 안쪽 버튼에 붙인다(<code>:has()</code> 로 잡는다)</td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <button class="ns-chip" type="button" role="checkbox" aria-checked="true">마케팅팀</button>
+
+    <span class="ns-chip">
+      박승인
+      <button class="ns-chip__remove" type="button" aria-label="박승인 제거">×</button>
+    </span>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Chip } from "@neosimplix/common-ui/react";
+
+    <Chip selected={on} onClick={() => setOn(!on)}>마케팅팀</Chip>
+    <Chip onRemove={() => remove("park")} removeLabel="박승인 제거">박승인</Chip>
+    <Chip>공지</Chip>
+  </script>
+
+  <h3>주의</h3>
+  <ul>
+    <li><code>removeLabel</code> 기본값(<code>"제거"</code>)을 그대로 두지 않는다. 칩이 여러 개일 때 이름이 전부 같아져 어느 칩인지 구별되지 않는다.</li>
+    <li>토글 갈래에 <code>role="checkbox"</code> 를 빠뜨리면 <code>aria-checked</code> 가 무시된다 — 배경은 칠해지지만 화면낭독기는 선택 상태를 모른다.</li>
+  </ul>
 
   <h2 id="ns-icon">ns-icon</h2>
   <p>

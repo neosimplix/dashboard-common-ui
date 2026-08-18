@@ -56,6 +56,9 @@ export type { FieldProps } from "./controls/Field.js";
 export { Message } from "./controls/Message.js";
 export type { MessageProps } from "./controls/Message.js";
 
+export { Chip } from "./controls/Chip.js";
+export type { ChipProps } from "./controls/Chip.js";
+
 export type {
   NsToggleDetail,
   NsNavigateDetail,
