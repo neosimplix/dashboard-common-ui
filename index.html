@@ -2285,7 +2285,7 @@
 
   <h3>데모</h3>
   <template class="ex">
-    <ns-tabs aria-label="갤러리 예시 탭" default-active="live" id="tabs-demo-tabs">
+    <ns-tabs aria-label="갤러리 예시 탭" default-active="live">
       <button type="button" data-ns-tab="live" data-ns-panel="tabs-demo-panel-live">운영 중</button>
       <button type="button" data-ns-tab="requests" data-ns-panel="tabs-demo-panel-requests">
         신청 <span class="ns-tabs__count">0</span>
@@ -2398,6 +2398,18 @@
     <li><code>&lt;ns-tabs active="live"&gt;</code> 는 <strong>무시된다.</strong> 프로퍼티 전용이라 관찰되지 않는다 — 콘솔이 경고한다. HTML 은 <code>default-active</code> 를 쓴다.</li>
     <li>패널의 <code>aria-labelledby</code> 는 <code>{data-ns-panel}-tab</code> 이다. React 는 <code>tabIdFor()</code> 로 계산한다.</li>
     <li>탭 버튼 안에 다른 버튼을 넣지 않는다. <code>click</code> 위임이 가장 가까운 <code>[data-ns-tab]</code> 을 찾으므로 안쪽 버튼도 탭 전환을 일으킨다.</li>
+    <li>
+      <strong>하이드레이션 전에는 활성 탭 표시가 없다.</strong> <code>active</code> 는 프로퍼티
+      전용이고 React 래퍼가 그것을 layout effect 에서 설정하므로 서버 마크업에
+      <code>aria-selected</code> 가 실리지 않는다 — 밑줄이 그 속성에 걸려 있어 첫 페인트에는
+      모든 탭이 선택되지 않은 모양으로 나온다. 패널 쪽 <code>hidden</code> 은 소비자가 직접
+      렌더하므로 서버에서도 맞다.
+    </li>
+    <li>
+      <strong><code>disabled</code> 탭은 지원하지 않는다.</strong> 화살표가 그 탭을 건너뛰지 않아
+      <code>ns-tab-change</code> 가 나가는데 <code>focus()</code> 는 먹지 않는다 — 선택은 옮겨졌고
+      포커스는 <code>tabindex="-1"</code> 이 된 이전 탭에 남는다. 못 고르는 탭은 그리지 않는다.
+    </li>
   </ul>
 
   <h2 id="ns-multi-select">ns-multi-select</h2>
