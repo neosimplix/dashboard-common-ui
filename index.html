@@ -1169,10 +1169,25 @@
     호이스팅에 기대는 코드가 된다 — npm 에서는 우연히 되고 pnpm 에서는 해석되지 않는다.
   </p>
   <p>
-    <strong>첫 렌더보다 앞서 부른다.</strong> 이미 그려진 <code>&lt;ns-icon&gt;</code> 을
+    <strong>어디서 부르는가에 조건이 둘 있다.</strong>
+  </p>
+  <p>
+    <strong>① 첫 렌더보다 앞서야 한다.</strong> 이미 그려진 <code>&lt;ns-icon&gt;</code> 을
     다시 그리게 하지 않으므로, 늦게 부르면 그 시점에 화면에 있던 아이콘이 빈 채로 남는다.
-    앱 진입점 모듈의 최상단에서 한 번 부르면 React 든 순수 HTML 이든 첫 렌더보다 앞선다.
-    컴포넌트 안에서 부르지 않는다.
+    그래서 컴포넌트 안이 아니라 <strong>모듈 최상위</strong>에서 부른다.
+  </p>
+  <p>
+    <strong>② 그 모듈이 브라우저 번들에 들어가야 한다.</strong> Next.js App Router 의
+    루트 레이아웃은 서버 컴포넌트다. 거기서 <code>import "./icons"</code> 해도
+    <strong>클라이언트 번들에 들어가지 않는다</strong> — 부수효과만 있고 export 를 쓰지 않는
+    모듈은 클라이언트 참조가 만들어지지 않기 때문이고, <code>"use client"</code> 를 붙여도
+    마찬가지다. 셸처럼 <strong>이미 클라이언트 컴포넌트인 파일</strong>이 import 하게 한다.
+    순수 HTML 소비자는 <code>&lt;script type="module"&gt;</code> 이 곧 클라이언트라 ①만 지키면 된다.
+  </p>
+  <p>
+    ②를 놓치면 등록이 통째로 실행되지 않는다. <strong>증상이 ①을 놓쳤을 때와 같아서</strong>
+    — 아이콘 자리가 비고 <code>[ns-icon] 없는 아이콘</code> 경고만 남는다 — 호출 위치를
+    앞으로 당기는 쪽으로 헛짚기 쉽다. 먼저 그 모듈이 브라우저에 도달했는지 본다.
   </p>
 
   <h3>접근성</h3>
