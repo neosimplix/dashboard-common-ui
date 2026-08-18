@@ -85,14 +85,25 @@ function open(
     const cleanup = (): void => {
       el.remove();
       /*
-        브라우저의 복원은 "지금 포커스가 대화상자 안에 있을 것" 을 조건으로 하는데,
-        확인·취소 버튼은 slot 으로 배정될 뿐 shadow 의 <dialog> 의 노드 트리 자손이
-        아니다. 그 조건을 노드 트리로 보는 구현에서는 하필 그 두 경로만 복원이
-        빠진다. 직접 한 번 더 맞춰 다섯 경로를 같게 만든다 — 이미 복원됐다면 같은
-        요소라 아무 일도 일어나지 않는다.
+        resolve 를 포커스보다 먼저 한다. focus() 가 던지면 Promise 가 영영 안 풀린다.
+      */
+      resolve(ok);
+
+      /*
+        **지우지 말 것 — 죽은 줄이 아니다.**
+
+        명세의 복원 조건은 논리합이다: 포커스가 대화상자의 shadow-including 자손일
+        것, **또는** wasModal 이 참일 것. 이 대화상자는 언제나 showModal() 로 열리고
+        위 순서 덕분에 아직 붙어 있고 모달인 채로 close 단계가 도니까, 명세를 따르는
+        엔진은 다섯 경로 모두에서 무조건 복원한다 — 자손이냐 아니냐는 물어보지도
+        않는다.
+
+        이 줄은 그 뒤 항을 구현하지 않고 자손 검사만 하는 엔진을 위한 backstop 이다.
+        그런 엔진에서는 확인·취소 버튼이 slot 으로 배정될 뿐 shadow 의 <dialog> 의
+        자손이 아니라서 하필 가장 많이 쓰는 두 경로만 복원이 빠진다. 이미 복원된
+        경우에는 같은 요소라 아무 일도 일어나지 않는다.
       */
       if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
-      resolve(ok);
     };
     /*
       성공·실패 양쪽에 같은 함수를 건다. 갱신 중 예외로 updateComplete 가 reject
@@ -119,14 +130,28 @@ function open(
     기다려야 하는지는 lit 과 브라우저의 마이크로태스크 순서에 달린 값이다. 대신
     포커스가 실제로 갔는지를 보고 끝낸다 — 조건을 직접 관찰하므로 그 순서가 바뀌어도
     어긋나지 않는다. 상한이 있어 어떤 경우에도 유한 번에 멈춘다.
+
+    `document.activeElement === target` 이 성립하는 것은 **취소 버튼이 light DOM
+    이기 때문이다.** 그 뿌리가 문서라 activeElement 가 버튼 자신을 준다. shadow
+    안이었다면 호스트로 재타깃되어 이 조건이 영영 참이 되지 않고 루프가 상한까지
+    헛돌았을 것이다.
   */
   const focusInitial = async (target: HTMLButtonElement): Promise<void> => {
     for (let i = 0; i < 5; i++) {
       await el.updateComplete;
       if (settled) return;              // 기다리는 사이에 닫혔다
-      target.focus();
+      // 긴 페이지에서 대화상자 뒤 문서가 튀지 않게 한다.
+      target.focus({ preventScroll: true });
       if (document.activeElement === target) return;
     }
+    /*
+      여기 오면 tone: "danger" 가 문서로 약속한 "취소에 초기 포커스" 가 깨진 것이다.
+      조용히 넘기면 ns-dialog 의 갱신 순서가 바뀌는 날 약속만 거짓이 되고 아무
+      흔적이 남지 않는다. 이 저장소가 조용한 오설정에 쓰는 방식 그대로 경고한다.
+    */
+    console.warn(
+      "[ns-confirm] 취소 버튼에 초기 포커스를 주지 못했습니다. ns-dialog 의 갱신 순서가 바뀌었을 수 있습니다.",
+    );
   };
 
   const confirm = document.createElement("button");
