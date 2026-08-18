@@ -4,7 +4,6 @@ import { cx } from "../cx.js";
 
 type ChipBase = {
   children: ReactNode;
-  disabled?: boolean;
   className?: string;
 };
 
@@ -17,12 +16,16 @@ type ChipBase = {
  *
  * `onClick` 이 토글 갈래에만 있는 것도 의도다. 제거 갈래는 칩 몸통이 `<span>`
  * 이고 × 만 버튼이라, 칩을 잘못 눌러 지우는 일이 없다.
+ *
+ * `disabled` 도 같은 이유로 두 상호작용 갈래에만 있다. 읽기 전용 갈래는
+ * `<span>` 하나뿐이라 disable 할 대상이 없다 — 허용해도 렌더가 아무것도
+ * 하지 않아 "속성은 받는데 스타일도 동작도 따라오지 않는" 거짓 API가 된다.
  */
 export type ChipProps = ChipBase &
   (
-    | { selected: boolean; onClick?: () => void; onRemove?: never; removeLabel?: never }
-    | { selected?: never; onClick?: never; onRemove: () => void; removeLabel?: string }
-    | { selected?: never; onClick?: never; onRemove?: never; removeLabel?: never }
+    | { selected: boolean; onClick?: () => void; onRemove?: never; removeLabel?: never; disabled?: boolean }
+    | { selected?: never; onClick?: never; onRemove: () => void; removeLabel?: string; disabled?: boolean }
+    | { selected?: never; onClick?: never; onRemove?: never; removeLabel?: never; disabled?: never }
   );
 
 /**
