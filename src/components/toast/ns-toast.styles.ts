@@ -19,9 +19,12 @@ export const styles = css`
       토스트는 대화상자와 ::backdrop 뒤에 가려 보이지도 눌리지도 않는다.
 
       Popover API(showPopover)로 이 리전도 top layer 에 올릴 수 있지만 쓰지 않는다.
-      Firefox 125+ 인데 이 패키지의 문서화된 하한은 Firefox 121 이고, UA 의
-      [popover] 규칙이 border 와 padding 을 넣어 :host 박스 금지 규칙(check-tokens.mjs
-      규칙 ④)에 걸린다.
+      이유는 하나, 브라우저 하한이다 — showPopover 는 Firefox 125+ 인데 이 패키지의
+      문서화된 하한은 Firefox 121 이다.
+
+      (UA 의 [popover] 규칙이 border·padding 을 넣는 것은 이유가 아니다.
+      check-tokens.mjs 규칙 ④ 는 no-op 값을 면제하므로 :host { border: none;
+      padding: 0 } 으로 되돌리면 통과한다.)
 
       해결은 문서다 — index.html 의 nsToast 절 "주의" 에 적혀 있다.
     */
