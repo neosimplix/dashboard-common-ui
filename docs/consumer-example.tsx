@@ -127,6 +127,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
               {/* 위에서 registerIcons 로 더한 이름. 스프라이트 기본 셋에는 없다. */}
               <NsIcon slot="leading" name="chart" />
             </NsNavItem>
+            <NsNavItem href="/c" label="프로젝트 C" onNsNavigate={(e) => log(e.detail.href)}>
+              {/*
+                등록 없이 자식으로 직접 넣는 길. 실제 소비자는 여기에
+                <House /> 같은 lucide-react 컴포넌트를 넣는다 — 이 패키지는
+                lucide 에 의존하지 않으므로 여기서는 svg 를 그대로 적는다.
+                width="24" 는 ::slotted 규칙이 --ns-icon-size 로 덮는다.
+              */}
+              <NsIcon slot="leading">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+                  <path d="M3 17V9m5 8V4m5 13v-6m4 6V7" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              </NsIcon>
+            </NsNavItem>
           </NsNavGroup>
         </Sidebar>
         <main>

@@ -77,6 +77,7 @@
   <ns-sidebar open id="docs-nav">
     <ns-nav-group heading="시작하기">
       <ns-nav-item href="#install" label="설치" badge="설" active></ns-nav-item>
+      <ns-nav-item href="#migration-0-2-2" label="0.2.1 → 0.2.2 이관" badge="이"></ns-nav-item>
       <ns-nav-item href="#migration-0-2-1" label="0.2.0 → 0.2.1 이관" badge="이"></ns-nav-item>
       <ns-nav-item href="#migration-0-2-0" label="0.1.5 → 0.2.0 이관" badge="이"></ns-nav-item>
       <ns-nav-item href="#usage" label="환경별 연동" badge="연"></ns-nav-item>
@@ -181,6 +182,24 @@
     @layer theme, base, ns-controls, components, utilities;
     @import "tailwindcss";
   </script>
+
+  <h2 id="migration-0-2-2">0.2.1 → 0.2.2 이관</h2>
+  <p>
+    <strong>소비자가 할 일은 없다.</strong> 태그만 올린다. 기존
+    <code>&lt;ns-icon name="menu"&gt;&lt;/ns-icon&gt;</code> 은 그대로 동작한다.
+  </p>
+  <p>
+    <code>ns-icon</code> 이 기본 슬롯을 갖는다. <strong>자식을 넣으면 그것이 그려지고
+    <code>name</code> 은 읽히지 않는다.</strong> 등록도 빌드 설정도 필요 없으므로
+    앱 아이콘은 대개 이쪽이 짧다. 자세한 것은 <a href="#ns-icon">ns-icon</a> 절의
+    <strong>자기 아이콘 넣기</strong> 를 본다.
+  </p>
+  <p>
+    <strong>손으로 HTML 을 쓸 때 <code>&lt;ns-icon&gt;</code> 안쪽에 공백을 두지 않는다.</strong>
+    기본 슬롯은 공백 텍스트 노드도 배정받고, 배정이 하나라도 있으면 브라우저가 폴백을
+    렌더하지 않는다 — 줄바꿈 하나로 아이콘이 사라진다. 콘솔 경고가 나온다. JSX 는
+    해당하지 않는다.
+  </p>
 
   <h2 id="migration-0-2-1">0.2.0 → 0.2.1 이관</h2>
   <p>
@@ -1081,6 +1100,13 @@
     상속되므로 바깥에서 정할 수 있다. 크기는 호스트 CSS 로 정한다
     (<code>ns-icon { width: 1rem }</code>). <code>google</code> 만 브랜드 규정상 색이 고정이다.
   </p>
+  <p>
+    <strong>내용을 얻는 길이 셋이다.</strong> ① 자식으로 직접 넣는다
+    (<code>&lt;ns-icon&gt;&lt;House /&gt;&lt;/ns-icon&gt;</code>) — 가장 짧고 등록이 필요 없다.
+    ② <code>registerIcons()</code> 로 스프라이트에 더하고 <code>name</code> 으로 부른다 —
+    같은 아이콘을 여러 곳에서 쓰거나 순수 HTML 일 때. ③ 수록된 셋
+    (<code>menu</code>·<code>close</code>·<code>google</code>)은 라이브러리 자신이 쓰는 것이다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">
@@ -1089,6 +1115,7 @@
     <ns-icon name="google"></ns-icon>
     <span style="color: var(--ns-color-danger)"><ns-icon name="close"></ns-icon></span>
     <span style="color: var(--ns-color-fg-muted)"><ns-icon name="menu" style="width:2rem;height:2rem"></ns-icon></span>
+    <ns-icon><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="40" height="40" aria-hidden="true"><path d="M3 17V9m5 8V4m5 13v-6m4 6V7"/></svg></ns-icon>
   </template>
   <div class="demo block" id="icon-demo" style="display:flex;align-items:center;gap:var(--ns-space-4);padding:var(--ns-space-4)"></div>
   <pre></pre>
@@ -1096,7 +1123,7 @@
   <h3>프로퍼티</h3>
   <table>
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. 기본값인 빈 문자열은 "아직 정하지 않음"으로 보고 조용히 아무것도 그리지 않는다 — 경고가 없다. 값을 줬는데 스프라이트에 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다 — 아래 <code>registerIcons()</code> 로 더한다</td></tr>
+    <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. <strong>자식이 있으면 읽히지 않는다</strong> — 슬롯 폴백이라 자식이 이긴다. 기본값인 빈 문자열은 "아직 정하지 않음"으로 보고 조용히 아무것도 그리지 않는다 — 경고가 없다. 값을 줬는데 스프라이트에 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
   </table>
 
   <h3>크기</h3>
@@ -1133,10 +1160,53 @@
     여기 있을 수 없으므로 스프라이트를 열어 둔다 — 아래 <code>registerIcons()</code>.
   </p>
 
+  <h3>자기 아이콘 넣기</h3>
+  <p>
+    <strong>자식을 넣으면 그것이 그려진다.</strong> 기본 슬롯의 폴백이 스프라이트라,
+    자식이 있으면 <code>name</code> 은 읽히지 않는다. 등록도 빌드 설정도 필요 없다.
+    <strong>0.2.2 부터다.</strong>
+  </p>
+  <script type="text/plain">
+    import { House, Settings } from "lucide-react";
+
+    <ns-icon><House /></ns-icon>
+    <ns-icon><Settings /></ns-icon>
+
+    <!-- 순수 HTML 도 같다 -->
+    <ns-icon><svg viewBox="0 0 24 24" stroke="currentColor">…</svg></ns-icon>
+  </script>
+  <p>
+    <strong>크기는 <code>ns-icon</code> 이 정한다.</strong> 넣은 것이 자기
+    <code>width</code>/<code>height</code> 를 갖고 와도 — lucide 계열은 24 를 찍는다 —
+    <code>::slotted(*)</code> 규칙이 <code>--ns-icon-size</code> 상자에 맞춘다. 프레젠테이션
+    속성은 어떤 CSS 규칙에도 지기 때문이다. 위 데모의 마지막 아이콘은
+    <code>width="40"</code> 을 달고 있지만 나머지와 같은 크기로 그려진다. 굳이 다르게
+    하려면 그 요소에 인라인 <code>style</code> 을 주면 이 규칙을 이긴다.
+  </p>
+  <p>
+    <strong>접근성은 넣는 쪽 책임이다.</strong> 스프라이트로 그릴 때 붙는
+    <code>aria-hidden</code> 은 우리 shadow 안의 <code>svg</code> 에 있는 것이라 슬롯으로
+    들어온 것에는 없다. lucide-react 는 스스로 붙인다.
+  </p>
+  <p>
+    <strong>안쪽에 공백을 두지 않는다.</strong> 기본 슬롯은 공백 텍스트 노드도 배정받고,
+    배정이 하나라도 있으면 브라우저가 폴백을 렌더하지 않는다. 그래서
+    <code>&lt;ns-icon name="menu"&gt;</code> 와 <code>&lt;/ns-icon&gt;</code> 를 줄을 나눠 쓰면
+    <strong>줄바꿈 하나 때문에 아이콘이 사라진다.</strong> 막을 방법이 없어서 대신
+    콘솔에 경고를 낸다. <strong>JSX 는 안전하다</strong> — 공백만 있는 줄을 컴파일 시점에
+    지우므로 <code>&lt;NsIcon name="menu"&gt;</code> 를 어떻게 줄바꿈해도 자식이 생기지 않는다.
+    손으로 쓰는 HTML 에만 해당한다.
+  </p>
+
   <h3>아이콘 더하기</h3>
   <p>
     <code>registerIcons(defs)</code> 가 스프라이트에 아이콘을 더한다. 같은 키를 다시 주면
     덮으므로 기본 셋을 교체하는 것도 같은 함수다. <strong>0.2.1 부터다.</strong>
+  </p>
+  <p>
+    <strong>자식으로 넣는 쪽을 먼저 검토한다.</strong> 등록은 이름 하나로 여러 곳에서
+    부르고 싶을 때, 또는 순수 HTML 이라 컴포넌트를 넣을 수 없을 때 값어치가 있다.
+    아래의 배치 조건(특히 RSC)도 자식으로 넣으면 아예 없다.
   </p>
   <script type="text/plain">
     import { registerIcons, svg } from "@neosimplix/common-ui/react";

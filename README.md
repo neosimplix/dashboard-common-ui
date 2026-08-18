@@ -76,6 +76,27 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 **자기 CSS 에서 `color-scheme` 을 세우고 있다면 지우고 `data-theme` 으로 옮긴다.** 소비자의 `:root { color-scheme: … }` 와 `tokens.css` 의 `:root` 는 특정도가 같아 승자를 임포트 순서가 정한다 — 토큰 이름에서 없앤 그 종속이 이 한 프로퍼티에는 그대로 남아 있다. `color-scheme` 은 이름을 바꿀 수 없는 표준 프로퍼티라 `--ns-` 같은 이름공간을 줄 수 없기 때문이다. 근거는 `docs/gotchas.md` 의 "`color-scheme` 에는 이름공간이 없어 접두사로 막을 수 없다" 에 있다.
 
+## 0.2.1 → 0.2.2 이관
+
+**소비자가 할 일은 없다.** 태그만 올린다.
+
+`ns-icon` 이 기본 슬롯을 갖는다. **자식을 넣으면 그것이 그려지고 `name` 은 읽히지 않는다.** 등록도 빌드 설정도 필요 없으므로, 앱 아이콘은 대개 이쪽이 짧다.
+
+```tsx
+import { House, Settings } from "lucide-react";
+
+<NsIcon><House /></NsIcon>
+<NsNavItem href="/" label="개요"><NsIcon slot="leading"><House /></NsIcon></NsNavItem>
+```
+
+크기는 `ns-icon` 이 정한다. 넣은 것이 자기 `width`/`height` 를 갖고 와도(lucide 계열은 24 를 찍는다) `::slotted(*)` 규칙이 `--ns-icon-size` 상자에 맞춘다 — 프레젠테이션 속성은 어떤 CSS 규칙에도 지기 때문이다. 다르게 하려면 그 요소에 인라인 `style` 을 준다.
+
+접근성은 넣는 쪽 책임이다. 스프라이트로 그릴 때 붙는 `aria-hidden` 은 우리 shadow 안의 `svg` 에 있는 것이라 슬롯으로 들어온 것에는 없다. lucide-react 는 스스로 붙인다.
+
+**손으로 HTML 을 쓸 때 `<ns-icon>` 안쪽에 공백을 두지 않는다.** 기본 슬롯은 공백 텍스트 노드도 배정받고, 배정이 하나라도 있으면 브라우저가 폴백을 렌더하지 않는다 — 줄바꿈 하나로 아이콘이 사라진다. 막을 수단이 없어 대신 콘솔 경고를 낸다. JSX 는 공백만 있는 줄을 컴파일 시점에 지우므로 해당하지 않는다.
+
+기존 `<ns-icon name="menu"></ns-icon>` 은 그대로 동작한다.
+
 ## 0.2.0 → 0.2.1 이관
 
 **소비자가 할 일은 없다.** 태그만 올린다. 고친 것과 더한 것은 넷이다.

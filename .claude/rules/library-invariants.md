@@ -31,7 +31,7 @@
 - **소비자 DOM 의 속성을 관리하면 `MutationObserver` 가 필요하다.** `updated()` 는 반응형 프로퍼티 변경만 본다. `{ childList: true, subtree: true }` 를 쓰고 **`attributes` 는 켜지 않는다** — 동기화가 `setAttribute` 를 쓰므로 자기 쓰기에 재발동해 루프가 된다.
 - **SSR 에 보여야 하는 상태는 반응형 프로퍼티가 아닌 이름으로 내보낸다.** `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 `useLayoutEffect` 에서만 설정하므로 서버 마크업에 남지 않는다. shim 이 `data-ns-*` 속성을 함께 렌더한다. (`ns-sidebar` 의 `data-ns-open`)
 - **`:not(:defined)` 경계는 상태에 따라 달라지는 예약에만 붙인다.** 상태를 보는 예약이 정의 이후까지 계속 걸리면 shadow 의 `:host` 와 다퉈 하이드레이션 튐이 된다. (`ns-sidebar` 의 너비, `ns-dialog` 의 `display: none`) **조건 없는 예약은 그칠 이유가 없으므로 경계를 긋지 않는다** — `ns-header`·`ns-page-heading`·`ns-skeleton` 의 `display`, `ns-icon` 의 크기가 그렇다. 특히 `ns-icon { width: var(--ns-icon-size) }` 는 정의 이후에도 걸려야 소비자의 `ns-icon { width: … }` override 가 `:host` 를 이기는 지점이 된다.
-- **둘 중 하나만 보여야 하는 자리는 슬롯 폴백으로 만든다.** 프로퍼티 두 개로 만들면 소비자가 분기해야 하고, 분기해야 한다는 사실을 문서로만 알릴 수 있다. (`ns-nav-item` 의 `leading` 슬롯과 `badge`)
+- **둘 중 하나만 보여야 하는 자리는 슬롯 폴백으로 만든다.** 프로퍼티 두 개로 만들면 소비자가 분기해야 하고, 분기해야 한다는 사실을 문서로만 알릴 수 있다. (`ns-nav-item` 의 `leading` 슬롯과 `badge`, `ns-icon` 의 기본 슬롯과 `name`) **기본 슬롯에 폴백을 두면 공백 텍스트 노드가 폴백을 죽인다** — 명명 슬롯은 공백이 기본 슬롯으로 가서 안전하지만 기본 슬롯은 그것까지 배정받는다. 막을 수단이 없으므로 `updated()` 에서 배정을 보고 경고를 낸다. (`ns-icon`)
 
 ## 스타일
 
