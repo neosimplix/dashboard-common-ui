@@ -16,6 +16,7 @@
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react.js"
     },
+    "./package.json": "./package.json",
     "./tokens.css": "./dist/tokens.css",
     "./controls.css": "./dist/controls.css",
     "./aliases.css": "./dist/aliases.css",
