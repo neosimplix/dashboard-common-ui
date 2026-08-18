@@ -73,7 +73,8 @@ common-ui/
 │   ├── check-events.mjs               발생 이벤트 ↔ React 래퍼 매핑 대조
 │   ├── check-controls.mjs             클래스 ↔ index.html 양방향, 요소 선택자는 정방향만 대조
 │   ├── check-tokens.mjs               var() 참조의 --ns- 접두사·정의 여부, data-ns-* 훅 세 곳 일치,
-│   │                                  :host 에 박스 프로퍼티가 없는지(preflight 가 지운다)
+│   │                                  :host 에 박스 프로퍼티가 없는지(preflight 가 지운다),
+│   │                                  index.html <style> 에 리터럴 색이 없는지
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
@@ -119,7 +120,7 @@ dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 
 | 명령 | 하는 일 |
 |---|---|
-| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 ⑤ 토큰 참조·:host 박스 |
+| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 ⑤ 토큰 참조·:host 박스·문서 리터럴 색 |
 | `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css · aliases.css 생성 |
 | `npm run demo` | 빌드 후 `index.html` 열기 (macOS `open`) |
 | `npm run release -- 0.1.4` | 검사 → 빌드 → 버전 커밋 → dist 포함 태그 생성 |

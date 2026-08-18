@@ -6,11 +6,12 @@
   그 속성만 조용히 무효가 된다.
   0.1.5 에서 토큰 이름을 소비자와 공유하다 겪은 고장이 정확히 그 종류였다.
 
-  네 규칙:
+  다섯 규칙:
     ① 모든 var(--x) 는 --ns- 로 시작한다.
     ② 이름이 리터럴이면 tokens.css 에 정의돼 있거나 WIRING 에 있어야 한다.
     ③ data-ns-* 훅 이름은 세 곳에서 일치한다.
     ④ :host 블록에 border·margin·padding 을 두지 않는다.
+    ⑤ index.html 의 <style> 에 리터럴 색을 두지 않는다.
 
   ②를 건너뛰는 경우가 하나 있다. ns-skeleton.ts 는 `var(--ns-radius-${this.radius})`
   로 이름을 조립하므로 정적으로 확인할 수 없다. 이름에 ${ 가 있으면 ①만 본다.
@@ -55,6 +56,15 @@
   요소가 갖게 하면 문서 규칙이 닿지 못한다 — ns-header 가 처음부터 그 모양이라
   같은 사고를 겪지 않았다.
 
+  ⑤ 는 위의 "index.html 은 검사 대상이 아니다" 를 한 군데만 뚫은 것이다. 규칙 ①을
+  그 파일에 켤 수 없는 이유는 산문이 옛 무접두사 이름을 일부러 적기 때문인데,
+  <style> 블록 안은 산문이 아니다. 그 안의 선언만 보면 오탐이 없고, 실제로 거기
+  하나 있던 리터럴 색(pre 의 `color: #fff`)이 다크모드에서 흰 바탕에 흰 글씨를
+  만들었다. 리터럴 색은 정의상 두 모드를 함께 뒤집을 수 없다.
+
+  선언 안만 보는 것이 중요하다. 선택자까지 훑으면 #icon-demo 같은 id 선택자가
+  16진수 색으로 읽힌다.
+
   한계:
     - 참조가 규칙을 지키는지만 본다. 그 토큰이 화면에서 옳은 값인지는
       index.html 육안 확인의 몫이다.
@@ -87,6 +97,14 @@
       제외한다. preflight 의 `border: 0 solid` 는 width·style·color 만 덮는다.
     - ④ 는 이 저장소의 :host 만 본다. 소비자가 자기 문서에서 ns-* 태그에
       박스를 주는 것은 정상적인 override 이고 막을 이유가 없다.
+    - ⑤ 는 <style> 블록만 본다. 인라인 style 속성은 대상이 아니다 —
+      <script type="text/plain"> 안의 예시 코드에도 style={{…}} 가 나오므로
+      가려내려면 결국 HTML 을 파싱해야 하고, 그것은 이 저장소가 검증 하네스에
+      대해 정한 선을 넘는다. 지금 인라인 style 에 색 리터럴은 없다.
+    - ⑤ 는 **부분적인 방어다.** 리터럴 색만 잡는다. 두 토큰이 서로 반대로
+      뒤집히지 않는 조합(--ns-color-fg 를 배경으로 쓰고 글자에 --ns-color-fg-body
+      를 쓰는 식)은 전부 토큰이라 통과한다. 그쪽은 여전히 육안 확인 몫이다.
+      실제 결함이 리터럴 쪽이었기에 이만큼만 막는다.
     - ①② 의 참조 수집은 주석을 지우지 않는다. 주석 속 var() 는 죽은 참조라
       실패시켜도 손해가 없는 방향이라서 그대로 둔다. ② 의 *정의* 수집은
       반대다 — 주석 속 정의가 실재하는 것처럼 보이면 없는 토큰이 통과하므로
@@ -290,7 +308,44 @@ if (hostBoxes.length > 0) {
   process.exit(1);
 }
 
+/* ⑤ index.html 의 <style> 블록에 리터럴 색이 없는지 본다. */
+
+/*
+  색 함수와 16진수, 그리고 흔한 색 이름. transparent · currentColor · none ·
+  inherit 은 값이 아니라 지시라서 대상이 아니다 — 모드가 바뀌어도 뜻이 그대로다.
+*/
+const LITERAL_COLOR =
+  /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|hwb|oklch|oklab|lab|lch|color)\(|\b(?:white|black|red|green|blue|gray|grey|silver|navy|teal|olive|maroon|lime|aqua|fuchsia|purple|orange|yellow|pink|brown)\b/;
+
+const DECL = /(?:^|;)\s*([a-z-]+)\s*:\s*([^;]+)/g;
+
+const literals = [];
+for (const [, css] of readFileSync("index.html", "utf8").matchAll(
+  /<style[^>]*>([\s\S]*?)<\/style>/g,
+)) {
+  /*
+    선언 안만 본다. 선택자까지 훑으면 #icon-demo 같은 id 선택자가 16진수로 읽힌다.
+    ④ 가 쓰는 blocks() 를 그대로 재사용하므로 중첩 at-rule 도 함께 처리된다.
+  */
+  for (const { selector, body } of blocks(strip(css, { line: false }))) {
+    for (const [, prop, value] of body.matchAll(DECL)) {
+      if (!LITERAL_COLOR.test(value)) continue;
+      literals.push(`index.html: ${selector} { ${prop}: ${value.trim()} }`);
+    }
+  }
+}
+
+if (literals.length > 0) {
+  console.error(
+    "index.html 의 <style> 에 리터럴 색이 있습니다. 두 모드를 함께 뒤집을 수 없으므로\n" +
+      "tokens.css 의 토큰이나 light-dark() 를 쓰세요:\n  " +
+      literals.sort().join("\n  "),
+  );
+  process.exit(1);
+}
+
 console.log(
   `토큰 참조 확인 완료: ${defined.size} 개 정의, ${targets.length} 개 파일 검사, ` +
-    `data-ns-* 훅 ${groups[0].found.size} 개 세 곳 일치, :host 박스 없음`,
+    `data-ns-* 훅 ${groups[0].found.size} 개 세 곳 일치, :host 박스 없음, ` +
+    `index.html 리터럴 색 없음`,
 );
