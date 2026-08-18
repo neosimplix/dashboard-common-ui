@@ -557,4 +557,26 @@
   .ns-accordion--plain .ns-accordion__body {
     margin-top: var(--ns-space-4);
   }
+
+  /*
+    로딩 · 빈 상태 · 오류를 남는 공간 가운데에 한 줄로 알린다.
+
+    flex: 1 1 0% 라 **부모가 flex 컨테이너여야 한다.** 그 자리를 통째로 차지해
+    가운데 정렬하는 것이 이 클래스의 전부다.
+
+    p 는 이 컨테이너의 유일한 자식이라 요소 타입으로 특정된다 — 이름을 붙이지 않는다.
+  */
+  .ns-message {
+    display: flex;
+    flex: 1 1 0%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ns-message p {
+    margin: 0;
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    color: var(--ns-color-fg-subtle);
+  }
 }

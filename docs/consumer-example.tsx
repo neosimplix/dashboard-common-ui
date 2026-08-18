@@ -32,6 +32,7 @@ import {
   Dialog,
   Field,
   Input,
+  Message,
   NsHeader,
   NsIcon,
   NsNavGroup,
@@ -224,6 +225,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               page={page}
               onNsPageChange={(e) => setPage(e.detail.page)}
             />
+            <div style={{ display: "flex", height: "6rem" }}>
+              <Message>표시할 항목이 없습니다.</Message>
+            </div>
           </Card>
         </main>
       </div>

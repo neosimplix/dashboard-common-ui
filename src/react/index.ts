@@ -53,6 +53,9 @@ export type { CheckboxProps } from "./controls/Checkbox.js";
 export { Field } from "./controls/Field.js";
 export type { FieldProps } from "./controls/Field.js";
 
+export { Message } from "./controls/Message.js";
+export type { MessageProps } from "./controls/Message.js";
+
 export type {
   NsToggleDetail,
   NsNavigateDetail,

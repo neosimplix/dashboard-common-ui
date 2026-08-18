@@ -105,6 +105,7 @@
       <ns-nav-item href="#ns-table" label=".ns-table" badge="TB"></ns-nav-item>
       <ns-nav-item href="#ns-card" label=".ns-card" badge="CD"></ns-nav-item>
       <ns-nav-item href="#ns-accordion" label=".ns-accordion" badge="AC"></ns-nav-item>
+      <ns-nav-item href="#ns-message" label=".ns-message" badge="MG"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group heading="컴포넌트">
       <ns-nav-item href="#ns-icon" label="ns-icon" badge="IC"></ns-nav-item>
@@ -1201,6 +1202,40 @@
     <li><code>--card</code> 에서 <code>__meta</code> 를 비우지 않는다. React 쪽은 타입이 막는다.</li>
     <li><code>--plain</code> 의 위쪽 여백은 쓰는 화면이 정한다. 이 클래스는 구분선과 그 바로 위 여백만 갖는다.</li>
   </ul>
+
+  <h2 id="ns-message">.ns-message</h2>
+  <p>
+    로딩 · 빈 상태 · 오류를 남는 공간 가운데에 한 줄로 알린다.
+    <strong>부모가 flex 컨테이너여야 한다</strong> — <code>flex: 1 1 0%</code> 로 남는
+    자리를 차지하고 그 안에서 가운데 정렬한다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="ns-message">
+      <p>왼쪽에서 프로젝트를 선택하세요.</p>
+    </div>
+  </template>
+  <div class="demo" id="message-demo" style="height:8rem"></div>
+  <pre></pre>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-message</code></td><td><code>div</code></td><td>남는 공간을 차지하고 가운데 정렬. 안의 <code>p</code> 는 자손 선택자로 잡히므로 클래스가 없다</td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <div class="ns-message"><p>표시할 항목이 없습니다.</p></div>
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Message } from "@neosimplix/common-ui/react";
+
+    <Message>왼쪽에서 프로젝트를 선택하세요.</Message>
+  </script>
 
   <h2 id="ns-icon">ns-icon</h2>
   <p>
