@@ -2420,7 +2420,7 @@
     <tr><th>이름</th><th>속성</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>options</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td><code>{ value, label, meta? }[]</code>. 받은 순서를 건드리지 않는다</td></tr>
     <tr><td><code>value</code></td><td>없음 (프로퍼티 전용)</td><td><code>undefined</code></td><td>제어 모드의 선택 집합</td></tr>
-    <tr><td><code>defaultValue</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td>비제어 초기 선택</td></tr>
+    <tr><td><code>defaultValue</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td>비제어 초기 선택. <strong>사용자가 처음 만지기 전까지 유효하다</strong> — 늦게 대입해도 반영된다</td></tr>
     <tr><td><code>searchPlaceholder</code></td><td><code>search-placeholder</code></td><td><code>"검색"</code></td><td></td></tr>
     <tr><td><code>emptyMessage</code></td><td><code>empty-message</code></td><td><code>"결과가 없습니다"</code></td><td></td></tr>
     <tr><td><code>inputId</code></td><td><code>input-id</code></td><td><code>""</code></td><td>검색 input 의 <code>id</code>. <code>.ns-field__label</code> 의 <code>for</code> 가 가리킬 곳</td></tr>
@@ -2478,6 +2478,16 @@
     <li><code>&lt;ns-multi-select value="…"&gt;</code> 같은 속성은 <strong>무시된다.</strong> 콘솔이 경고한다.</li>
     <li><code>id</code> 를 안쪽 input 에 옮기지 않는다. <code>input-id</code> 를 따로 받는 이유가 그것이다 — 옮기면 문서에 같은 <code>id</code> 가 둘 생긴다.</li>
     <li>검색은 <code>label</code> 과 <code>meta</code> 둘 다에 걸린다. 화면에 보이는 문자열만 검색어가 된다.</li>
+    <li>
+      <code>defaultValue</code> 는 <strong>언제 대입해도 된다.</strong> 첫 렌더에서 한 번 읽고 마는 것이
+      아니라 사용자가 처음 토글할 때까지 계속 유효하다 — 위 배선 예시처럼 마크업에 태그를 두고
+      나중에 스크립트가 대입하는 순서가 정상 경로다. 사용자가 한 번 만진 뒤에는 무시된다.
+    </li>
+    <li>
+      제어 모드에서 소비자가 <code>ns-multi-select-change</code> 를 받고도 <code>value</code> 를
+      바꾸지 않으면(예: 최대 개수 제한) 체크박스는 <strong>원래 상태로 되돌아간다.</strong>
+      제어 컴포넌트가 그래야 하는 대로다.
+    </li>
   </ul>
 
   <h2 id="ns-header">ns-header</h2>
