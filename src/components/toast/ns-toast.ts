@@ -162,12 +162,12 @@ export class NsToast extends LitElement {
     else this.#resumeTimers();
   }
 
-  #onPointerEnter = (): void => {
+  #onMouseEnter = (): void => {
     this.#hovered = true;
     this.#sync();
   };
 
-  #onPointerLeave = (): void => {
+  #onMouseLeave = (): void => {
     this.#hovered = false;
     this.#sync();
   };
@@ -213,8 +213,8 @@ export class NsToast extends LitElement {
       <div
         class="region"
         aria-live="polite"
-        @mouseenter=${this.#onPointerEnter}
-        @mouseleave=${this.#onPointerLeave}
+        @mouseenter=${this.#onMouseEnter}
+        @mouseleave=${this.#onMouseLeave}
         @focusin=${this.#onFocusIn}
         @focusout=${this.#onFocusOut}
       >

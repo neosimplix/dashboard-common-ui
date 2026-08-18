@@ -58,10 +58,16 @@ export const styles = css`
     pointer-events: auto;
   }
 
-  /* tone 은 왼쪽 색 띠 하나로만 표현한다. 배경을 칠하면 글자 대비를 다시 정해야 한다. */
-  .toast.success { border-left: 3px solid var(--ns-color-success); }
-  .toast.danger  { border-left: 3px solid var(--ns-color-danger); }
-  .toast.warn    { border-left: 3px solid var(--ns-color-warn); }
+  /*
+    tone 은 왼쪽 색 띠 하나로만 표현한다. 배경을 칠하면 글자 대비를 다시 정해야 한다.
+
+    neutral 도 같은 두께의 투명한 띠를 갖는다. 없으면 색 있는 것만 3px 두꺼워져
+    쌓였을 때 neutral 만 안쪽 폭이 좁고 글자 시작점이 어긋난다.
+  */
+  .toast          { border-left: 3px solid transparent; }
+  .toast.success  { border-left-color: var(--ns-color-success); }
+  .toast.danger   { border-left-color: var(--ns-color-danger); }
+  .toast.warn     { border-left-color: var(--ns-color-warn); }
 
   .message {
     flex: 1;
@@ -91,10 +97,5 @@ export const styles = css`
   .close:focus-visible {
     outline: 2px solid var(--ns-color-accent);
     outline-offset: 2px;
-  }
-
-  /* 애니메이션을 끄는 사용자를 위한 것. 지금은 전이가 없지만 규약을 남겨 둔다. */
-  @media (prefers-reduced-motion: reduce) {
-    .toast { transition: none; }
   }
 `;
