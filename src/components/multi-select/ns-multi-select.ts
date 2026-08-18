@@ -8,6 +8,13 @@ import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js
 import type { NsMultiSelectChangeDetail } from "../../types.js";
 
 export interface NsMultiSelectOption {
+  /**
+   * 이 후보의 식별자. **`options` 안에서 유일해야 한다.**
+   *
+   * 두 곳에서 키로 쓰인다 — 목록과 칩 줄의 `repeat()` 이 이 값으로 DOM 을
+   * 재사용하므로, 겹치면 lit 이 같은 키의 두 항목을 하나로 보고 렌더가 어긋난다.
+   * 선택도 값으로만 하므로 겹친 후보는 함께 선택되고 칩도 그 수만큼 생긴다.
+   */
   value: string;
   label: string;
   /**

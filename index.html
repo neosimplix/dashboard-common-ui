@@ -2432,7 +2432,6 @@
     <div class="ns-field">
       <label class="ns-field__label" for="multi-select-demo-search">담당자</label>
       <ns-multi-select
-        id="multi-select-demo-el"
         input-id="multi-select-demo-search"
         input-describedby="multi-select-demo-hint"
         search-placeholder="이름으로 검색"
@@ -2447,7 +2446,7 @@
   <h3>프로퍼티</h3>
   <table>
     <tr><th>이름</th><th>속성</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>options</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td><code>{ value, label, meta? }[]</code>. 받은 순서를 건드리지 않는다</td></tr>
+    <tr><td><code>options</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td><code>{ value, label, meta? }[]</code>. 받은 순서를 건드리지 않는다. <strong><code>value</code> 는 유일해야 한다</strong> — 목록과 칩 줄의 렌더 키라 겹치면 렌더가 어긋나고 칩도 겹친 수만큼 생긴다</td></tr>
     <tr><td><code>value</code></td><td>없음 (프로퍼티 전용)</td><td><code>undefined</code></td><td>제어 모드의 선택 집합</td></tr>
     <tr><td><code>defaultValue</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td>비제어 초기 선택. <strong>사용자가 처음 만지기 전까지 유효하다</strong> — 늦게 대입해도 반영된다</td></tr>
     <tr><td><code>searchPlaceholder</code></td><td><code>search-placeholder</code></td><td><code>"검색"</code></td><td></td></tr>
@@ -3400,10 +3399,10 @@
     다중 선택 데모. 비제어로 둔다 — options 와 defaultValue 만 넣으면
     선택 상태는 컴포넌트가 갖는다.
 
-    데모 컨테이너 안에서 찾는다. <template class="ex"> 안에 쓴 id 는 복제되면
-    데모 안에 그대로 들어가므로 getElementById 로 찾지 않는다 — 템플릿 안의
-    원본과 복제본이 같은 이름을 갖는다. (구조 검사의 중복 id grep 은 텍스트를
-    보므로 주석에도 그 이름을 id="…" 형태로 적지 않는다.)
+    데모 컨테이너 안에서 찾는다. 이웃 배선들과 같은 규약이다 — 조회를 자기 절
+    안으로 가둬 두면 다른 절이 같은 태그를 쓰게 되어도 서로를 집지 않는다.
+    (구조 검사의 중복 id grep 은 텍스트를 보므로 주석에도 id="…" 형태의 이름을
+    적지 않는다.)
   */
   const multiSelectDemo = document.querySelector("#multi-select-demo ns-multi-select");
   if (multiSelectDemo) {

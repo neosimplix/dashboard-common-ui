@@ -88,6 +88,18 @@ const TABS = [
   { id: "requests", panel: "panel-requests", label: "신청", count: 3 },
 ];
 
+/*
+  후보 목록은 모듈 상수다. 인라인 배열 리터럴로 넘기면 렌더마다 새 배열이 되고,
+  options 는 반응형 프로퍼티라 그때마다 ns-multi-select 가 다시 렌더된다.
+  index.html 의 React 예시가 같은 이유로 OWNERS 를 밖에 둔다.
+
+  value 는 유일해야 한다 — 목록과 칩 줄의 렌더 키다.
+*/
+const OWNERS = [
+  { value: "kim", label: "김담당", meta: "플랫폼개발팀" },
+  { value: "park", label: "박승인", meta: "마케팅팀" },
+];
+
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
 declare function useRouter(): { push(href: string): void };
@@ -311,10 +323,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             ))}
             {/* e.detail 을 실제로 읽어 ns-multi-select-change 의 detail 타입이 검사되게 한다. */}
             <NsMultiSelect
-              options={[
-                { value: "kim", label: "김담당", meta: "플랫폼개발팀" },
-                { value: "park", label: "박승인", meta: "마케팅팀" },
-              ]}
+              options={OWNERS}
               value={owners}
               onNsMultiSelectChange={(e) => setOwners(e.detail.values)}
               searchPlaceholder="이름으로 검색"
