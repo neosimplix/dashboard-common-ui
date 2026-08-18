@@ -11,11 +11,33 @@ export const styles = css`
     height: 100%;
     min-height: 0;
     width: var(--ns-sidebar-width);
+    background: var(--ns-color-surface);
+    transition: width 200ms var(--ns-transition-ease);
+  }
+
+  /*
+    경계선과 스크롤을 호스트가 아니라 이 <nav> 가 갖는다.
+
+    호스트는 문서 트리에 있으므로 소비자의 문서 규칙이 :host 를 이긴다.
+    특정도가 아니라 캐스케이드 순서로 정해지는 것이라 :host 쪽이 아무리
+    구체적이어도 진다. Tailwind preflight 의 "*, ::before, ::after,
+    ::backdrop { border: 0 solid }" 가 그 규칙이고, 0.2.0 까지 여기 있던
+    border-right 는 Tailwind 를 쓰는 소비자 전부에서 지워지고 있었다.
+    shadow 안의 요소에는 그 규칙이 닿지 못한다.
+
+    overflow 를 함께 내리는 이유는 스크롤바와 경계선의 순서다. 경계선만
+    내리면 스크롤바가 호스트 것이라 경계선 오른쪽에 생긴다. 같은 요소가
+    둘을 가져야 스크롤바가 경계선 안쪽에 남아 0.2.0 과 같게 그려진다.
+
+    배경은 preflight 가 건드리지 않으므로 :host 에 그대로 둔다 — 소비자가
+    ns-sidebar { background: … } 로 덮을 수 있는 자리를 남긴다.
+  */
+  nav {
+    box-sizing: border-box;
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid var(--ns-color-line);
-    background: var(--ns-color-surface);
-    transition: width 200ms var(--ns-transition-ease);
   }
 
   /*
