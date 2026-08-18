@@ -74,6 +74,17 @@ registerIcons({
   },
 });
 
+/*
+  탭과 패널의 짝을 한 곳에 둔다. 탭 버튼의 data-ns-panel 과 패널의 id 가 같은
+  문자열에서 나오므로 어긋날 수 없다 — tabIdFor 의 주석이 말하는 그 이유다.
+  패널 id 를 상태로 조립하면(`panel-${tab}`) 활성이 아닌 탭의 aria-controls 가
+  실재하지 않는 id 를 가리켜 둘 중 하나는 항상 끊어진다.
+*/
+const TABS = [
+  { id: "live", panel: "panel-live", label: "운영 중" },
+  { id: "requests", panel: "panel-requests", label: "신청", count: 3 },
+];
+
 // Next.js 없이 타입 검사만 하기 위한 최소 스텁.
 declare function usePathname(): string;
 declare function useRouter(): { push(href: string): void };
@@ -250,19 +261,26 @@ export function Shell({ children }: { children: React.ReactNode }) {
             />
             {/* e.detail 을 실제로 읽어 ns-tab-change 의 detail 타입이 검사되게 한다. */}
             <NsTabs aria-label="관리자 목록" active={tab} onNsTabChange={(e) => setTab(e.detail.id)}>
-              <button type="button" data-ns-tab="live" data-ns-panel="panel-live">운영 중</button>
-              <button type="button" data-ns-tab="requests" data-ns-panel="panel-requests">
-                신청 <span className="ns-tabs__count">3</span>
-              </button>
+              {TABS.map((t) => (
+                <button key={t.id} type="button" data-ns-tab={t.id} data-ns-panel={t.panel}>
+                  {t.label}
+                  {t.count !== undefined && <span className="ns-tabs__count">{t.count}</span>}
+                </button>
+              ))}
             </NsTabs>
-            <div
-              id={`panel-${tab}`}
-              role="tabpanel"
-              aria-labelledby={tabIdFor(`panel-${tab}`)}
-              tabIndex={0}
-            >
-              {tab} 패널
-            </div>
+            {/* 탭마다 패널이 하나씩 있고 보이는 것만 고른다. */}
+            {TABS.map((t) => (
+              <div
+                key={t.panel}
+                id={t.panel}
+                role="tabpanel"
+                aria-labelledby={tabIdFor(t.panel)}
+                tabIndex={0}
+                hidden={tab !== t.id}
+              >
+                {t.label} 패널
+              </div>
+            ))}
             <div style={{ display: "flex", height: "6rem" }}>
               <Message>표시할 항목이 없습니다.</Message>
             </div>

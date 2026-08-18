@@ -2251,8 +2251,13 @@
     <code>ns-table</code> 이 셀을 렌더하지 않는 것과 같은 자리다.
   </p>
   <p>
-    <strong>shadow 로 만들 수 없다.</strong> <code>aria-controls</code> 는 IDREF 라
-    shadow 경계를 넘지 못해서, 탭이 패널을 가리키는 연결이 에러 없이 끊긴다.
+    <strong>shadow root 를 두지 않는다.</strong> 이 컴포넌트는 자기 마크업을 하나도
+    렌더하지 않으므로 캡슐화할 것이 없고, shadow 를 두면 얻는 것 없이 실패 경로만
+    생긴다 — <code>LitElement</code> 처럼 템플릿을 렌더하면 소비자가 쓴 버튼이 덮이고,
+    <code>&lt;slot&gt;</code> 없는 shadow root 는 그 버튼을 가린다. 둘 다 에러 없이
+    빈 탭 줄이 된다. 곁들여, 전역 스타일시트인 <code>controls.css</code> 는 shadow
+    안에 닿지 않는다. <code>aria-controls</code> 는 이 결정의 근거가 아니다 — 슬롯을
+    쓰면 탭 버튼은 문서 트리에 그대로 남으므로 IDREF 도 계속 해석된다.
   </p>
   <p>
     <strong>호스트에 <code>role="tablist"</code> 를 쓴다.</strong> ARIA 의 tablist↔tab
@@ -2327,7 +2332,9 @@
       </button>
     </ns-tabs>
 
+    <!-- data-ns-panel 마다 실재하는 패널이 하나씩 있어야 한다. -->
     <div id="panel-live" role="tabpanel" aria-labelledby="panel-live-tab" tabindex="0">…</div>
+    <div id="panel-requests" role="tabpanel" aria-labelledby="panel-requests-tab" tabindex="0" hidden>…</div>
   </script>
 
   <h3>배선</h3>
@@ -2340,18 +2347,32 @@
   <script type="text/plain">
     import { NsTabs, tabIdFor } from "@neosimplix/common-ui/react";
 
+    /* 탭과 패널의 짝을 한 곳에 둔다. data-ns-panel 과 패널 id 가 같은 문자열에서
+       나오므로 어긋날 수 없다. 패널 id 를 상태로 조립하면(`panel-${tab}`) 활성이
+       아닌 탭의 aria-controls 가 실재하지 않는 id 를 가리킨다. */
+    const TABS = [
+      { id: "live", panel: "panel-live", label: "운영 중" },
+      { id: "requests", panel: "panel-requests", label: "신청", count: 3 },
+    ];
+
     const [tab, setTab] = useState("live");
 
     <NsTabs aria-label="관리자 목록" active={tab} onNsTabChange={(e) => setTab(e.detail.id)}>
-      <button type="button" data-ns-tab="live" data-ns-panel="panel-live">운영 중</button>
-      <button type="button" data-ns-tab="requests" data-ns-panel="panel-requests">
-        신청 <span className="ns-tabs__count">3</span>
-      </button>
+      {TABS.map((t) => (
+        <button key={t.id} type="button" data-ns-tab={t.id} data-ns-panel={t.panel}>
+          {t.label}
+          {t.count !== undefined && <span className="ns-tabs__count">{t.count}</span>}
+        </button>
+      ))}
     </NsTabs>
 
-    <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={tabIdFor(`panel-${tab}`)} tabIndex={0}>
-      {tab} 패널
-    </div>
+    {/* 탭마다 패널이 하나씩 있고 보이는 것만 고른다. */}
+    {TABS.map((t) => (
+      <div key={t.panel} id={t.panel} role="tabpanel" aria-labelledby={tabIdFor(t.panel)}
+           tabIndex={0} hidden={tab !== t.id}>
+        {t.label} 패널
+      </div>
+    ))}
   </script>
 
   <h3>주의</h3>

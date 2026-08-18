@@ -27,8 +27,15 @@ export function tabIdFor(panelId: string): string {
  * </ns-tabs>
  * ```
  *
- * **shadow 로 만들 수 없다.** `aria-controls` 는 IDREF 라 shadow 경계를 넘지
- * 못해서, 탭이 패널을 가리키는 연결이 에러 없이 끊긴다.
+ * **shadow root 를 두지 않는다.** 이 컴포넌트는 자기 마크업을 하나도 렌더하지
+ * 않으므로 캡슐화할 것이 없고, shadow 를 두면 얻는 것 없이 실패 경로만 생긴다 —
+ * `LitElement` 처럼 템플릿을 렌더하면 소비자가 쓴 버튼이 덮이고, `<slot>` 없는
+ * shadow root 는 그 버튼을 가린다. 둘 다 에러 없이 빈 탭 줄이 된다.
+ * 곁들여, 전역 스타일시트인 `controls.css` 는 shadow 안에 닿지 않으므로 shadow
+ * 안에 무언가를 그리는 순간 그 스타일을 컴포넌트에 다시 적어야 한다.
+ *
+ * (`aria-controls` 는 이 결정의 근거가 아니다. 슬롯을 쓰면 탭 버튼은 문서 트리에
+ * 그대로 남으므로 IDREF 도 `ns-tabs button` 선택자도 계속 해석된다.)
  */
 export class NsTabs extends ReactiveElement {
   /*
@@ -210,13 +217,21 @@ export class NsTabs extends ReactiveElement {
   /*
     자동 활성화 패턴. 화살표를 누르면 포커스와 선택이 함께 움직인다 — 탭 전환이
     싼 화면이라 이 패턴이 맞다. 목록 끝에서는 반대쪽으로 순환한다.
+
+    **기준점은 키가 발생한 탭이지 선택된 탭이 아니다.** 둘은 제어 모드에서
+    갈라진다 — 소비자가 ns-tab-change 를 무시하거나 비동기로 미루면 포커스는
+    옆 탭으로 갔는데 #current 는 그대로다. 선택된 탭을 기준으로 세면 다음
+    화살표가 같은 곳을 다시 골라 포커스가 한 칸 옆에 영영 갇히고, 그 사이
+    DOM 포커스는 tabindex="-1" 인 요소에 앉아 이 코드가 지키려는 roving
+    tabindex 규약 자체가 깨진다. 비제어에서는 둘이 일치하므로 차이가 없다.
   */
   #onKeyDown = (e: KeyboardEvent): void => {
     // 탭이 아닌 자식(소비자가 넣은 무언가)에서 난 화살표는 흘린다.
-    if (this.#tabFrom(e.target) === null) return;
+    const from = this.#tabFrom(e.target);
+    if (from === null) return;
 
     const tabs = this.#tabs;
-    const index = tabs.findIndex((el) => this.#idOf(el) === this.#current);
+    const index = tabs.indexOf(from);
     // 기준점이 없으면 화살표를 삼키지 않는다.
     if (index === -1) return;
 
