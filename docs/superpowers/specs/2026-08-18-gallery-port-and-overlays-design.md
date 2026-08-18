@@ -186,10 +186,10 @@ roving tabindex 인 이유: 전부 `0` 이면 탭이 다섯 개일 때 Tab 을 �
 
 ```
 ns-tabs { display: flex; align-items: stretch; gap; border-bottom; overflow-x: auto }
-ns-tabs button { … border-bottom: 2px solid transparent … }
-ns-tabs button[aria-selected="true"] { … border-bottom-color: var(--ns-color-accent) }
+ns-tabs [data-ns-tab] { … border-bottom: 2px solid transparent … }
+ns-tabs [data-ns-tab][aria-selected="true"] { … border-bottom-color: var(--ns-color-accent) }
 .ns-tabs__count { … }
-ns-tabs button[aria-selected="true"] .ns-tabs__count { … }
+ns-tabs [data-ns-tab][aria-selected="true"] .ns-tabs__count { … }
 ```
 
 밑줄이 탭 줄 전체에 이어지고 활성 탭만 그 위에 진한 선을 얹는다. 탭 각각에 테두리를 두르면 활성/비활성 경계가 두 겹으로 보인다. 활성 표시가 밑줄이므로 비활성에도 `2px` 투명 테두리로 자리를 미리 잡아 둔다 — 없으면 선택할 때 1px 씩 움직인다.

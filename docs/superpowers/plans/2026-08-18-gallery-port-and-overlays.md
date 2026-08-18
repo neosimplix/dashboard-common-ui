@@ -1531,7 +1531,7 @@ export { NsTabs, tabIdFor } from "./components/tabs/ns-tabs.js";
     overflow-x: auto;
   }
 
-  ns-tabs button {
+  ns-tabs [data-ns-tab] {
     display: inline-flex;
     align-items: center;
     gap: var(--ns-space-2);
@@ -1551,20 +1551,20 @@ export { NsTabs, tabIdFor } from "./components/tabs/ns-tabs.js";
       border-color var(--ns-transition-fast) var(--ns-transition-ease);
   }
 
-  ns-tabs button:hover {
+  ns-tabs [data-ns-tab]:hover {
     color: var(--ns-color-fg-body);
   }
 
   /*
     안쪽에 그린다. 이 컨테이너가 overflow-x: auto 라 바깥에 그린 링은 잘린다.
   */
-  ns-tabs button:focus-visible {
+  ns-tabs [data-ns-tab]:focus-visible {
     outline: 2px solid var(--ns-color-accent);
     outline-offset: -2px;
     border-radius: var(--ns-radius-control);
   }
 
-  ns-tabs button[aria-selected="true"] {
+  ns-tabs [data-ns-tab][aria-selected="true"] {
     color: var(--ns-color-fg);
     font-weight: var(--ns-weight-semibold);
     border-bottom-color: var(--ns-color-accent);
@@ -1589,7 +1589,7 @@ export { NsTabs, tabIdFor } from "./components/tabs/ns-tabs.js";
     font-weight: var(--ns-weight-semibold);
   }
 
-  ns-tabs button[aria-selected="true"] .ns-tabs__count {
+  ns-tabs [data-ns-tab][aria-selected="true"] .ns-tabs__count {
     background: var(--ns-color-accent);
     color: var(--ns-color-accent-fg);
   }
@@ -2333,7 +2333,9 @@ export type { NsMultiSelectOption } from "../components/multi-select/ns-multi-se
   multiSelectDemo.defaultValue = ["kim", "park"];
 ```
 
-`<template class="ex">` 안의 `id="multi-select-demo-el"` 는 복제되면 데모 안에 그대로 들어간다. **`getElementById` 로 찾지 않는다** — `<template>` 안의 원본과 복제본이 같은 `id` 를 갖게 되므로 위처럼 데모 컨테이너 안에서 찾는다.
+**데모 컨테이너로 좁혀 찾는다** — 이웃 배선 블록과 같은 규약이다.
+
+(`<template>` 안의 원본이 `getElementById` 에 함께 잡힌다는 이유를 적지 않는다 — 사실이 아니다. 템플릿 내용은 별도의 불활성 문서 조각에 있어 문서 트리에 들어가지 않으므로 `getElementById` 는 복제본만 본다. 다만 `.claude/rules/verification.md` 의 중복 id grep 은 **텍스트 수준**이라 템플릿 안의 `id` 도 세므로, 절 이름 접두사 규칙은 그대로 지킨다.)
 
 - [ ] **Step 9: 검사를 실패시켜 본다**
 
