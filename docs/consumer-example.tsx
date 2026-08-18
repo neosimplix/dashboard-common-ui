@@ -24,6 +24,7 @@
 import * as React from "react";
 import { useState } from "react";
 import {
+  Accordion,
   Button,
   ButtonLink,
   Card,
@@ -160,6 +161,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
               />
             </Field>
             <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} />
+            <Accordion title="권한" summary="3개" defaultOpen>
+              <Checkbox label="가입 승인" defaultChecked />
+            </Accordion>
+            <Accordion variant="plain" title="관리자 로그인">
+              <Input value="" onChange={(e) => log(e.target.value)} />
+            </Accordion>
             <Checkbox
               label="사용자 목록 조회"
               hint="부서 기본"
