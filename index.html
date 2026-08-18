@@ -2562,7 +2562,9 @@
 
   <h4>JS</h4>
   <script type="text/plain">
-    import { nsToast } from "@neosimplix/common-ui";
+    import { nsToast } from "@neosimplix/common-ui/react";
+    // 순수 HTML 은 "@neosimplix/common-ui" 에서 같은 함수를 받는다.
+    // React 에서 그쪽을 쓰면 요소 번들이 두 벌 들어온다.
 
     nsToast("저장했습니다", { tone: "success" });
 
@@ -2623,7 +2625,9 @@
 
   <h4>JS</h4>
   <script type="text/plain">
-    import { nsAlert, nsConfirm } from "@neosimplix/common-ui";
+    import { nsAlert, nsConfirm } from "@neosimplix/common-ui/react";
+    // 순수 HTML 은 "@neosimplix/common-ui" 에서 같은 함수를 받는다.
+    // React 에서 그쪽을 쓰면 요소 번들이 두 벌 들어온다.
 
     await nsAlert({ heading: "권한 없음", message: "관리자에게 문의하세요." });
 
