@@ -1040,6 +1040,8 @@
     <tr><td><code>ns-table</code></td><td>(요소 선택자)</td><td>스크롤 컨테이너. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
     <tr><td><code>.ns-table</code></td><td><code>table</code></td><td>표면. <code>th</code>·<code>td</code>·hover 는 자손 선택자로 잡혀 클래스가 필요 없다</td></tr>
     <tr><td><code>.ns-table__sort</code></td><td><code>th</code> 안의 <code>button</code></td><td>정렬 헤더. 삼각형 자리를 늘 잡아 두어 정렬 시 헤더 폭이 흔들리지 않는다</td></tr>
+    <tr><td><code>.ns-table--rows-clickable</code></td><td><code>table</code></td><td>행에 커서를 준다. <strong>핸들러는 주지 않는다</strong> — <code>&lt;tr onclick&gt;</code> 은 쓰는 쪽이 붙인다</td></tr>
+    <tr><td><code>.ns-table__row-button</code></td><td>첫 <code>td</code> 안의 <code>button</code></td><td>키보드가 그 행에 닿는 길. 셀 텍스트처럼 보인다</td></tr>
   </table>
 
   <h3>HTML</h3>
@@ -1070,6 +1072,67 @@
         </tbody>
       </table>
     </NsTable>
+  </script>
+
+  <h3>행 클릭</h3>
+  <p>
+    행 전체가 눌리는 표는 <strong>마우스만으로는 절반이다.</strong>
+    <code>&lt;tr onclick&gt;</code> 에는 키보드가 닿지 않고, <code>&lt;tr&gt;</code> 에
+    <code>tabindex</code>·<code>role="button"</code> 을 얹으면 그 행이 더 이상 표의 행이
+    아니게 되어 화면낭독기가 칸 제목과 값의 연결을 잃는다.
+  </p>
+  <p>
+    그래서 시맨틱은 그대로 두고 첫 칸에 버튼을 넣는다.
+    <code>Enter</code>·<code>Space</code> 가 이 버튼에서 <code>click</code> 을 내고 그것이
+    <code>&lt;tr&gt;</code> 로 버블링해 이미 있는 핸들러를 탄다 —
+    <strong>이 버튼에 핸들러를 또 붙이면 클릭 한 번에 두 번 돈다.</strong>
+    <code>aria-haspopup="dialog"</code> 는 이 저장소의 규약이다 — 행 클릭이 모달을 여는 것이
+    기본이고, 모달이 아니면 쓰는 쪽이 뺀다.
+  </p>
+
+  <template class="ex">
+    <table class="ns-table ns-table--rows-clickable">
+      <thead>
+        <tr><th>이름</th><th>주소</th><th>미답변</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><button class="ns-table__row-button" type="button" aria-haspopup="dialog">글로벌 인플루언서 마케팅</button></td>
+          <td>global-influencer-marketing</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td><button class="ns-table__row-button" type="button" aria-haspopup="dialog">테스트 대시보드</button></td>
+          <td>project01-test</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
+  <div class="demo block" id="table-row-click-demo" style="padding:var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3>행 클릭 배선</h3>
+  <script type="text/plain">
+    // 핸들러는 <tr> 에만 붙인다. 버튼은 키보드 진입점일 뿐이다.
+    for (const row of table.querySelectorAll("tbody tr")) {
+      row.addEventListener("click", () => openDetail(row));
+    }
+  </script>
+
+  <h3>React 예시 (행 클릭)</h3>
+  <script type="text/plain">
+    <table className="ns-table ns-table--rows-clickable">
+      <tbody>
+        <tr onClick={() => setDetail(row)}>
+          <td>
+            <button className="ns-table__row-button" type="button" aria-haspopup="dialog">
+              {row.name}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </script>
 
   <h2 id="ns-card">.ns-card</h2>

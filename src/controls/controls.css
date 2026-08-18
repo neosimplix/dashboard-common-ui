@@ -198,7 +198,8 @@
   .ns-select:focus-visible,
   .ns-chip:focus-visible,
   .ns-chip__remove:focus-visible,
-  .ns-table__sort:focus-visible {
+  .ns-table__sort:focus-visible,
+  .ns-table__row-button:focus-visible {
     outline: 2px solid var(--ns-color-accent);
     outline-offset: 2px;
   }
@@ -438,6 +439,45 @@
   .ns-table th[aria-sort="descending"] .ns-table__sort::after {
     opacity: 1;
     rotate: 180deg;
+  }
+
+  /*
+    행 전체가 눌리는 표. hover 배경은 위에서 이미 모든 표에 준다(읽기 보조이기도
+    하다) — 여기서 더하는 것은 커서뿐이다.
+  */
+  .ns-table--rows-clickable tbody tr {
+    cursor: pointer;
+  }
+
+  /*
+    클릭되는 행의 첫 칸에 넣는 버튼. **키보드가 그 행에 닿는 유일한 길이다.**
+
+    <tr> 에 role="button" 을 달면 그 행이 더 이상 표의 행이 아니게 되어
+    화면낭독기가 칸 제목과 값의 연결을 잃는다. 그래서 시맨틱은 그대로 두고
+    버튼을 안에 넣는다.
+
+    **이 버튼에 핸들러를 붙이지 않는다.** 핸들러는 <tr> 에만 있다. Enter·Space 가
+    이 버튼에서 click 을 내고 그것이 <tr> 로 버블링하므로, 여기에 또 달면 클릭
+    한 번에 두 번 돈다.
+
+    표 안의 이름이 버튼처럼 보이지 않게 한다 — 행 전체가 이미 클릭 대상이고,
+    이 버튼은 키보드로 그 행에 닿기 위한 것이다. 셀 텍스트와 같아 보여야 한다.
+
+    포커스 링은 <tr> 이 아니라 이 버튼에 그린다(위 공용 목록). <tr> 의 outline 은
+    브라우저마다 셀 경계에서 끊겨 보인다.
+  */
+  .ns-table__row-button {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .ns-table__row-button:hover {
+    text-decoration: underline;
   }
 
   ns-pagination {
