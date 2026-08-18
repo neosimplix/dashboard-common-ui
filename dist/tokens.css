@@ -1,0 +1,197 @@
+/*
+  common-ui 디자인 토큰.
+
+  모든 이름에 --ns- 접두사를 붙인다. 붙이지 않던 0.1.5 에서 두 번째 소비자의
+  --color-surface 와 이름만 겹치고 값 체계가 달라, 임포트 순서가 셸 색을
+  결정하는 상태가 됐다. 컴포넌트 스타일은 var() 폴백 없이 이 이름들을 읽으므로
+  이름을 공유하면 라이브러리 렌더링이 소비자 캐스케이드에 종속된다.
+
+  이미 무접두사 이름을 쓰던 프로젝트는 dist/aliases.css 를 임포트한다.
+  그 파일은 이 파일에서 생성된다(scripts/copy-css.mjs).
+
+  색 값은 Tailwind v4 기본 팔레트(oklch)에서 그대로 가져왔다. 이 파일은
+  Tailwind 에 의존하지 않으므로 순수 HTML 에서도 동작한다.
+*/
+/*
+  다크모드 신호.
+
+  값은 아래 :root 에서 light-dark() 한 줄에 둔다. 미디어쿼리 안팎으로 선언을
+  복제하면 값이 두 곳에 존재하게 되고, 어긋나도 아무도 모른다 — 이 파일이
+  var() 폴백을 금지하는 것과 같은 이유다.
+
+  color-scheme 은 상속되므로 컴포넌트 shadow 안까지 도달한다. 네이티브 폼
+  컨트롤·스크롤바·기본 배경도 함께 뒤집힌다.
+
+  요구 브라우저: Chrome 123 · Safari 17.5 · Firefox 121 이상.
+  light-dark() 자체는 Firefox 120 부터지만, controls.css 가 이미 쓰는 :has() 가
+  Firefox 121 이라 이 패키지의 하한은 121 이다. 다크모드가 하한을 올린 것이 아니다.
+*/
+:root                     { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+:root {
+  /* 표면 · 전경 · 경계 */
+  --ns-color-surface:        light-dark(#fff, oklch(21% 0.006 285.885));
+  --ns-color-surface-sunken: light-dark(oklch(98.5% 0 0), oklch(14.1% 0.005 285.823));
+  --ns-color-surface-hover:  light-dark(oklch(96.7% 0.001 286.375), oklch(27.4% 0.006 286.033));
+  --ns-color-line:           light-dark(oklch(92% 0.004 286.32), oklch(27.4% 0.006 286.033));
+  --ns-color-line-strong:    light-dark(oklch(87.1% 0.006 286.286), oklch(37% 0.013 285.805));
+  --ns-color-overlay:        light-dark(rgb(0 0 0 / .4), rgb(0 0 0 / .6));
+
+  --ns-color-fg:        light-dark(oklch(21% 0.006 285.885), oklch(98.5% 0 0));
+  --ns-color-fg-body:   light-dark(oklch(37% 0.013 285.805), oklch(87.1% 0.006 286.286));
+  --ns-color-fg-muted:  light-dark(oklch(55.2% 0.016 285.938), oklch(70.5% 0.015 286.067));
+  --ns-color-fg-subtle: light-dark(oklch(70.5% 0.015 286.067), oklch(55.2% 0.016 285.938));
+
+  /* 액센트 — 브랜드 컬러가 정해지면 이 네 줄만 교체한다 */
+  --ns-color-accent:       light-dark(oklch(21% 0.006 285.885), oklch(98.5% 0 0));
+  --ns-color-accent-hover: light-dark(oklch(27.4% 0.006 286.033), oklch(92% 0.004 286.32));
+  --ns-color-accent-fg:    light-dark(#fff, oklch(21% 0.006 285.885));
+  --ns-color-disabled:     light-dark(oklch(87.1% 0.006 286.286), oklch(37% 0.013 285.805));
+
+  /* 상태 */
+  --ns-color-danger:          light-dark(oklch(57.7% 0.245 27.325), oklch(70.4% 0.191 22.216));
+  --ns-color-danger-surface:  light-dark(oklch(97.1% 0.013 17.38), oklch(25.8% 0.092 26.042));
+  --ns-color-warn:            light-dark(oklch(55.5% 0.163 48.998), oklch(82.8% 0.189 84.429));
+  --ns-color-warn-surface:    light-dark(oklch(98.7% 0.022 95.277), oklch(27.9% 0.077 45.635));
+  --ns-color-success:         light-dark(oklch(59.6% 0.145 163.225), oklch(76.5% 0.177 163.223));
+  --ns-color-success-surface: light-dark(oklch(97.9% 0.021 166.113), oklch(26.2% 0.051 172.552));
+
+  /* 간격 — 4px 스케일 */
+  --ns-space-1: .25rem;
+  --ns-space-1-5: .375rem;
+  --ns-space-2: .5rem;
+  --ns-space-2-5: .625rem;
+  --ns-space-3: .75rem;
+  --ns-space-4: 1rem;
+  --ns-space-5: 1.25rem;
+  --ns-space-6: 1.5rem;
+  --ns-space-8: 2rem;
+
+  /* 반경 — 용도 이름 */
+  --ns-radius-badge: .25rem;
+  --ns-radius-control: .375rem;
+  --ns-radius-panel: .5rem;
+  --ns-radius-card: .75rem;
+  --ns-radius-pill: 9999px;
+
+  /* 타이포 — 크기와 줄간격은 반드시 짝으로 쓴다 */
+  --ns-font-size-2xs: .6875rem; --ns-line-height-2xs: 1rem;
+  --ns-font-size-xs: .75rem;    --ns-line-height-xs: 1rem;
+  --ns-font-size-sm: .875rem;   --ns-line-height-sm: 1.25rem;
+  --ns-font-size-base: 1rem;    --ns-line-height-base: 1.5rem;
+  --ns-font-size-lg: 1.125rem;  --ns-line-height-lg: 1.75rem;
+  --ns-font-size-xl: 1.25rem;   --ns-line-height-xl: 1.75rem;
+  --ns-weight-medium: 500;
+  --ns-weight-semibold: 600;
+
+  /* 레이아웃 상수 */
+  --ns-header-height: 3.5rem;
+  --ns-sidebar-width: 15rem;
+  --ns-sidebar-width-collapsed: 4rem;
+  --ns-page-padding-x: var(--ns-space-6);
+  --ns-page-padding-y: var(--ns-space-6);
+  --ns-card-padding: var(--ns-space-8);
+  --ns-control-height-sm: 1.75rem;
+  --ns-control-height-md: 2.5rem;
+
+  /* 기타 */
+  --ns-elevation-card:
+    0 1px 3px 0 light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4)),
+    0 1px 2px -1px light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4));
+  --ns-transition-fast: 150ms;
+  --ns-transition-ease: cubic-bezier(.4, 0, .2, 1);
+
+  /*
+    @no-alias
+
+    아래는 0.1.5 에서도 --ns- 였던 것들이다. 무접두사 원본이 없으므로
+    aliases.css 생성에서 제외한다. scripts/copy-css.mjs 가 이 표시를 읽는다.
+    표시는 이 주석 하나뿐이고, 여기부터 :root 블록 끝까지가 대상이다.
+  */
+
+  /*
+    ns-icon 의 크기. 요소 선택자 대신 커스텀 프로퍼티인 이유는 shadow 경계다 —
+    요소 선택자는 문서 트리에만 적용되므로 ns-dialog 의 shadow 안에 있는
+    <ns-icon> 에 닿지 못한다. 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지
+    도달한다.
+  */
+  --ns-icon-size: 1.25rem;
+
+  /*
+    ns-dialog 의 치수. 폭과 여백을 나눠 두는 이유가 있다 — 컴포넌트가
+    min(폭, 100vw - 여백) 으로 감싸므로, 소비자가 --ns-dialog-width 만 키워도
+    작은 화면에서 넘치지 않는다. 하나로 합치면 소비자가 min() 째로 덮어써서
+    그 보호가 사라진다.
+
+    32rem 은 화면 비율이 아니라 절대 상한이다. 큰 모니터에서도 512px 이다.
+    넓은 폼 대화상자는 인스턴스에서 --ns-dialog-width 를 올린다.
+  */
+  --ns-dialog-width: 32rem;
+  --ns-dialog-margin: var(--ns-space-8);
+}
+
+/*
+  정의 전 레이아웃 예약.
+
+  커스텀 엘리먼트는 customElements.define 이전까지 display: inline 이고
+  크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
+  light DOM 선택자라 upgrade 전에도 적용된다.
+
+  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
+  정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
+  프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
+  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. upgrade 이후의 너비는
+  ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
+
+  data-ns-open 은 React 소비자를 위한 통로다. createComponent 가 반응형
+  프로퍼티만 가로채므로, 반응형이 아닌 이 이름은 서버 마크업에 그대로 실린다.
+  src/react/tags/Sidebar.tsx 가 채운다. 순수 HTML 소비자는 마크업에 open 을
+  직접 쓰므로 첫 짝이 걸린다.
+
+  이 예약만으로는 튐이 좁아질 뿐 사라지지 않는다. customElements.define 이
+  hydrateRoot 보다 먼저 실행되므로, upgrade 와 hydration 사이에는 :not(:defined)
+  가 이미 떨어져 나갔는데 open 은 아직 설정되지 않은 구간이 남는다. 그 구간을
+  덮는 것은 ns-sidebar.styles.ts 의 :host(:not([open]):not([data-ns-open])) 다.
+  두 파일을 함께 고쳐야 타임라인에 구멍이 안 생긴다.
+*/
+ns-header { display: block; height: var(--ns-header-height); }
+
+ns-sidebar                             { display: block; }
+ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); }
+ns-sidebar:not(:defined)[open],
+ns-sidebar:not(:defined)[data-ns-open] { width: var(--ns-sidebar-width); }
+
+/*
+  ns-icon 은 값을 --ns-icon-size 에서 받는다. 이 요소 선택자만으로는 문서 트리의
+  아이콘만 잡히고 다른 컴포넌트 shadow 안의 아이콘은 크기를 잃는다.
+  소비자는 ns-icon { width: … } 로 여전히 덮을 수 있다(문서 선택자가 :host 를 이긴다).
+*/
+ns-icon { display: inline-flex; width: var(--ns-icon-size); height: var(--ns-icon-size); }
+
+/*
+  슬롯에 들어온 자식의 크기. shadow 의 ::slotted(*) 와 같은 선언을 문서 트리에도
+  둔다 — 둘 다 필요하고 대상이 다르다.
+
+  ::slotted 는 shadow root 가 생긴 뒤에만 존재한다. 그런데 소비자가 넣는 아이콘은
+  대개 자기 크기를 갖고 온다(lucide 계열은 width="24" height="24" 를 찍는다).
+  upgrade 전에는 호스트만 --ns-icon-size 로 예약돼 있고 자식은 24 로 그려지다가,
+  upgrade 직후 ::slotted 가 걸리면서 20 으로 줄어든다 — ns-sidebar 에서 없앤 것과
+  같은 종류의 튐이 아이콘 크기로 되돌아온다.
+
+  이 규칙이 그 구간을 덮는다. 정의 이후에도 계속 걸리는 것이 맞다 — 조건 없는
+  예약이라 그칠 이유가 없고, 소비자가 자식에 인라인 style 로 다른 크기를 주는
+  override 경로도 그대로 남는다(인라인이 둘 다 이긴다).
+
+  ::slotted 쪽을 지울 수 없는 이유는 이 선택자가 문서 트리에만 닿기 때문이다.
+  다른 컴포넌트의 shadow 안에 있는 ns-icon 의 자식에는 위 ns-icon 규칙과 마찬가지로
+  도달하지 못한다.
+*/
+ns-icon > * { display: block; width: 100%; height: 100%; }
+
+ns-page-heading { display: block; }
+ns-skeleton { display: block; }
+
+/* 정의 전에는 light DOM 자식이 그대로 보인다. 모달 내용이 페이지에 새는 것을 막는다. */
+ns-dialog:not(:defined) { display: none; }
