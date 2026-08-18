@@ -264,17 +264,23 @@ export function Shell({ children }: { children: React.ReactNode }) {
               행 클릭. 핸들러는 <tr> 에만 있다 — RowButton 에 또 붙이면
               Enter·Space 가 낸 click 이 버블링해 한 번에 두 번 돈다.
             */}
-            <table className="ns-table ns-table--rows-clickable">
-              <tbody>
-                <tr onClick={() => log("open detail")}>
-                  <td>
-                    <button className="ns-table__row-button" type="button" aria-haspopup="dialog">
-                      글로벌 인플루언서 마케팅
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <NsTable>
+              <table className="ns-table ns-table--rows-clickable">
+                <tbody>
+                  <tr onClick={() => log("open detail")}>
+                    <td>
+                      <button
+                        className="ns-table__row-button"
+                        type="button"
+                        aria-haspopup="dialog"
+                      >
+                        글로벌 인플루언서 마케팅
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </NsTable>
             <NsPagination
               total={240}
               perPage={20}

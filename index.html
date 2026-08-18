@@ -1094,23 +1094,25 @@
   </p>
 
   <template class="ex">
-    <table class="ns-table ns-table--rows-clickable">
-      <thead>
-        <tr><th>이름</th><th>주소</th><th>미답변</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><button class="ns-table__row-button" type="button" aria-haspopup="dialog">글로벌 인플루언서 마케팅</button></td>
-          <td>global-influencer-marketing</td>
-          <td>3</td>
-        </tr>
-        <tr>
-          <td><button class="ns-table__row-button" type="button" aria-haspopup="dialog">테스트 대시보드</button></td>
-          <td>project01-test</td>
-          <td>—</td>
-        </tr>
-      </tbody>
-    </table>
+    <ns-table>
+      <table class="ns-table ns-table--rows-clickable">
+        <thead>
+          <tr><th>이름</th><th>주소</th><th>미답변</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><button class="ns-table__row-button" type="button" aria-haspopup="dialog">글로벌 인플루언서 마케팅</button></td>
+            <td>global-influencer-marketing</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td><button class="ns-table__row-button" type="button" aria-haspopup="dialog">테스트 대시보드</button></td>
+            <td>project01-test</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </ns-table>
   </template>
   <div class="demo block" id="table-row-click-demo" style="padding:var(--ns-space-4)"></div>
   <pre></pre>
@@ -1131,17 +1133,19 @@
 
   <h3>React 예시 (행 클릭)</h3>
   <script type="text/plain">
-    <table className="ns-table ns-table--rows-clickable">
-      <tbody>
-        <tr onClick={() => setDetail(row)}>
-          <td>
-            <button className="ns-table__row-button" type="button" aria-haspopup="dialog">
-              {row.name}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <NsTable>
+      <table className="ns-table ns-table--rows-clickable">
+        <tbody>
+          <tr onClick={() => setDetail(row)}>
+            <td>
+              <button className="ns-table__row-button" type="button" aria-haspopup="dialog">
+                {row.name}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </NsTable>
   </script>
 
   <h2 id="ns-card">.ns-card</h2>
