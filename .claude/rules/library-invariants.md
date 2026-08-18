@@ -40,6 +40,7 @@
 - `:host-context()` 를 쓰지 않는다. Chromium 전용이다.
 - **`invalid` 는 클래스가 아니라 `[aria-invalid="true"]` 로 스타일한다.** `--invalid` 변형 클래스를 만들지 않는다.
 - **`controls.css` 는 `@layer ns-controls` 로 감싼다.** 감싸지 않으면 소비자의 Tailwind 유틸 오버라이드가 막힌다.
+- **`:host` 에 `border`·`margin`·`padding` 을 두지 않는다.** 호스트는 문서 트리에 있어 소비자의 문서 규칙이 `:host` 를 이긴다 — 특정도가 아니라 캐스케이드 순서라 `:host` 쪽이 아무리 구체적이어도 진다. Tailwind preflight 의 `*, ::before, ::after, ::backdrop { border: 0 solid; margin: 0; padding: 0 }` 가 그 규칙이고, Tailwind 소비자는 예외 없이 이것을 갖는다. 박스는 shadow 안의 요소가 갖는다 (`ns-sidebar` 의 `nav`, `ns-nav-group` 의 `[role="group"]`, `ns-header` 의 `header`). **`background`·`color`·`width`·`display` 는 대상이 아니다** — preflight 가 건드리지 않고, `:host` 에 두어야 소비자가 `ns-x { … }` 로 덮을 수 있다. `check-tokens.mjs` 의 규칙 ④ 가 강제한다.
 - **shadow 컴포넌트는 `controls.css` 를 재사용할 수 없다.** 전역 스타일시트는 shadow 안에 도달하지 않는다. `tokens.css` 의 요소 선택자(정의 전 레이아웃 예약)도 같다 — 둘 다 문서 트리에만 적용된다. 필요한 최소한만 그 컴포넌트의 shadow 스타일에 다시 적는다.
 - **shadow 경계를 넘겨야 하는 값은 선택자가 아니라 커스텀 프로퍼티로 내려보낸다.** 문서의 요소 선택자는 shadow 안에 닿지 않지만, 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지 도달한다. (`--ns-icon-size`, `--ns-dialog-width`, `--ns-label-display`)
 - **다크모드 값은 토큰마다 `light-dark()` 한 쌍으로 둔다.** `@media (prefers-color-scheme: dark)` 안에 선언 블록을 복제하지 않는다. 신호는 `:root` 의 `color-scheme` 하나이고, `[data-theme]` 은 그 한 프로퍼티만 덮는다.
