@@ -2547,6 +2547,14 @@
   <h4>주의</h4>
   <ul>
     <li><code>&lt;ns-toast&gt;</code> 를 직접 마크업에 쓰지 않는다. <code>nsToast()</code> 가 문서당 하나를 만들어 <code>body</code> 에 붙인다.</li>
+    <li>
+      <strong>모달 <code>ns-dialog</code> 가 열려 있는 동안 띄운 토스트는 대화상자 뒤에 가린다.</strong>
+      <code>showModal()</code> 이 대화상자를 <strong>top layer</strong> 로 올리는데, top layer 는
+      통상 스태킹 컨텍스트의 모든 <code>z-index</code> 위에 있어 숫자를 아무리 키워도 닿지 않는다.
+      가려진 토스트는 보이지도 눌리지도 않는다. 대화상자를 닫은 뒤에 띄우거나, 그 메시지를
+      대화상자 안에 표시한다. (<code>nsAlert</code>·<code>nsConfirm</code> 도 같은
+      <code>showModal()</code> 경로다.)
+    </li>
     <li><code>danger</code> 만 <code>role="alert"</code> 로 즉시 읽힌다. 나머지는 리전의 <code>aria-live="polite"</code> 를 탄다.</li>
     <li>서버에서 부르면 아무 일도 하지 않는다 — 이벤트 핸들러에서만 부른다.</li>
   </ul>

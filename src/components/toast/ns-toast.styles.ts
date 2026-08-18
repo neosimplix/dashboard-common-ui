@@ -12,6 +12,19 @@ export const styles = css`
     position: fixed;
     right: var(--ns-space-4);
     bottom: var(--ns-space-4);
+    /*
+      **이 숫자를 올려도 열려 있는 모달 ns-dialog 를 이길 수 없다.** showModal() 은
+      대화상자를 top layer 로 올리고, top layer 는 통상 스태킹 컨텍스트의 모든
+      z-index 위에 있다 — 정수 하나로 닿는 곳이 아니다. 대화상자가 열린 채로 띄운
+      토스트는 대화상자와 ::backdrop 뒤에 가려 보이지도 눌리지도 않는다.
+
+      Popover API(showPopover)로 이 리전도 top layer 에 올릴 수 있지만 쓰지 않는다.
+      Firefox 125+ 인데 이 패키지의 문서화된 하한은 Firefox 121 이고, UA 의
+      [popover] 규칙이 border 와 padding 을 넣어 :host 박스 금지 규칙(check-tokens.mjs
+      규칙 ④)에 걸린다.
+
+      해결은 문서다 — index.html 의 nsToast 절 "주의" 에 적혀 있다.
+    */
     z-index: 1000;
     display: block;
     /* 토스트가 없는 동안 화면 오른쪽 아래 클릭을 가로채지 않는다. */

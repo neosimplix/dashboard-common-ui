@@ -64,8 +64,12 @@ export type { ChipProps } from "./controls/Chip.js";
 
 /*
   명령형 API 다. React 컴포넌트가 아니라 함수라 래퍼가 필요 없다 — 이벤트
-  핸들러에서 그대로 부른다. 이 파일에는 'use client' 배너가 붙으므로 서버
-  컴포넌트에서 import 하면 빌드가 막는다.
+  핸들러에서 그대로 부른다.
+
+  이 파일에는 'use client' 배너가 붙는다. 그것은 **막는 것이 아니라 여는 것이다** —
+  클라이언트 경계를 표시하므로 Server Component 가 이 모듈을 import 하는 것은
+  정상이고 빌드도 통과한다. 서버 렌더 중에 nsToast() 를 부르면 터지지 않고
+  document 가 없다는 것을 보고 조용히 no-op 를 돌려준다.
 */
 export { nsToast } from "../components/toast/toast.js";
 export type { NsToastOptions } from "../components/toast/toast.js";
