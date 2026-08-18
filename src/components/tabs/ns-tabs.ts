@@ -35,7 +35,7 @@ export function tabIdFor(panelId: string): string {
  * 안에 무언가를 그리는 순간 그 스타일을 컴포넌트에 다시 적어야 한다.
  *
  * (`aria-controls` 는 이 결정의 근거가 아니다. 슬롯을 쓰면 탭 버튼은 문서 트리에
- * 그대로 남으므로 IDREF 도 `ns-tabs button` 선택자도 계속 해석된다.)
+ * 그대로 남으므로 IDREF 도 `ns-tabs [data-ns-tab]` 선택자도 계속 해석된다.)
  */
 export class NsTabs extends ReactiveElement {
   /*
@@ -69,6 +69,13 @@ export class NsTabs extends ReactiveElement {
   #innerActive = "";
   #observer?: MutationObserver;
 
+  /*
+    평생 한 번만 켜진다. ns-pagination 의 #warnedPage, ns-table 의
+    #warnedHalfControlled 와 같은 관용구다 — 렌더마다 다시 경고하면 스팸이 되고,
+    다른 진단과 플래그를 공유하면 먼저 일어난 쪽이 나머지를 막는다.
+  */
+  #warnedNoMatch = false;
+
   get #controlled(): boolean {
     return this.active !== undefined;
   }
@@ -94,7 +101,32 @@ export class NsTabs extends ReactiveElement {
     const tabs = this.#tabs;
     if (tabs.length === 0) return "";
     const wanted = this.active ?? this.#innerActive;
-    return tabs.some((el) => this.#idOf(el) === wanted) ? wanted : this.#idOf(tabs[0]);
+    if (tabs.some((el) => this.#idOf(el) === wanted)) return wanted;
+
+    const fallback = this.#idOf(tabs[0]);
+
+    /*
+      폴백 자체는 바꾸지 않고 들리게만 한다. 조용히 두면 고장이 이렇게 보인다 —
+      첫 번째 탭이 선택된 채로 그려지는데 **그 탭을 눌러도 아무 일도 일어나지
+      않는다.** #select 가 id === #current 에서 조기 반환하므로 이벤트가 나가지
+      않고, 소비자 상태는 영원히 어긋난 값에 머문다. 다른 탭을 먼저 눌러야
+      빠져나온다. 화살표 키는 도는 것이 이것을 더 임의적으로 보이게 한다.
+
+      빈 문자열은 지목이 아니다 — 비제어 기본값(첫 번째 탭)을 뜻하므로 거른다.
+
+      ns-pagination 이 범위를 벗어난 page 에, ns-table 이 반쪽 제어에 하는 것과
+      같은 자리다. 알리기만 하고 소비자 상태를 교정하지 않는다.
+    */
+    if (wanted !== "" && !this.#warnedNoMatch) {
+      this.#warnedNoMatch = true;
+      console.warn(
+        this.#controlled
+          ? `[ns-tabs] active="${wanted}" 와 일치하는 data-ns-tab 이 없습니다. 첫 번째 탭 "${fallback}" 을 표시하지만 그 탭을 눌러도 ns-tab-change 가 나가지 않습니다. 대소문자까지 맞는지 확인하세요.`
+          : `[ns-tabs] 활성 탭 "${wanted}" 와 일치하는 data-ns-tab 이 없습니다. 첫 번째 탭 "${fallback}" 을 표시합니다. default-active 값이 data-ns-tab 과 맞는지 확인하세요.`,
+      );
+    }
+
+    return fallback;
   }
 
   override connectedCallback(): void {
