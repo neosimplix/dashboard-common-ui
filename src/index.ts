@@ -29,6 +29,8 @@ export { NsToast } from "./components/toast/ns-toast.js";
 export type { NsToastTone } from "./components/toast/ns-toast.js";
 export { nsToast } from "./components/toast/toast.js";
 export type { NsToastOptions } from "./components/toast/toast.js";
+export { nsAlert, nsConfirm } from "./components/dialog/confirm.js";
+export type { NsAlertOptions, NsConfirmOptions } from "./components/dialog/confirm.js";
 
 /*
   스프라이트 등록. svg 를 함께 내보내는 이유는 lit 이 이 패키지의 의존성이라

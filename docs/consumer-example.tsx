@@ -47,6 +47,7 @@ import {
   Select,
   Sidebar,
   Textarea,
+  nsConfirm,
   nsToast,
   registerIcons,
   svg,
@@ -201,7 +202,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <NsIcon name="menu" />
             </Button>
             <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
-            <Button variant="danger" size="sm" onClick={() => log("delete")}>삭제</Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={async () => {
+                if (await nsConfirm({ heading: "삭제", message: "되돌릴 수 없습니다.", tone: "danger" })) {
+                  log("deleted");
+                }
+              }}
+            >
+              삭제
+            </Button>
             {/*
               명령형 API 다. 래퍼가 없으므로 이벤트 핸들러에서 그대로 부른다 —
               소비자 관점에서 import 경로와 인자 타입이 맞는지가 여기서 검사된다.

@@ -2559,6 +2559,59 @@
     <li>서버에서 부르면 아무 일도 하지 않는다 — 이벤트 핸들러에서만 부른다.</li>
   </ul>
 
+  <h3 id="overlays-alert">nsAlert · nsConfirm</h3>
+  <p>
+    <code>ns-dialog</code> 를 새로 만들어 <code>body</code> 에 붙이고 Promise 를
+    돌려준다. 닫히면 요소를 지운다 — 남기면 호출 횟수만큼 대화상자가 문서에 쌓인다.
+  </p>
+  <p>
+    버튼은 <code>.ns-button</code> 이다. <strong><code>controls.css</code> 를 요구하는
+    것이 새 요구사항은 아니다</strong> — <code>ns-pagination</code> 이 이미 light DOM 에
+    <code>.ns-button</code> 을 렌더한다.
+  </p>
+  <div class="demo block" id="confirm-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-3);padding:var(--ns-space-4)">
+    <button class="ns-button ns-button--outline ns-button--sm" id="confirm-demo-alert">nsAlert</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="confirm-demo-confirm">nsConfirm</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="confirm-demo-danger">nsConfirm (danger)</button>
+    <span id="confirm-demo-log">—</span>
+  </div>
+
+  <h4>인자</h4>
+  <table>
+    <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>heading</code></td><td><code>""</code></td><td>제목. 비우면 제목 줄이 없다</td></tr>
+    <tr><td><code>message</code></td><td>—</td><td>본문. 문자열만</td></tr>
+    <tr><td><code>confirmLabel</code></td><td><code>"확인"</code></td><td></td></tr>
+    <tr><td><code>cancelLabel</code></td><td><code>"취소"</code></td><td><code>nsConfirm</code> 만</td></tr>
+    <tr><td><code>tone</code></td><td><code>"default"</code></td><td><code>"danger"</code> 면 확인이 <code>.ns-button--danger</code> 이고 <strong>취소에 초기 포커스</strong>. <code>nsConfirm</code> 만</td></tr>
+  </table>
+
+  <h4>닫히는 경로</h4>
+  <table>
+    <tr><th>경로</th><th><code>nsAlert</code></th><th><code>nsConfirm</code></th></tr>
+    <tr><td>확인 버튼</td><td>resolve</td><td><code>true</code></td></tr>
+    <tr><td>취소 버튼</td><td>—</td><td><code>false</code></td></tr>
+    <tr><td>ESC · 백드롭 · 닫기 버튼</td><td>resolve</td><td><code>false</code></td></tr>
+  </table>
+
+  <h4>JS</h4>
+  <script type="text/plain">
+    import { nsAlert, nsConfirm } from "@neosimplix/common-ui";
+
+    await nsAlert({ heading: "권한 없음", message: "관리자에게 문의하세요." });
+
+    if (await nsConfirm({ heading: "삭제", message: "되돌릴 수 없습니다.", tone: "danger" })) {
+      await remove();
+    }
+  </script>
+
+  <h4>주의</h4>
+  <ul>
+    <li><strong>폼이 들어가는 모달은 이 API 로 만들지 않는다.</strong> 문자열만 받는다 — <code>ns-dialog</code> 로 직접 만든다.</li>
+    <li>여러 번 부르면 네이티브 top layer 에 쌓인다. 큐를 두지 않는다.</li>
+    <li><code>tone: "danger"</code> 를 파괴적 확인에 반드시 쓴다. 초기 포커스가 취소로 가는 것이 그 신호다.</li>
+  </ul>
+
   <h2 id="ns-header">ns-header</h2>
   <p>
     좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
@@ -3324,6 +3377,29 @@
     }
     toastDemo.querySelector("#toast-demo-sticky").addEventListener("click", () => {
       NsCommonUi.nsToast("직접 닫아야 사라진다", { duration: 0 });
+    });
+  }
+
+  /* alert/confirm 데모. 결과를 옆에 적어 어느 경로로 닫혔는지 보이게 한다. */
+  const confirmDemo = document.getElementById("confirm-demo");
+  const confirmLog = confirmDemo && confirmDemo.querySelector("#confirm-demo-log");
+  if (confirmDemo && confirmLog) {
+    confirmDemo.querySelector("#confirm-demo-alert").addEventListener("click", async () => {
+      await NsCommonUi.nsAlert({ heading: "권한 없음", message: "관리자에게 문의하세요." });
+      confirmLog.textContent = "alert 닫힘";
+    });
+    confirmDemo.querySelector("#confirm-demo-confirm").addEventListener("click", async () => {
+      const ok = await NsCommonUi.nsConfirm({ heading: "저장", message: "변경 사항을 저장할까요?" });
+      confirmLog.textContent = `confirm → ${ok}`;
+    });
+    confirmDemo.querySelector("#confirm-demo-danger").addEventListener("click", async () => {
+      const ok = await NsCommonUi.nsConfirm({
+        heading: "삭제",
+        message: "되돌릴 수 없습니다.",
+        confirmLabel: "삭제",
+        tone: "danger",
+      });
+      confirmLog.textContent = `danger confirm → ${ok}`;
     });
   }
 </script>

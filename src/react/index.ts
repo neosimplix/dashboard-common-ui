@@ -74,6 +74,8 @@ export type { ChipProps } from "./controls/Chip.js";
 export { nsToast } from "../components/toast/toast.js";
 export type { NsToastOptions } from "../components/toast/toast.js";
 export type { NsToastTone } from "../components/toast/ns-toast.js";
+export { nsAlert, nsConfirm } from "../components/dialog/confirm.js";
+export type { NsAlertOptions, NsConfirmOptions } from "../components/dialog/confirm.js";
 
 export type {
   NsToggleDetail,
