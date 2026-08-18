@@ -1454,9 +1454,24 @@
     초기값은 <code>default-open</code> 속성이다.
   </p>
   <p>
-    <strong><code>open</code> 은 속성이 아니라 프로퍼티다.</strong>
-    <code>&lt;ns-dialog open&gt;</code> 이라고 쓰면 제어 모드로 들어가 스스로 닫지
-    못하게 된다. 순수 HTML 에서는 <code>default-open</code> 을 쓴다.
+    <strong><code>open</code> 은 속성이 아니라 프로퍼티다.</strong> 순수 HTML 에서는
+    <code>default-open</code> 을 쓴다. 겸용했다면
+    <code>&lt;ns-dialog open&gt;</code> 이 제어 모드로 들어가 스스로 닫지 못하게 되므로,
+    그것을 피하려고 이름을 갈랐다.
+  </p>
+  <p>
+    <strong>그래서 <code>&lt;ns-dialog open&gt;</code> 은 제어 모드로 들어가지 않는다 —
+    무시된다.</strong> 속성이 관찰되지 않으므로 열리지도 않고 <code>open</code> 프로퍼티는
+    <code>undefined</code> 로 남아 비제어다. 이 구분이 중요한 이유는 증상이 다르기
+    때문이다 — 제어 모드로 들어갔다면 "열린 채 안 닫히는" 것이고, 실제로는 "아무 일도
+    안 일어나는" 것이다. <strong>0.2.5 부터 그 속성이 붙어 있으면 콘솔에 한 번
+    경고한다.</strong> 라이브러리는 호스트에 속성을 쓰지 않으므로 이 이름의 속성이
+    발견되면 언제나 소비자가 쓴 것이고, 언제나 실수다.
+  </p>
+  <p>
+    같은 규칙이 <code>ns-pagination</code> 의 <code>page</code>,
+    <code>ns-table</code> 의 <code>sortKey</code>·<code>sortDirection</code>·<code>selected</code>
+    에도 적용된다. 전부 프로퍼티 전용이고, 속성으로 쓰면 무시되며, 이제 경고한다.
   </p>
   <p>
     제어에서 비제어로 되돌릴 수도 있다 — <code>open</code> 을 다시 <code>undefined</code>

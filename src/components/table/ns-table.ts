@@ -3,6 +3,7 @@ import { property } from "lit/decorators.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
+import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js";
 import type {
   NsSelectChangeDetail,
   NsSortDetail,
@@ -52,9 +53,12 @@ export class NsTable extends ReactiveElement {
   /**
    * 제어 모드의 정렬 칼럼. `undefined` 면 비제어다.
    *
-   * 속성이 아니라 프로퍼티 전용인 이유는 ns-dialog 의 `open` 과 같다 —
-   * `<ns-table sort-key="name">` 이라고 쓰면 제어 모드로 들어가 컴포넌트가
-   * 스스로 방향을 바꾸지 못한다. 순수 HTML 은 `default-sort-key` 를 쓴다.
+   * 속성이 아니라 프로퍼티 전용인 이유는 ns-dialog 의 `open` 과 같다. 겸용했다면
+   * `<ns-table sort-key="name">` 이 제어 모드로 들어가 컴포넌트가 스스로 방향을
+   * 바꾸지 못한다. 순수 HTML 은 `default-sort-key` 를 쓴다.
+   *
+   * **그래서 `<ns-table sort-key="name">` 은 무시된다** — 속성이 관찰되지 않는다.
+   * 붙어 있으면 connectedCallback 이 경고한다.
    */
   @property({ attribute: false }) sortKey?: string;
 
@@ -112,6 +116,11 @@ export class NsTable extends ReactiveElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
+    warnPropertyOnlyAttributes(this, {
+      "sort-key": "default-sort-key",
+      "sort-direction": "default-sort-direction",
+      selected: "각 행 checkbox 의 checked 속성",
+    });
     // 위임이라 소비자가 행을 다시 그려도 리스너를 다시 붙일 필요가 없다.
     this.addEventListener("click", this.#onClick);
     this.addEventListener("change", this.#onChange);

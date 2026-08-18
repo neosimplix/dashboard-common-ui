@@ -4,6 +4,7 @@ import { repeat } from "lit/directives/repeat.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
+import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js";
 import type { NsPageChangeDetail } from "../../types.js";
 
 /**
@@ -167,6 +168,7 @@ export class NsPagination extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
+    warnPropertyOnlyAttributes(this, { page: "default-page" });
   }
 
   /*

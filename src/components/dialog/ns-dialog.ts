@@ -3,6 +3,7 @@ import { property, query, state } from "lit/decorators.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
+import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js";
 import type { NsDialogCloseDetail, NsDialogCloseReason } from "../../types.js";
 import { styles } from "./ns-dialog.styles.js";
 
@@ -23,9 +24,15 @@ export class NsDialog extends LitElement {
   /**
    * 제어 모드. `undefined` 면 비제어다.
    *
-   * 속성이 아니라 프로퍼티 전용인 이유: `<ns-dialog open>` 이라고 쓰면 boolean
-   * 속성이 `true` 로 읽혀 제어 모드로 들어가고, 그러면 컴포넌트가 스스로 닫지
-   * 못한다. 순수 HTML 소비자는 `default-open` 을 쓴다.
+   * 속성이 아니라 프로퍼티 전용이다. 겸용했다면 `<ns-dialog open>` 이 boolean
+   * 속성으로 읽혀 제어 모드로 들어가고, 그러면 컴포넌트가 스스로 닫지 못한다.
+   * 그것을 피하려고 이름을 갈랐다 — 순수 HTML 소비자는 `default-open` 을 쓴다.
+   *
+   * **그래서 `<ns-dialog open>` 은 제어 모드로 들어가지 않는다. 무시된다.**
+   * 속성이 관찰되지 않으므로 열리지도 않고 이 프로퍼티는 `undefined` 로 남아
+   * 비제어다. 위 문장은 고르지 않은 설계를 설명한 것이지 현재 동작이 아니다 —
+   * 소비자가 이 주석을 읽고도 `setAttribute("open")` 을 썼다. 실제로 그 속성이
+   * 붙어 있으면 connectedCallback 이 경고한다.
    *
    * `open` 을 나중에 `undefined` 로 되돌리면 비제어로 전환되고, 그 시점의 내부
    * 상태(보통 닫힘)가 화면에 반영된다 — 열려 있던 대화상자가 닫힌다. React 의
@@ -64,6 +71,7 @@ export class NsDialog extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
+    warnPropertyOnlyAttributes(this, { open: "default-open" });
 
     /*
       분리되는 동안 열려 있던 대화상자는 top layer 에서만 빠지고 open 속성은 남는다.
