@@ -501,6 +501,90 @@
     line-height: var(--ns-line-height-sm);
   }
 
+  /*
+    ns-tabs 는 소비자가 쓴 버튼에 행동만 얹는다(ns-table 과 같다). 자식이 전부
+    버튼이므로 요소 타입으로 특정된다 — 소비자가 외울 클래스는 .ns-tabs__count
+    하나뿐이다.
+
+    요소 선택자라 정의되지 않은 커스텀 엘리먼트에도 적용된다. 스타일은 즉시,
+    동작은 JS 로드 시 붙는다.
+  */
+  ns-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: var(--ns-space-1);
+    /*
+      밑줄이 탭 줄 전체에 이어지고 활성 탭만 그 위에 진한 선을 얹는다.
+      탭 각각에 테두리를 두르면 활성/비활성 경계가 두 겹으로 보인다.
+    */
+    border-bottom: 1px solid var(--ns-color-line);
+    /* 탭이 많으면 줄바꿈하지 않고 가로로 스크롤한다 — 줄바꿈되면 밑줄이 끊긴다. */
+    overflow-x: auto;
+  }
+
+  ns-tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ns-space-2);
+    padding: var(--ns-space-2-5) var(--ns-space-3);
+    border: 0;
+    /* 활성 표시가 밑줄이므로 자리를 미리 잡아 둔다 — 없으면 선택할 때 1px 씩 움직인다. */
+    border-bottom: 2px solid transparent;
+    background: none;
+    font-family: inherit;
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    font-weight: var(--ns-weight-medium);
+    color: var(--ns-color-fg-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--ns-transition-fast) var(--ns-transition-ease),
+      border-color var(--ns-transition-fast) var(--ns-transition-ease);
+  }
+
+  ns-tabs button:hover {
+    color: var(--ns-color-fg-body);
+  }
+
+  /*
+    안쪽에 그린다. 이 컨테이너가 overflow-x: auto 라 바깥에 그린 링은 잘린다.
+  */
+  ns-tabs button:focus-visible {
+    outline: 2px solid var(--ns-color-accent);
+    outline-offset: -2px;
+    border-radius: var(--ns-radius-control);
+  }
+
+  ns-tabs button[aria-selected="true"] {
+    color: var(--ns-color-fg);
+    font-weight: var(--ns-weight-semibold);
+    border-bottom-color: var(--ns-color-accent);
+  }
+
+  /*
+    처리·확인할 건수. undefined 와 0 이 다르다 — 셀 것이 없는 탭은 이 span 을
+    아예 쓰지 않고, 셀 것이 있는데 지금 없으면 0 을 쓴다. 0 을 숨기면
+    "배지가 없다" 와 "처리할 게 없다" 가 같은 모양이 된다.
+  */
+  .ns-tabs__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    padding: 0 var(--ns-space-1-5);
+    border-radius: var(--ns-radius-pill);
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg-muted);
+    font-size: var(--ns-font-size-2xs);
+    line-height: var(--ns-line-height-2xs);
+    font-weight: var(--ns-weight-semibold);
+  }
+
+  ns-tabs button[aria-selected="true"] .ns-tabs__count {
+    background: var(--ns-color-accent);
+    color: var(--ns-color-accent-fg);
+  }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--ns-color-line);

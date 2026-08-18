@@ -5,7 +5,9 @@
   클래스를 붙이는 컴포넌트는 controls/, 커스텀 엘리먼트 래퍼의 프롭 이름을
   맞추는 어댑터는 tags/ 에 있다.
 */
-export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPagination, NsSkeleton, NsTable } from "./elements.js";
+export { NsHeader, NsIcon, NsNavGroup, NsNavItem, NsPagination, NsSkeleton, NsTable, NsTabs } from "./elements.js";
+
+export { tabIdFor } from "../components/tabs/ns-tabs.js";
 
 /*
   스프라이트 등록. 루트 진입점에도 같은 이름으로 있지만 여기도 내보낸다 —
@@ -68,4 +70,5 @@ export type {
   NsSortDirection,
   NsSelectChangeDetail,
   NsPageChangeDetail,
+  NsTabChangeDetail,
 } from "../types.js";

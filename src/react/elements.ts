@@ -11,6 +11,7 @@ import { NsPagination as NsPaginationElement } from "../components/pagination/ns
 import { NsSidebar as NsSidebarElement } from "../components/sidebar/ns-sidebar.js";
 import { NsSkeleton as NsSkeletonElement } from "../components/skeleton/ns-skeleton.js";
 import { NsTable as NsTableElement } from "../components/table/ns-table.js";
+import { NsTabs as NsTabsElement } from "../components/tabs/ns-tabs.js";
 import type {
   NsToggleDetail,
   NsNavigateDetail,
@@ -18,6 +19,7 @@ import type {
   NsSelectChangeDetail,
   NsSortDetail,
   NsPageChangeDetail,
+  NsTabChangeDetail,
 } from "../types.js";
 
 /*
@@ -145,5 +147,19 @@ export const NsPagination = createComponent({
   events: {
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsPageChange: "ns-page-change" as EventName<CustomEvent<NsPageChangeDetail>>,
+  },
+});
+
+/*
+  shim 이 필요 없다. active·defaultActive 어느 것도 HTML 전역 속성과 충돌하지
+  않으므로 평범한 래퍼를 그대로 공개한다. 탭 버튼은 children 으로 넘긴다.
+*/
+export const NsTabs = createComponent({
+  react: React,
+  tagName: "ns-tabs",
+  elementClass: NsTabsElement,
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsTabChange: "ns-tab-change" as EventName<CustomEvent<NsTabChangeDetail>>,
   },
 });

@@ -115,6 +115,7 @@
       <ns-nav-item href="#ns-dialog" label="ns-dialog" badge="DG"></ns-nav-item>
       <ns-nav-item href="#ns-table-tag" label="ns-table" badge="TT"></ns-nav-item>
       <ns-nav-item href="#ns-pagination" label="ns-pagination" badge="PG"></ns-nav-item>
+      <ns-nav-item href="#ns-tabs" label="ns-tabs" badge="TS"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -2242,6 +2243,118 @@
     />
   </script>
 
+  <h2 id="ns-tabs">ns-tabs</h2>
+  <p>
+    탭 줄. <strong>탭 버튼을 렌더하지 않는다</strong> — 소비자가 쓴
+    <code>&lt;button&gt;</code> 에 <code>role</code>·<code>aria-selected</code>·
+    <code>aria-controls</code>·roving tabindex 를 채우고 화살표 키를 단다.
+    <code>ns-table</code> 이 셀을 렌더하지 않는 것과 같은 자리다.
+  </p>
+  <p>
+    <strong>shadow 로 만들 수 없다.</strong> <code>aria-controls</code> 는 IDREF 라
+    shadow 경계를 넘지 못해서, 탭이 패널을 가리키는 연결이 에러 없이 끊긴다.
+  </p>
+  <p>
+    <strong>호스트에 <code>role="tablist"</code> 를 쓴다.</strong> ARIA 의 tablist↔tab
+    소유 관계는 DOM 부모여야 해서 둘 곳이 호스트밖에 없다. 이미 <code>role</code> 이
+    있으면 건드리지 않는다. <code>aria-label</code> 은 직접 쓴다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <ns-tabs aria-label="갤러리 예시 탭" default-active="live" id="tabs-demo-tabs">
+      <button type="button" data-ns-tab="live" data-ns-panel="tabs-demo-panel-live">운영 중</button>
+      <button type="button" data-ns-tab="requests" data-ns-panel="tabs-demo-panel-requests">
+        신청 <span class="ns-tabs__count">0</span>
+      </button>
+      <button type="button" data-ns-tab="inquiries" data-ns-panel="tabs-demo-panel-inquiries">
+        문의 <span class="ns-tabs__count">3</span>
+      </button>
+    </ns-tabs>
+    <div id="tabs-demo-panel-live" role="tabpanel" aria-labelledby="tabs-demo-panel-live-tab" tabindex="0">
+      운영 중 패널
+    </div>
+  </template>
+  <div class="demo block" id="tabs-demo" style="padding:var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>이름</th><th>속성</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>active</code></td><td>없음 (프로퍼티 전용)</td><td><code>undefined</code></td><td>제어 모드의 활성 탭. <strong><code>active="…"</code> 속성은 무시된다</strong></td></tr>
+    <tr><td><code>defaultActive</code></td><td><code>default-active</code></td><td><code>""</code></td><td>비제어 초기 탭. 비면 첫 번째 탭</td></tr>
+  </table>
+
+  <h3>탭 버튼이 갖는 것</h3>
+  <table>
+    <tr><th>속성</th><th>누가 쓰나</th><th>설명</th></tr>
+    <tr><td><code>data-ns-tab</code></td><td>소비자</td><td>이 탭의 식별자. <code>ns-tab-change</code> 의 <code>id</code> 가 이 값이다</td></tr>
+    <tr><td><code>data-ns-panel</code></td><td>소비자</td><td>이 탭이 여는 패널의 <code>id</code></td></tr>
+    <tr><td><code>role="tab"</code> · <code>aria-controls</code> · <code>aria-selected</code> · <code>tabindex</code></td><td>컴포넌트</td><td>자동으로 채운다</td></tr>
+    <tr><td><code>id</code></td><td>컴포넌트</td><td><code>{data-ns-panel}-tab</code>. <strong>직접 쓰면 덮지 않는다</strong></td></tr>
+    <tr><td><code>.ns-tabs__count</code></td><td>소비자</td><td>건수 배지. <strong><code>0</code> 도 그린다</strong> — 배지가 없는 것과 처리할 게 없는 것은 다르다</td></tr>
+  </table>
+
+  <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>React 프롭</th></tr>
+    <tr><td><code>ns-tab-change</code></td><td><code>{ id }</code></td><td><code>onNsTabChange</code></td></tr>
+  </table>
+
+  <h3>키보드</h3>
+  <table>
+    <tr><th>키</th><th>동작</th></tr>
+    <tr><td><code>←</code> <code>→</code></td><td>이전·다음 탭으로. 끝에서 순환한다</td></tr>
+    <tr><td><code>Home</code> <code>End</code></td><td>첫·마지막 탭으로</td></tr>
+    <tr><td><code>Tab</code></td><td>탭 줄을 한 번에 지나 패널로 간다 (활성 탭만 <code>tabindex="0"</code>)</td></tr>
+  </table>
+  <p>
+    화살표를 누르면 포커스와 선택이 함께 움직인다(자동 활성화). 탭 전환이 싼 화면에 맞는 패턴이다.
+  </p>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-tabs aria-label="관리자 목록" default-active="live">
+      <button type="button" data-ns-tab="live" data-ns-panel="panel-live">운영 중</button>
+      <button type="button" data-ns-tab="requests" data-ns-panel="panel-requests">
+        신청 <span class="ns-tabs__count">3</span>
+      </button>
+    </ns-tabs>
+
+    <div id="panel-live" role="tabpanel" aria-labelledby="panel-live-tab" tabindex="0">…</div>
+  </script>
+
+  <h3>배선</h3>
+  <script type="text/plain">
+    // 비제어면 배선이 필요 없다. 패널을 갈아 끼울 때만 듣는다.
+    tabs.addEventListener("ns-tab-change", (e) => showPanel(e.detail.id));
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsTabs, tabIdFor } from "@neosimplix/common-ui/react";
+
+    const [tab, setTab] = useState("live");
+
+    <NsTabs aria-label="관리자 목록" active={tab} onNsTabChange={(e) => setTab(e.detail.id)}>
+      <button type="button" data-ns-tab="live" data-ns-panel="panel-live">운영 중</button>
+      <button type="button" data-ns-tab="requests" data-ns-panel="panel-requests">
+        신청 <span className="ns-tabs__count">3</span>
+      </button>
+    </NsTabs>
+
+    <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={tabIdFor(`panel-${tab}`)} tabIndex={0}>
+      {tab} 패널
+    </div>
+  </script>
+
+  <h3>주의</h3>
+  <ul>
+    <li><code>&lt;ns-tabs active="live"&gt;</code> 는 <strong>무시된다.</strong> 프로퍼티 전용이라 관찰되지 않는다 — 콘솔이 경고한다. HTML 은 <code>default-active</code> 를 쓴다.</li>
+    <li>패널의 <code>aria-labelledby</code> 는 <code>{data-ns-panel}-tab</code> 이다. React 는 <code>tabIdFor()</code> 로 계산한다.</li>
+    <li>탭 버튼 안에 다른 버튼을 넣지 않는다. <code>click</code> 위임이 가장 가까운 <code>[data-ns-tab]</code> 을 찾으므로 안쪽 버튼도 탭 전환을 일으킨다.</li>
+  </ul>
+
   <h2 id="ns-header">ns-header</h2>
   <p>
     좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
@@ -2936,6 +3049,16 @@
       paginationLog.textContent = `ns-page-change  page=${e.detail.page}`;
     });
   }
+
+  /*
+    탭 데모. 비제어라 활성 표시는 컴포넌트가 하고, 여기서는 패널 글자만 바꾼다.
+    id 에 tabs-demo- 접두사를 붙인 것은 다른 절과 겹치지 않게 하기 위해서다.
+  */
+  const tabsDemo = document.getElementById("tabs-demo");
+  const tabsPanel = tabsDemo.querySelector("[role='tabpanel']");
+  tabsDemo.addEventListener("ns-tab-change", (e) => {
+    tabsPanel.textContent = `${e.detail.id} 패널`;
+  });
 </script>
 
 </body>

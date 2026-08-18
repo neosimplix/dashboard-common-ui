@@ -8,6 +8,7 @@ import "./components/pagination/ns-pagination.js";
 import "./components/sidebar/ns-sidebar.js";
 import "./components/skeleton/ns-skeleton.js";
 import "./components/table/ns-table.js";
+import "./components/tabs/ns-tabs.js";
 
 export { NsDialog } from "./components/dialog/ns-dialog.js";
 export { NsHeader } from "./components/header/ns-header.js";
@@ -19,6 +20,7 @@ export { NsPagination } from "./components/pagination/ns-pagination.js";
 export { NsSidebar } from "./components/sidebar/ns-sidebar.js";
 export { NsSkeleton } from "./components/skeleton/ns-skeleton.js";
 export { NsTable } from "./components/table/ns-table.js";
+export { NsTabs, tabIdFor } from "./components/tabs/ns-tabs.js";
 
 /*
   스프라이트 등록. svg 를 함께 내보내는 이유는 lit 이 이 패키지의 의존성이라
@@ -38,4 +40,5 @@ export type {
   NsSortDirection,
   NsSelectChangeDetail,
   NsPageChangeDetail,
+  NsTabChangeDetail,
 } from "./types.js";

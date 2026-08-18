@@ -53,6 +53,16 @@ export interface NsPageChangeDetail {
   page: number;
 }
 
+/**
+ * ns-tabs 의 탭 전환. 요청되는 다음 탭이다.
+ *
+ * `id` 는 탭 버튼의 `data-ns-tab` 값이다. **탭 버튼의 DOM `id` 가 아니다** —
+ * 그쪽은 `data-ns-panel` 에서 파생된다(`tabIdFor`).
+ */
+export interface NsTabChangeDetail {
+  id: string;
+}
+
 declare global {
   interface HTMLElementEventMap {
     "ns-toggle": CustomEvent<NsToggleDetail>;
@@ -61,5 +71,6 @@ declare global {
     "ns-sort": CustomEvent<NsSortDetail>;
     "ns-select-change": CustomEvent<NsSelectChangeDetail>;
     "ns-page-change": CustomEvent<NsPageChangeDetail>;
+    "ns-tab-change": CustomEvent<NsTabChangeDetail>;
   }
 }

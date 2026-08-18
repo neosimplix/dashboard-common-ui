@@ -41,12 +41,14 @@ import {
   NsPagination,
   NsSkeleton,
   NsTable,
+  NsTabs,
   PageHeading,
   Select,
   Sidebar,
   Textarea,
   registerIcons,
   svg,
+  tabIdFor,
 } from "../src/react/index.js";
 import type { NsDialogCloseReason, NsSortDetail } from "../src/react/index.js";
 
@@ -98,6 +100,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [rows, setRows] = useState<string[]>([]);
 
   const [page, setPage] = useState(1);
+
+  const [tab, setTab] = useState("live");
 
   // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
   const onDialogClose = (reason: NsDialogCloseReason) => {
@@ -244,6 +248,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
               page={page}
               onNsPageChange={(e) => setPage(e.detail.page)}
             />
+            {/* e.detail 을 실제로 읽어 ns-tab-change 의 detail 타입이 검사되게 한다. */}
+            <NsTabs aria-label="관리자 목록" active={tab} onNsTabChange={(e) => setTab(e.detail.id)}>
+              <button type="button" data-ns-tab="live" data-ns-panel="panel-live">운영 중</button>
+              <button type="button" data-ns-tab="requests" data-ns-panel="panel-requests">
+                신청 <span className="ns-tabs__count">3</span>
+              </button>
+            </NsTabs>
+            <div
+              id={`panel-${tab}`}
+              role="tabpanel"
+              aria-labelledby={tabIdFor(`panel-${tab}`)}
+              tabIndex={0}
+            >
+              {tab} 패널
+            </div>
             <div style={{ display: "flex", height: "6rem" }}>
               <Message>표시할 항목이 없습니다.</Message>
             </div>
