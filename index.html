@@ -2274,6 +2274,12 @@
     <div id="tabs-demo-panel-live" role="tabpanel" aria-labelledby="tabs-demo-panel-live-tab" tabindex="0">
       운영 중 패널
     </div>
+    <div id="tabs-demo-panel-requests" role="tabpanel" aria-labelledby="tabs-demo-panel-requests-tab" tabindex="0" hidden>
+      신청 패널
+    </div>
+    <div id="tabs-demo-panel-inquiries" role="tabpanel" aria-labelledby="tabs-demo-panel-inquiries-tab" tabindex="0" hidden>
+      문의 패널
+    </div>
   </template>
   <div class="demo block" id="tabs-demo" style="padding:var(--ns-space-4)"></div>
   <pre></pre>
@@ -3051,14 +3057,39 @@
   }
 
   /*
-    탭 데모. 비제어라 활성 표시는 컴포넌트가 하고, 여기서는 패널 글자만 바꾼다.
+    탭 데모. 비제어라 활성 표시(aria-selected·tabindex·밑줄)는 컴포넌트가 하고,
+    여기서는 패널을 갈아 끼우는 것만 한다 — 소비자가 실제로 쓰는 배선이 이 모양이다.
     id 에 tabs-demo- 접두사를 붙인 것은 다른 절과 겹치지 않게 하기 위해서다.
+
+    이웃 배선들과 같은 존재 가드를 둔다. 이 파일의 배선 스크립트는 하나뿐이라
+    여기서 예외가 나면 아래 문장이 전부 실행되지 않는다 — 지금은 이것이 마지막이라
+    피해가 없지만 다음 절이 아래에 붙는 순간 조용한 고장이 된다.
   */
   const tabsDemo = document.getElementById("tabs-demo");
-  const tabsPanel = tabsDemo.querySelector("[role='tabpanel']");
-  tabsDemo.addEventListener("ns-tab-change", (e) => {
-    tabsPanel.textContent = `${e.detail.id} 패널`;
-  });
+  const tabsDemoTabs = tabsDemo?.querySelector("ns-tabs");
+  if (tabsDemo && tabsDemoTabs) {
+    const tabsPanels = [...tabsDemo.querySelectorAll("[role='tabpanel']")];
+    // data-ns-tab 값(= 이벤트의 detail.id)에서 패널 id 로 가는 길. 탭 버튼이 갖고 있다.
+    const tabsPanelIdFor = (id) =>
+      tabsDemoTabs.querySelector(`[data-ns-tab="${id}"]`)?.dataset.nsPanel;
+
+    const showTabsPanel = (id) => {
+      const wanted = tabsPanelIdFor(id);
+      for (const panel of tabsPanels) panel.hidden = panel.id !== wanted;
+    };
+
+    /*
+      첫 화면을 default-active 에 맞춘다. 첫 ns-tab-change 를 기다리면 아무 탭도
+      누르지 않은 상태에서 마크업의 hidden 과 컴포넌트가 고른 활성 탭이 어긋날 수
+      있다 — 초기 상태를 이벤트에 의존시키지 않는다.
+    */
+    showTabsPanel(tabsDemoTabs.getAttribute("default-active"));
+
+    // 데모 컨테이너에 붙인다. ns-tab-change 는 composed 라 document 까지 올라온다.
+    tabsDemo.addEventListener("ns-tab-change", (e) => {
+      showTabsPanel(e.detail.id);
+    });
+  }
 </script>
 
 </body>
