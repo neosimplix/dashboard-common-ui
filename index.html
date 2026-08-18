@@ -116,6 +116,7 @@
       <ns-nav-item href="#ns-table-tag" label="ns-table" badge="TT"></ns-nav-item>
       <ns-nav-item href="#ns-pagination" label="ns-pagination" badge="PG"></ns-nav-item>
       <ns-nav-item href="#ns-tabs" label="ns-tabs" badge="TS"></ns-nav-item>
+      <ns-nav-item href="#ns-multi-select" label="ns-multi-select" badge="MS"></ns-nav-item>
       <ns-nav-item href="#ns-header" label="ns-header" badge="HD"></ns-nav-item>
       <ns-nav-item href="#ns-sidebar" label="ns-sidebar" badge="SB"></ns-nav-item>
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
@@ -2382,6 +2383,103 @@
     <li>탭 버튼 안에 다른 버튼을 넣지 않는다. <code>click</code> 위임이 가장 가까운 <code>[data-ns-tab]</code> 을 찾으므로 안쪽 버튼도 탭 전환을 일으킨다.</li>
   </ul>
 
+  <h2 id="ns-multi-select">ns-multi-select</h2>
+  <p>
+    후보가 길 때 쓰는 다중 선택 — 선택 칩 줄 · 검색 · 높이 제한 목록.
+    <strong>정렬 순서는 호출부가 <code>options</code> 배열 순서로 정한다.</strong>
+  </p>
+  <p>
+    Light DOM 이다. 안쪽의 칩·검색·체크박스가 전부
+    <code>.ns-chip</code>·<code>.ns-input</code>·<code>.ns-checkbox</code> 라
+    shadow 였다면 셋을 다시 적어야 했다.
+  </p>
+  <p>
+    <strong><code>options</code> 와 <code>value</code> 는 배열이라 속성으로 쓸 수 없다.</strong>
+    순수 HTML 에서도 JS 로 대입한다.
+  </p>
+
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="ns-field">
+      <label class="ns-field__label" for="multi-select-demo-search">담당자</label>
+      <ns-multi-select
+        id="multi-select-demo-el"
+        input-id="multi-select-demo-search"
+        input-describedby="multi-select-demo-hint"
+        search-placeholder="이름으로 검색"
+        empty-message="해당하는 사람이 없습니다"
+      ></ns-multi-select>
+      <span class="ns-field__hint" id="multi-select-demo-hint">부서명으로도 검색됩니다</span>
+    </div>
+  </template>
+  <div class="demo block" id="multi-select-demo" style="max-width:22rem;padding:var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3>프로퍼티</h3>
+  <table>
+    <tr><th>이름</th><th>속성</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>options</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td><code>{ value, label, meta? }[]</code>. 받은 순서를 건드리지 않는다</td></tr>
+    <tr><td><code>value</code></td><td>없음 (프로퍼티 전용)</td><td><code>undefined</code></td><td>제어 모드의 선택 집합</td></tr>
+    <tr><td><code>defaultValue</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td>비제어 초기 선택</td></tr>
+    <tr><td><code>searchPlaceholder</code></td><td><code>search-placeholder</code></td><td><code>"검색"</code></td><td></td></tr>
+    <tr><td><code>emptyMessage</code></td><td><code>empty-message</code></td><td><code>"결과가 없습니다"</code></td><td></td></tr>
+    <tr><td><code>inputId</code></td><td><code>input-id</code></td><td><code>""</code></td><td>검색 input 의 <code>id</code>. <code>.ns-field__label</code> 의 <code>for</code> 가 가리킬 곳</td></tr>
+    <tr><td><code>inputDescribedby</code></td><td><code>input-describedby</code></td><td><code>""</code></td><td>검색 input 의 <code>aria-describedby</code></td></tr>
+  </table>
+
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>설명</th></tr>
+    <tr><td><code>.ns-multi-select__chips</code></td><td>선택 칩 줄. 선택이 있을 때만 렌더된다</td></tr>
+    <tr><td><code>.ns-multi-select__list</code></td><td>높이 제한 목록. <code>max-height: 15rem</code></td></tr>
+    <tr><td><code>.ns-multi-select__empty</code></td><td>검색 결과가 없을 때</td></tr>
+  </table>
+  <p>셋 다 이 컴포넌트가 렌더한다 — 소비자가 쓰는 이름이 아니라 덮어쓸 때 쓰는 이름이다.</p>
+
+  <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>React 프롭</th></tr>
+    <tr><td><code>ns-multi-select-change</code></td><td><code>{ values }</code> — <strong>요청되는 다음 전체 집합</strong></td><td><code>onNsMultiSelectChange</code></td></tr>
+  </table>
+
+  <h3>HTML</h3>
+  <script type="text/plain">
+    <ns-multi-select id="owners" input-id="owners-search" search-placeholder="이름으로 검색">
+    </ns-multi-select>
+  </script>
+
+  <h3>배선</h3>
+  <script type="text/plain">
+    const el = document.getElementById("owners");
+    el.options = [
+      { value: "kim", label: "김담당", meta: "플랫폼개발팀" },
+      { value: "park", label: "박승인", meta: "마케팅팀" },
+    ];
+    el.defaultValue = ["kim"];
+    el.addEventListener("ns-multi-select-change", (e) => save(e.detail.values));
+  </script>
+
+  <h3>React</h3>
+  <script type="text/plain">
+    import { NsMultiSelect } from "@neosimplix/common-ui/react";
+
+    const [owners, setOwners] = useState<string[]>(["kim"]);
+
+    <NsMultiSelect
+      options={OWNERS}
+      value={owners}
+      onNsMultiSelectChange={(e) => setOwners(e.detail.values)}
+      searchPlaceholder="이름으로 검색"
+    />
+  </script>
+
+  <h3>주의</h3>
+  <ul>
+    <li><code>&lt;ns-multi-select value="…"&gt;</code> 같은 속성은 <strong>무시된다.</strong> 콘솔이 경고한다.</li>
+    <li><code>id</code> 를 안쪽 input 에 옮기지 않는다. <code>input-id</code> 를 따로 받는 이유가 그것이다 — 옮기면 문서에 같은 <code>id</code> 가 둘 생긴다.</li>
+    <li>검색은 <code>label</code> 과 <code>meta</code> 둘 다에 걸린다. 화면에 보이는 문자열만 검색어가 된다.</li>
+  </ul>
+
   <h2 id="ns-header">ns-header</h2>
   <p>
     좌측 토글 버튼과 프로젝트 이름은 공통이고, 우측은 <code>actions</code> slot 으로
@@ -3110,6 +3208,27 @@
     tabsDemo.addEventListener("ns-tab-change", (e) => {
       showTabsPanel(e.detail.id);
     });
+  }
+
+  /*
+    다중 선택 데모. 비제어로 둔다 — options 와 defaultValue 만 넣으면
+    선택 상태는 컴포넌트가 갖는다.
+
+    데모 컨테이너 안에서 찾는다. <template class="ex"> 안에 쓴 id 는 복제되면
+    데모 안에 그대로 들어가므로 getElementById 로 찾지 않는다 — 템플릿 안의
+    원본과 복제본이 같은 이름을 갖는다. (구조 검사의 중복 id grep 은 텍스트를
+    보므로 주석에도 그 이름을 id="…" 형태로 적지 않는다.)
+  */
+  const multiSelectDemo = document.querySelector("#multi-select-demo ns-multi-select");
+  if (multiSelectDemo) {
+    multiSelectDemo.options = [
+      { value: "kim", label: "김담당", meta: "플랫폼개발팀" },
+      { value: "park", label: "박승인", meta: "마케팅팀" },
+      { value: "choi", label: "최데이터", meta: "데이터분석팀" },
+      { value: "han", label: "한지우", meta: "경영지원팀" },
+      { value: "jung", label: "정하늘", meta: "세일즈팀" },
+    ];
+    multiSelectDemo.defaultValue = ["kim", "park"];
   }
 </script>
 

@@ -1,6 +1,7 @@
 import "./components/dialog/ns-dialog.js";
 import "./components/header/ns-header.js";
 import "./components/icon/ns-icon.js";
+import "./components/multi-select/ns-multi-select.js";
 import "./components/nav-group/ns-nav-group.js";
 import "./components/nav-item/ns-nav-item.js";
 import "./components/page-heading/ns-page-heading.js";
@@ -13,6 +14,8 @@ import "./components/tabs/ns-tabs.js";
 export { NsDialog } from "./components/dialog/ns-dialog.js";
 export { NsHeader } from "./components/header/ns-header.js";
 export { NsIcon } from "./components/icon/ns-icon.js";
+export { NsMultiSelect } from "./components/multi-select/ns-multi-select.js";
+export type { NsMultiSelectOption } from "./components/multi-select/ns-multi-select.js";
 export { NsNavGroup } from "./components/nav-group/ns-nav-group.js";
 export { NsNavItem } from "./components/nav-item/ns-nav-item.js";
 export { NsPageHeading } from "./components/page-heading/ns-page-heading.js";
@@ -41,4 +44,5 @@ export type {
   NsSelectChangeDetail,
   NsPageChangeDetail,
   NsTabChangeDetail,
+  NsMultiSelectChangeDetail,
 } from "./types.js";

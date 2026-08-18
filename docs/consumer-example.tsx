@@ -36,6 +36,7 @@ import {
   Message,
   NsHeader,
   NsIcon,
+  NsMultiSelect,
   NsNavGroup,
   NsNavItem,
   NsPagination,
@@ -113,6 +114,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [page, setPage] = useState(1);
 
   const [tab, setTab] = useState("live");
+
+  const [owners, setOwners] = useState<string[]>(["kim"]);
 
   // reason 을 실제로 읽어 detail 타입이 검사되게 한다.
   const onDialogClose = (reason: NsDialogCloseReason) => {
@@ -281,6 +284,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 {t.label} 패널
               </div>
             ))}
+            {/* e.detail 을 실제로 읽어 ns-multi-select-change 의 detail 타입이 검사되게 한다. */}
+            <NsMultiSelect
+              options={[
+                { value: "kim", label: "김담당", meta: "플랫폼개발팀" },
+                { value: "park", label: "박승인", meta: "마케팅팀" },
+              ]}
+              value={owners}
+              onNsMultiSelectChange={(e) => setOwners(e.detail.values)}
+              searchPlaceholder="이름으로 검색"
+            />
             <div style={{ display: "flex", height: "6rem" }}>
               <Message>표시할 항목이 없습니다.</Message>
             </div>

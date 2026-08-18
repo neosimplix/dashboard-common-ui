@@ -63,6 +63,19 @@ export interface NsTabChangeDetail {
   id: string;
 }
 
+/**
+ * ns-multi-select 의 선택 변경. **요청되는 다음 전체 집합**이다 — 바뀐 하나가 아니다.
+ *
+ * 전체 집합으로 두는 이유는 소비자 처리가 한 줄이 되기 때문이다 —
+ * `setOwners(e.detail.values)`. `ns-select-change` 와 같은 판단이다.
+ *
+ * 이름이 `ns-select-change` 와 다른 이유는 그 이름을 ns-table 이 이미 쓰기
+ * 때문이다. HTMLElementEventMap 은 전역이라 같은 이름에 다른 detail 을 실을 수 없다.
+ */
+export interface NsMultiSelectChangeDetail {
+  values: string[];
+}
+
 declare global {
   interface HTMLElementEventMap {
     "ns-toggle": CustomEvent<NsToggleDetail>;
@@ -72,5 +85,6 @@ declare global {
     "ns-select-change": CustomEvent<NsSelectChangeDetail>;
     "ns-page-change": CustomEvent<NsPageChangeDetail>;
     "ns-tab-change": CustomEvent<NsTabChangeDetail>;
+    "ns-multi-select-change": CustomEvent<NsMultiSelectChangeDetail>;
   }
 }

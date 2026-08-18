@@ -585,6 +585,44 @@
     color: var(--ns-color-accent-fg);
   }
 
+  /*
+    ns-multi-select 는 자기 내용을 렌더한다(ns-pagination 과 같다). 안쪽의
+    칩·검색·체크박스는 전부 위에서 이미 정의한 .ns-chip · .ns-input · .ns-checkbox
+    다 — Light DOM 인 이유가 그것이다.
+  */
+  ns-multi-select {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ns-space-2);
+  }
+
+  .ns-multi-select__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ns-space-2);
+  }
+
+  /*
+    15rem 은 한 곳에만 있고 테마로 변할 이유가 없는 구조적 상수라 리터럴이다.
+    참고 구현이 이 값에 이름을 붙였던 것은 CSS Modules 라 재사용 수단이 그것뿐이었기
+    때문이지, 토큰이어야 해서가 아니다.
+  */
+  .ns-multi-select__list {
+    max-height: 15rem;
+    overflow-y: auto;
+    border: 1px solid var(--ns-color-line);
+    border-radius: var(--ns-radius-control);
+    padding: var(--ns-space-1) var(--ns-space-3);
+  }
+
+  .ns-multi-select__empty {
+    margin: 0;
+    padding: var(--ns-space-3) 0;
+    color: var(--ns-color-fg-subtle);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+  }
+
   .ns-card {
     width: 100%;
     border: 1px solid var(--ns-color-line);

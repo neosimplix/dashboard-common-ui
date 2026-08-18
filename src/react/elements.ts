@@ -4,6 +4,7 @@ import { createComponent, type EventName } from "@lit/react";
 import { NsDialog as NsDialogElement } from "../components/dialog/ns-dialog.js";
 import { NsHeader as NsHeaderElement } from "../components/header/ns-header.js";
 import { NsIcon as NsIconElement } from "../components/icon/ns-icon.js";
+import { NsMultiSelect as NsMultiSelectElement } from "../components/multi-select/ns-multi-select.js";
 import { NsNavGroup as NsNavGroupElement } from "../components/nav-group/ns-nav-group.js";
 import { NsNavItem as NsNavItemElement } from "../components/nav-item/ns-nav-item.js";
 import { NsPageHeading as NsPageHeadingElement } from "../components/page-heading/ns-page-heading.js";
@@ -20,6 +21,7 @@ import type {
   NsSortDetail,
   NsPageChangeDetail,
   NsTabChangeDetail,
+  NsMultiSelectChangeDetail,
 } from "../types.js";
 
 /*
@@ -161,5 +163,21 @@ export const NsTabs = createComponent({
   events: {
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsTabChange: "ns-tab-change" as EventName<CustomEvent<NsTabChangeDetail>>,
+  },
+});
+
+/*
+  shim 이 필요 없다. options·value 어느 것도 HTML 전역 속성과 충돌하지 않으므로
+  평범한 래퍼를 그대로 공개한다 — 그래서 EventName<> 검사가 고전적인 경로로
+  동작한다(docs/consumer-example.tsx 가 e.detail 을 직접 읽는다).
+*/
+export const NsMultiSelect = createComponent({
+  react: React,
+  tagName: "ns-multi-select",
+  elementClass: NsMultiSelectElement,
+  events: {
+    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+    onNsMultiSelectChange:
+      "ns-multi-select-change" as EventName<CustomEvent<NsMultiSelectChangeDetail>>,
   },
 });
