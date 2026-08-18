@@ -1272,8 +1272,11 @@ export function tabIdFor(panelId: string): string {
  * </ns-tabs>
  * ```
  *
- * **shadow 로 만들 수 없다.** `aria-controls` 는 IDREF 라 shadow 경계를 넘지
- * 못해서, 탭이 패널을 가리키는 연결이 에러 없이 끊긴다.
+ * **shadow 로 만들 수 없다.** `LitElement` 는 템플릿으로 소비자 자식을 덮어쓰고,
+ * slot 없는 shadow root 는 그 자식을 감춘다. `controls.css` 도 shadow 안에 닿지 않는다.
+ *
+ * (`aria-controls` 가 IDREF 라서가 **아니다.** 이 컴포넌트는 버튼을 렌더하지 않으므로
+ * slot 을 둔 shadow root 였다면 버튼이 문서 트리에 남아 IDREF 는 그대로 해결된다.)
  */
 export class NsTabs extends ReactiveElement {
   /*
@@ -1650,8 +1653,11 @@ Expected: FAIL — `ns-tab-change` 가 React 매핑에 없다.
     <code>ns-table</code> 이 셀을 렌더하지 않는 것과 같은 자리다.
   </p>
   <p>
-    <strong>shadow 로 만들 수 없다.</strong> <code>aria-controls</code> 는 IDREF 라
-    shadow 경계를 넘지 못해서, 탭이 패널을 가리키는 연결이 에러 없이 끊긴다.
+    <strong>shadow 로 만들 수 없다.</strong> <code>LitElement</code> 는 템플릿으로 소비자
+    자식을 덮어쓰고, slot 없는 shadow root 는 그 자식을 감춘다.
+    <code>controls.css</code> 도 shadow 안에 닿지 않는다.
+    (<code>aria-controls</code> 가 IDREF 라서가 <strong>아니다</strong> — 버튼을 렌더하지
+    않으므로 slot 을 둔 shadow root 였다면 버튼이 문서 트리에 남아 IDREF 는 해결된다.)
   </p>
   <p>
     <strong>호스트에 <code>role="tablist"</code> 를 쓴다.</strong> ARIA 의 tablist↔tab
@@ -3173,7 +3179,9 @@ npm run build && node --input-type=module -e "import('./dist/index.js').then(m=>
 
 불변 규칙은 "호스트의 속성을 쓰지 않는다" 다. `setAttribute` 로 소비자가 쓴 속성을 덮으면 문서화된 override 가 조용히 죽기 때문이다.
 
-`ns-tabs` 는 호스트에 `role="tablist"` 를 쓴다. **둘 곳이 거기밖에 없다** — ARIA 의 tablist↔tab 소유 관계는 DOM 부모여야 하고, 탭 버튼들의 부모는 호스트다. shadow 안의 `div` 에 `role="tablist"` 를 주면 그 안에 탭이 없으므로 관계가 성립하지 않고, 애초에 `aria-controls` 가 IDREF 라 shadow 경계를 넘지 못한다.
+`ns-tabs` 는 호스트에 `role="tablist"` 를 쓴다. **둘 곳이 거기밖에 없다** — ARIA 의 tablist↔tab 소유 관계는 DOM 부모여야 하고, 탭 버튼들의 부모는 호스트다. shadow 안의 `div` 에 `role="tablist"` 를 주면 그 안에 탭이 없으므로 관계가 성립하지 않는다.
+
+**`aria-controls` 가 shadow 경계를 못 넘는다는 이유를 쓰지 않는다 — 사실이 아니다.** 이 컴포넌트는 버튼을 렌더하지 않으므로, slot 을 둔 shadow root 였다면 버튼이 문서 트리에 남아 IDREF 가 그대로 해결된다. Light DOM 인 진짜 이유는 셋이다: `LitElement` 가 템플릿으로 소비자 자식을 덮어쓰고, slot 없는 shadow root 는 그 자식을 감추며, `controls.css` 가 shadow 안에 닿지 않는다. 이 문단을 `docs/gotchas.md` 로 옮길 때 그 셋을 쓴다.
 
 규칙이 실제로 막으려던 것은 **소비자가 쓴 값을 덮는 것**이므로, 이미 `role` 이 있으면 건드리지 않는 조건부 쓰기로 그 성질을 지킨다.
 
