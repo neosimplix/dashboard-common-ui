@@ -2,7 +2,15 @@
 import "./ns-dialog.js";
 
 export interface NsAlertOptions {
-  /** 대화상자 제목. 비우면 제목 줄 없이 본문만 나온다. */
+  /**
+   * 대화상자 제목. **타입상 선택이지만 실질적으로 필수다.**
+   *
+   * ns-dialog 는 `<dialog aria-labelledby="dialog-heading">` 로 이 제목을 가리키므로,
+   * 비우면 모달에 접근 가능한 이름이 없다 — 스크린리더가 "대화상자" 라고만 읽는다.
+   *
+   * 비워도 제목 줄이 사라지지는 않는다. ns-dialog 는 헤더를 조건 없이 그리므로
+   * 닫기 버튼과 아래 경계선은 그대로 남고 글자만 빈다.
+   */
   heading?: string;
   /** 본문. 문자열만 받는다 — textContent 로 들어가므로 HTML 주입 경로가 없다. */
   message: string;
@@ -22,13 +30,20 @@ export interface NsConfirmOptions extends NsAlertOptions {
  * 대화상자를 만들어 띄우고, 닫힐 때 resolve 한다.
  *
  * 비제어로 쓴다 — 이 대화상자는 소비자가 상태를 갖지 않는 것이 목적이므로
- * `show()`/네이티브 닫힘 경로가 맞다.
+ * `show()`/네이티브 닫힘 경로가 맞다. 제어 모드가 아니므로 `show()`·`close()` 가
+ * 경고하지 않는다.
  */
 function open(
   options: NsConfirmOptions,
   withCancel: boolean,
   resolve: (ok: boolean) => void,
 ): void {
+  /*
+    포커스를 돌려줄 곳. 대화상자를 열기 전에 잡아 둔다.
+    아래 finish() 의 복원 주석에 왜 브라우저에만 맡기지 않는지 적어 뒀다.
+  */
+  const opener = document.activeElement;
+
   const el = document.createElement("ns-dialog");
   el.heading = options.heading ?? "";
 
@@ -37,7 +52,9 @@ function open(
   /*
     ns-dialog 의 .body 가 이미 패딩을 주므로 <p> 의 UA 여백은 군더더기다.
     클래스를 만들지 않는 이유: 이 <p> 는 이 함수만 만들고 소비자가 손댈 수 없어서,
-    controls.css 에 이름을 하나 더 늘릴 근거가 없다.
+    controls.css 에 이름을 하나 더 늘릴 근거가 없다. 인라인 스타일인 것도 같은
+    이유로 의도된 것이다 — 소비자가 이 <p> 에 선택자를 걸 방법이 없으므로
+    덮을 수 없는 값이고, 덮을 수 있어야 할 이유도 없다.
   */
   body.style.margin = "0";
   el.append(body);
@@ -47,8 +64,69 @@ function open(
   const finish = (ok: boolean): void => {
     if (settled) return;
     settled = true;
-    el.remove();
-    resolve(ok);
+
+    /*
+      순서가 전부다.
+
+      remove() 만 하면 대화상자가 top layer 에서 빠지기만 하고 네이티브 "close the
+      dialog" 단계가 돌지 않는다. 그 단계에 포커스 복원이 들어 있어서, 건너뛰면
+      확인·취소로 닫았을 때 포커스가 <body> 로 떨어지고 다음 Tab 이 문서 맨 위에서
+      다시 시작한다. ESC 는 브라우저가 직접 닫으니 무관하지만 나머지 네 경로가 전부
+      이 문제를 갖는다 — 백드롭·닫기 버튼도 ns-dialog 의 updated() 를 타긴 하는데
+      그때는 이미 제거된 뒤라 늦다.
+
+      ns-dialog 의 close() 는 #innerOpen 을 내리고 requestUpdate() 만 한다. 실제
+      네이티브 close() 는 다음 갱신의 updated() 에서 돈다. 그래서 그 갱신을 기다린
+      뒤에 지운다 — 뒤집으면 제거가 먼저 포커스를 <body> 로 옮겨서 이어 도는
+      복원 조건을 깬다. 마이크로태스크 한 번이라 그 사이에 프레임은 그려지지 않는다.
+    */
+    el.close();
+
+    const cleanup = (): void => {
+      el.remove();
+      /*
+        브라우저의 복원은 "지금 포커스가 대화상자 안에 있을 것" 을 조건으로 하는데,
+        확인·취소 버튼은 slot 으로 배정될 뿐 shadow 의 <dialog> 의 노드 트리 자손이
+        아니다. 그 조건을 노드 트리로 보는 구현에서는 하필 그 두 경로만 복원이
+        빠진다. 직접 한 번 더 맞춰 다섯 경로를 같게 만든다 — 이미 복원됐다면 같은
+        요소라 아무 일도 일어나지 않는다.
+      */
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
+      resolve(ok);
+    };
+    /*
+      성공·실패 양쪽에 같은 함수를 건다. 갱신 중 예외로 updateComplete 가 reject
+      되면 then(cleanup) 하나로는 요소가 문서에 남고 Promise 가 영영 안 풀린다.
+    */
+    void el.updateComplete.then(cleanup, cleanup);
+  };
+
+  /*
+    초기 포커스를 직접 준다. autofocus 속성은 여기서 죽는다 — 이유가 둘 겹친다.
+
+    ① ns-dialog 의 hasFooter 는 false 로 시작하므로 첫 렌더가 footer 를
+       `[hidden]` 으로 그리고, `.footer[hidden] { display: none }` 이다. 그런데
+       showModal() 은 바로 그 첫 갱신의 updated() 에서 동기로 불린다. 초기 포커스를
+       정하는 시점에 취소 버튼은 display:none 안이라 포커스 가능 영역이 아니다.
+    ② 취소 버튼은 slot 으로 배정될 뿐 shadow 의 <dialog> 의 노드 트리 자손이 아니라
+       autofocus 후보 탐색이 닿는지가 구현에 달렸다.
+
+    hasFooter 는 slotchange 로 뒤늦게 켜지고, 그 slotchange 는 첫 갱신이 끝난 뒤의
+    마이크로태스크에서 돈다. 즉 갱신을 한 번 더 기다려야 한다.
+
+    갱신 횟수를 세지 않는다. 첫 updateComplete 는 hasFooter 가 켜지기 전에 이미
+    true 로 풀리므로 `while (!(await updateComplete))` 관용구가 통하지 않고, 몇 번
+    기다려야 하는지는 lit 과 브라우저의 마이크로태스크 순서에 달린 값이다. 대신
+    포커스가 실제로 갔는지를 보고 끝낸다 — 조건을 직접 관찰하므로 그 순서가 바뀌어도
+    어긋나지 않는다. 상한이 있어 어떤 경우에도 유한 번에 멈춘다.
+  */
+  const focusInitial = async (target: HTMLButtonElement): Promise<void> => {
+    for (let i = 0; i < 5; i++) {
+      await el.updateComplete;
+      if (settled) return;              // 기다리는 사이에 닫혔다
+      target.focus();
+      if (document.activeElement === target) return;
+    }
   };
 
   const confirm = document.createElement("button");
@@ -63,14 +141,16 @@ function open(
   const footer = document.createElement("div");
   footer.slot = "footer";
 
+  /** 파괴적 확인에서는 초기 포커스가 취소에 간다. */
+  let initialFocus: HTMLButtonElement | null = null;
+
   if (withCancel) {
     const cancel = document.createElement("button");
     cancel.type = "button";
     cancel.className = "ns-button ns-button--outline ns-button--sm";
     cancel.textContent = options.cancelLabel ?? "취소";
     cancel.addEventListener("click", () => finish(false));
-    // 파괴적 확인에서는 초기 포커스가 취소에 간다.
-    if (options.tone === "danger") cancel.autofocus = true;
+    if (options.tone === "danger") initialFocus = cancel;
     footer.append(cancel);
   }
 
@@ -82,6 +162,8 @@ function open(
 
   document.body.append(el);
   el.show();
+
+  if (initialFocus !== null) void focusInitial(initialFocus);
 }
 
 /**

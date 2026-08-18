@@ -2579,7 +2579,7 @@
   <h4>인자</h4>
   <table>
     <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>heading</code></td><td><code>""</code></td><td>제목. 비우면 제목 줄이 없다</td></tr>
+    <tr><td><code>heading</code></td><td><code>""</code></td><td><strong>타입상 선택이지만 실질적으로 필수다.</strong> <code>&lt;dialog aria-labelledby&gt;</code> 가 이 제목을 가리키므로 비우면 모달에 접근 가능한 이름이 없다. 비워도 제목 줄이 사라지지는 않는다 — 닫기 버튼과 경계선은 그대로 남고 글자만 빈다</td></tr>
     <tr><td><code>message</code></td><td>—</td><td>본문. 문자열만</td></tr>
     <tr><td><code>confirmLabel</code></td><td><code>"확인"</code></td><td></td></tr>
     <tr><td><code>cancelLabel</code></td><td><code>"취소"</code></td><td><code>nsConfirm</code> 만</td></tr>
@@ -2608,8 +2608,10 @@
   <h4>주의</h4>
   <ul>
     <li><strong>폼이 들어가는 모달은 이 API 로 만들지 않는다.</strong> 문자열만 받는다 — <code>ns-dialog</code> 로 직접 만든다.</li>
+    <li><strong><code>heading</code> 을 항상 준다.</strong> 비우면 모달에 접근 가능한 이름이 없다 — 스크린리더가 "대화상자" 라고만 읽는다.</li>
     <li>여러 번 부르면 네이티브 top layer 에 쌓인다. 큐를 두지 않는다.</li>
     <li><code>tone: "danger"</code> 를 파괴적 확인에 반드시 쓴다. 초기 포커스가 취소로 가는 것이 그 신호다.</li>
+    <li>닫히면 포커스가 대화상자를 연 요소로 돌아간다. 다섯 경로 모두 같다.</li>
   </ul>
 
   <h2 id="ns-header">ns-header</h2>
