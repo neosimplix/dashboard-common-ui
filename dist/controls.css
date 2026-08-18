@@ -1,0 +1,456 @@
+/*
+  common-ui 네이티브 요소용 클래스.
+
+  폼 컨트롤·버튼·카드를 웹 컴포넌트로 만들지 않는 이유는 설계 문서
+  docs/superpowers/specs/2026-08-13-common-ui-primitives-design.md §2 에 있다.
+  요약: shadow DOM 은 폼 참여·label for·검증·자동완성을 끊고, FACE 로 되살려도
+  "JS 없이 동작한다" 는 성질은 돌아오지 않는다.
+
+  값은 tokens.css 의 토큰만 참조한다. var() 폴백을 쓰지 않는다 — 값이 두 곳에
+  존재하면 어긋나고, 어긋나도 아무도 모른다.
+
+  @layer 로 감싸는 이유:
+    Tailwind v4 는 preflight 를 @layer base, 유틸을 @layer utilities 에 넣는다.
+    레이어에 들지 않은 스타일은 레이어에 든 스타일을 항상 이긴다 — 순서와
+    무관하게. 감싸지 않으면 preflight 는 이기지만 소비자의 className="px-6"
+    같은 유틸 오버라이드까지 막아버린다.
+
+    그래서 감싸고, 소비자가 Tailwind import 위에 레이어 순서를 선언한다:
+      @layer theme, base, ns-controls, components, utilities;
+
+    이 한 줄이 없으면 preflight 가 이 파일의 스타일을 지운다. JS 로 감지할
+    방법이 없어 문서로만 지키는 요구사항이다.
+*/
+@layer ns-controls {
+  /*
+    <button> 과 <a> 가 같은 클래스를 쓴다. 동작이 링크면 마크업도 링크여야 하고,
+    참고 구현이 Button/ButtonLink 두 컴포넌트로 나눠 스타일을 공유하려고
+    헬퍼를 두었던 이유가 클래스에서는 사라진다.
+  */
+  .ns-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ns-space-3);
+    border-radius: var(--ns-radius-control);
+    font-weight: var(--ns-weight-medium);
+    transition: background-color var(--ns-transition-fast) var(--ns-transition-ease),
+      color var(--ns-transition-fast) var(--ns-transition-ease);
+    cursor: pointer;
+    /* <a> 로 렌더될 때를 위한 것. <button> 에는 영향이 없다. */
+    text-decoration: none;
+    box-sizing: border-box;
+    /*
+      참고 구현은 Tailwind preflight 아래서 돌아 border-width: 0 과
+      font-family: inherit 를 전역으로 받았다. 이 파일에는 preflight 가 없어
+      직접 채워야 한다 — 없으면 <button> 은 UA 테두리·컨트롤 글꼴로 렌더되고
+      같은 클래스를 쓰는 <a> 는 그렇지 않아 둘이 달라 보인다.
+      border 는 --outline 이 아래서 다시 선언한다 — 특정도가 이 규칙과 같은
+      (0,1,0) 이라 소스 순서상 나중에 오는 규칙이 이긴다.
+    */
+    border: 0;
+    font-family: inherit;
+  }
+
+  /*
+    aria-disabled 를 :disabled 와 나란히 잡는다.
+
+    ns-pagination 의 이전·다음은 disabled 대신 aria-disabled="true" 를 쓴다 —
+    포커스된 버튼이 disabled 되면 브라우저가 blur 시켜 키보드 사용자가 위치를
+    잃기 때문이다(근거는 index.html 의 ns-pagination 절). 동작만 살리고 겉모습을
+    두면 "눌러도 아무 일도 안 일어나는데 활성으로 보이는 버튼" 이 되므로,
+    회색·not-allowed·hover 억제 셋을 :disabled 와 같이 준다.
+
+    invalid 를 --invalid 변형 클래스가 아니라 [aria-invalid="true"] 로 잡는 것과
+    같은 모양이다. 상태는 속성이 갖고 스타일이 따라온다.
+
+    :not(:disabled, [aria-disabled="true"]) 의 특정도는 인자 중 가장 높은 것
+    하나(0,1,0)라 :not(:disabled) 와 같다 — 소비자가 덮을 자리가 달라지지 않는다.
+  */
+  .ns-button:disabled,
+  .ns-button[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  /* ── 크기 ── */
+  .ns-button--md {
+    min-height: var(--ns-control-height-md);
+    padding-inline: var(--ns-space-4);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+  }
+
+  .ns-button--sm {
+    min-height: var(--ns-control-height-sm);
+    padding-inline: var(--ns-space-2);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+  }
+
+  /* ── 변형 ── */
+  .ns-button--solid {
+    background: var(--ns-color-accent);
+    color: var(--ns-color-accent-fg);
+  }
+  .ns-button--solid:hover:not(:disabled, [aria-disabled="true"]) { background: var(--ns-color-accent-hover); }
+  .ns-button--solid:disabled,
+  .ns-button--solid[aria-disabled="true"] { background: var(--ns-color-disabled); }
+
+  .ns-button--outline {
+    background: transparent;
+    color: var(--ns-color-fg-body);
+    border: 1px solid var(--ns-color-line-strong);
+  }
+  .ns-button--outline:hover:not(:disabled, [aria-disabled="true"]) { background: var(--ns-color-surface-sunken); }
+
+  .ns-button--ghost {
+    background: transparent;
+    color: var(--ns-color-fg-muted);
+  }
+  .ns-button--ghost:hover:not(:disabled, [aria-disabled="true"]) {
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg);
+  }
+
+  /* --solid 는 배경을 바꿔 이미 disabled 로 보인다. 나머지 둘은 배경이 없어 글자색만 죽인다. */
+  .ns-button--outline:disabled,
+  .ns-button--ghost:disabled,
+  .ns-button--outline[aria-disabled="true"],
+  .ns-button--ghost[aria-disabled="true"] {
+    color: var(--ns-color-fg-subtle);
+  }
+
+  /* 정사각 패딩만 쓴다. --sm/--md 와 함께 쓰지 않는다. */
+  .ns-button--icon {
+    background: transparent;
+    color: var(--ns-color-fg-body);
+    padding: var(--ns-space-1-5);
+  }
+  .ns-button--icon:hover:not(:disabled, [aria-disabled="true"]) {
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg);
+  }
+
+  .ns-button--full { width: 100%; }
+
+  /*
+    .ns-input · .ns-textarea · .ns-select 는 기본 값을 공유한다. 값이 같은 것은
+    우연이 아니라 의도다 — .ns-field 안에 나란히 놓였을 때 어긋나 보이지 않게
+    하기 위해서다. 한 셀렉터 목록으로 묶어 그 의도를 코드로 남긴다. 참고 구현이
+    세 벌로 갖고 있었던 것은 CSS Modules 라 파일이 나뉘어 불가피했던 것이다.
+
+    invalid 는 변형 클래스가 아니라 [aria-invalid="true"] 로 잡는다. 붙여야
+    마땅한 속성을 붙이면 스타일이 따라온다 — 빨간 테두리만 원하고 화면낭독기에는
+    안 알리는 조합은 만들 수 없고, 그건 막는 것이 맞다.
+  */
+  .ns-input,
+  .ns-textarea,
+  .ns-select {
+    width: 100%;
+    padding: var(--ns-space-2) var(--ns-space-3);
+    border: 1px solid var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-control);
+    background: var(--ns-color-surface);
+    color: var(--ns-color-fg);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    outline: none;
+    box-sizing: border-box;
+    /* 폼 컨트롤은 기본적으로 UA 컨트롤 글꼴을 쓴다 — 상속시키지 않으면 셋 다 페이지 글꼴과 다르게 보이고, textarea 는 혼자 monospace 로 뜬다. */
+    font-family: inherit;
+  }
+
+  /*
+    포커스 표시자.
+
+    텍스트 컨트롤은 위에서 outline: none 으로 UA 링을 지웠고, 남은 신호는
+    :focus 의 테두리 색 변화 하나였다. forced-colors 모드(Windows 고대비 등)는
+    시스템 팔레트가 테두리 색을 덮어쓰므로 그 신호가 **완전히 사라진다** —
+    키보드 사용자가 지금 어디에 있는지 알 수 없게 된다. 버튼에는 애초에
+    포커스 규칙이 없어 UA 링에만 의존하고 있었다.
+
+    :focus 가 아니라 :focus-visible 이라 마우스 클릭에는 링이 뜨지 않는다.
+
+    offset 이 양수인 이유: 음수로 테두리 안쪽에 그리면 .ns-button--solid 의
+    배경이 --ns-color-accent 라 같은 색 링이 보이지 않는다. 밖에 그리면 어느
+    변형에서든 페이지 표면 위에 놓여 대비가 유지된다.
+
+    .ns-table__sort 도 여기 있다 — th 안의 텍스트 버튼이라 배경이 없고,
+    링이 없으면 정렬 헤더에 키보드로 도달했는지 알 수 없다.
+  */
+  .ns-button:focus-visible,
+  .ns-input:focus-visible,
+  .ns-textarea:focus-visible,
+  .ns-select:focus-visible,
+  .ns-table__sort:focus-visible {
+    outline: 2px solid var(--ns-color-accent);
+    outline-offset: 2px;
+  }
+
+  /* textarea 만 높이를 rows 로 정하므로 최소 높이를 갖지 않는다. */
+  .ns-input,
+  .ns-select {
+    min-height: var(--ns-control-height-md);
+  }
+
+  .ns-textarea {
+    /* 가로로 늘리면 표·대화상자 폭이 깨진다. 세로만 허용한다. */
+    resize: vertical;
+  }
+
+  /* select 에는 ::placeholder 가 없다 — 아래 :has() 규칙이 그 역할을 한다. */
+  .ns-input::placeholder,
+  .ns-textarea::placeholder {
+    color: var(--ns-color-fg-subtle);
+  }
+
+  .ns-input:focus,
+  .ns-textarea:focus,
+  .ns-select:focus {
+    border-color: var(--ns-color-accent);
+  }
+
+  /*
+    아직 고르지 않은 상태는 플레이스홀더처럼 옅게 보여준다.
+    빈 값 option 이 선택돼 있는지를 :has() 로 판별한다 — 클래스를 토글하는
+    자바스크립트가 필요 없고, 순수 HTML 에서도 동작한다.
+  */
+  .ns-select:has(option[value=""]:checked) {
+    color: var(--ns-color-fg-subtle);
+  }
+
+  .ns-input:disabled,
+  .ns-textarea:disabled,
+  .ns-select:disabled {
+    color: var(--ns-color-fg-subtle);
+    cursor: not-allowed;
+  }
+
+  .ns-input[aria-invalid="true"],
+  .ns-input[aria-invalid="true"]:focus,
+  .ns-textarea[aria-invalid="true"],
+  .ns-textarea[aria-invalid="true"]:focus,
+  .ns-select[aria-invalid="true"],
+  .ns-select[aria-invalid="true"]:focus {
+    border-color: var(--ns-color-danger);
+  }
+
+  /*
+    행 전체가 <label> 이다. 클릭 영역이 라벨 글자까지 넓어지고, for/id 배선이
+    필요 없다 — 감싸는 label 은 내부의 labelable 요소를 암묵적으로 가리킨다.
+
+    (.ns-field 는 반대로 label 이 컨트롤을 감싸지 않는다. 그쪽은 hint/error 가
+     accessible name 에 섞여 들어가는 문제가 있어서다. 체크박스는 hint 가
+     짧은 보조 문구뿐이라 그 문제가 없다.)
+
+    input 과 첫 span 은 요소 타입으로 특정되므로 자손 선택자로 잡는다.
+    hint 만 이름을 붙인다 — span 이 둘이라 순서에만 의존하면 깨지기 쉽다.
+  */
+  .ns-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--ns-space-2);
+    padding: var(--ns-space-1-5) 0;
+    cursor: pointer;
+  }
+
+  /* 클래스를 토글하는 자바스크립트 없이 disabled 를 반영한다. */
+  .ns-checkbox:has(:disabled) {
+    cursor: default;
+    opacity: .6;
+  }
+
+  .ns-checkbox input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--ns-color-accent);
+    cursor: inherit;
+  }
+
+  .ns-checkbox span {
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    color: var(--ns-color-fg-body);
+  }
+
+  /*
+    자손 선택자로 써야 한다. `.ns-checkbox__hint` 단독은 특정도 (0,1,0) 이고
+    위의 `.ns-checkbox span` 은 (0,1,1) 이라 자손 선택자가 이긴다 — hint 가
+    라벨과 같은 크기·색으로 렌더되고 **에러는 나지 않는다.**
+    `.ns-checkbox .ns-checkbox__hint` 는 (0,2,0) 이라 이긴다.
+  */
+  .ns-checkbox .ns-checkbox__hint {
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    color: var(--ns-color-fg-subtle);
+  }
+
+  /*
+    hint/error 는 <label> 밖에 두고 id 로 컨트롤과 연결한다. label 이 컨트롤을
+    감싸면 hint/error 텍스트까지 그 컨트롤의 accessible name 에 포함돼,
+    화면낭독기가 포커스마다 라벨과 오류 문구를 한 문장으로 읽게 된다.
+
+    hint 와 error 가 둘 다 span 이라 양쪽 모두 이름이 필요하다. label 은
+    하나뿐이지만, .ns-checkbox 의 label 이 역할이 정반대(행 전체를 감싼다)라
+    구분을 위해 이름을 붙인다.
+  */
+  .ns-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ns-space-1-5);
+  }
+
+  .ns-field__label {
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    font-weight: var(--ns-weight-medium);
+    color: var(--ns-color-fg-body);
+  }
+
+  .ns-field__hint {
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    color: var(--ns-color-fg-muted);
+  }
+
+  .ns-field__error {
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    color: var(--ns-color-danger);
+  }
+
+  /*
+    ns-table 이 스크롤 컨테이너를 겸한다. 참고 구현은 <div class="scroll"> 로
+    감쌌지만, 래퍼용 클래스를 따로 두면 "정렬은 필요 없고 스타일만" 인 경우와
+    두 가지 쓰는 법이 생긴다.
+
+    요소 선택자는 정의되지 않은 커스텀 엘리먼트에도 적용되므로 JS 없이도
+    스타일이 맞다. 스타일은 즉시, 동작은 JS 로드 시 붙는다.
+  */
+  ns-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .ns-table {
+    width: 100%;
+    /*
+      overflow-x: auto 는 표가 컨테이너를 넘을 수 있을 때만 발동한다.
+      width: 100% 만 있으면 넘칠 수가 없어 브라우저가 칸을 쥐어짜 맞추고,
+      액션 칸의 버튼이 폭을 잃어 글자가 줄바꿈된다. max-content 는 "내용이
+      필요로 하는 폭" 이다.
+    */
+    min-width: max-content;
+    border-collapse: collapse;
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+  }
+
+  .ns-table th {
+    padding: var(--ns-space-2) var(--ns-space-3);
+    text-align: left;
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    font-weight: var(--ns-weight-semibold);
+    color: var(--ns-color-fg-muted);
+    border-bottom: 1px solid var(--ns-color-line);
+    white-space: nowrap;
+  }
+
+  .ns-table td {
+    padding: var(--ns-space-3);
+    color: var(--ns-color-fg-body);
+    border-bottom: 1px solid var(--ns-color-line);
+    vertical-align: middle;
+  }
+
+  .ns-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .ns-table tbody tr:hover {
+    background: var(--ns-color-surface-hover);
+  }
+
+  /*
+    정렬 헤더는 <th> 안의 <button> 이다. <th> 자체를 클릭 가능하게만 만들면
+    키보드로 도달할 수 없고 화면낭독기가 상호작용 요소로 안내하지 않는다.
+    tabindex/role=button 을 <th> 에 얹는 것은 표 의미를 깨뜨린다.
+
+    th 의 글꼴·색을 상속하는 텍스트 버튼이다 — .ns-button 을 쓰지 않는 이유는
+    크기·정렬·삼각형 자리가 다르기 때문이다.
+  */
+  .ns-table__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ns-space-1-5);
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .ns-table__sort:hover {
+    color: var(--ns-color-fg);
+  }
+
+  /*
+    삼각형을 border 로 그린다. content 로 화살표 문자를 넣지 않는다 — 생성된
+    텍스트가 일부 브라우저에서 화면낭독기에 읽혀 aria-sort 와 중복 안내가 된다.
+    border 로 그린 삼각형은 텍스트 노드가 없어 안내되지 않고, 의미는 aria-sort
+    하나가 담는다.
+
+    자리는 정렬 여부와 무관하게 늘 잡아 둔다. 안 그러면 정렬할 때마다 헤더
+    폭이 흔들린다.
+  */
+  .ns-table__sort::after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-inline: .25rem solid transparent;
+    border-block-end: .3rem solid currentColor;
+    opacity: 0;
+  }
+
+  .ns-table th[aria-sort="ascending"] .ns-table__sort::after {
+    opacity: 1;
+  }
+
+  .ns-table th[aria-sort="descending"] .ns-table__sort::after {
+    opacity: 1;
+    rotate: 180deg;
+  }
+
+  ns-pagination {
+    display: block;
+  }
+
+  /*
+    nav 는 이 컴포넌트가 렌더하는 유일한 자식이라 요소 타입으로 특정된다 —
+    클래스를 붙이지 않는다.
+  */
+  ns-pagination nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ns-space-1);
+  }
+
+  .ns-pagination-gap {
+    padding-inline: var(--ns-space-2);
+    color: var(--ns-color-fg-subtle);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+  }
+
+  .ns-card {
+    width: 100%;
+    border: 1px solid var(--ns-color-line);
+    border-radius: var(--ns-radius-card);
+    background: var(--ns-color-surface);
+    padding: var(--ns-card-padding);
+    box-shadow: var(--ns-elevation-card);
+  }
+}
