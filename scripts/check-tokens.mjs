@@ -1,15 +1,16 @@
 /*
-  컴포넌트와 클래스가 참조하는 커스텀 프로퍼티가 규칙을 지키는지 확인한다.
+  컴포넌트 CSS 가 문법으로는 멀쩡한데 브라우저에서 조용히 무효가 되는 것들을 잡는다.
 
-  토큰 참조는 CSS 문자열이라 tsc 가 보지 못한다. 옛 무접두사 이름을
+  이 파일의 CSS 는 템플릿 리터럴 안에 있어 tsc 가 보지 못한다. 옛 무접두사 이름을
   var(--color-line) 으로 다시 적어도 타입 검사와 빌드가 통과하고, 화면에서
   그 속성만 조용히 무효가 된다.
   0.1.5 에서 토큰 이름을 소비자와 공유하다 겪은 고장이 정확히 그 종류였다.
 
-  세 규칙:
+  네 규칙:
     ① 모든 var(--x) 는 --ns- 로 시작한다.
     ② 이름이 리터럴이면 tokens.css 에 정의돼 있거나 WIRING 에 있어야 한다.
     ③ data-ns-* 훅 이름은 세 곳에서 일치한다.
+    ④ :host 블록에 border·margin·padding 을 두지 않는다.
 
   ②를 건너뛰는 경우가 하나 있다. ns-skeleton.ts 는 `var(--ns-radius-${this.radius})`
   로 이름을 조립하므로 정적으로 확인할 수 없다. 이름에 ${ 가 있으면 ①만 본다.
@@ -41,6 +42,19 @@
   설명하면서 [data-ns-open] 을 그대로 적으므로, 지우지 않으면 설명문이 짝을
   채워 검사가 무력해진다.
 
+  ④ 도 같은 종류의 조용한 무효다. 호스트 요소는 문서 트리에 있으므로 소비자의
+  문서 규칙이 shadow 의 :host 규칙을 이긴다 — 특정도가 아니라 캐스케이드 순서로
+  정해지는 것이라 :host 쪽이 아무리 구체적이어도 진다. Tailwind preflight 의
+
+    *, ::before, ::after, ::backdrop { border: 0 solid; margin: 0; padding: 0 }
+
+  가 그 규칙이고, Tailwind 를 쓰는 소비자는 예외 없이 이것을 갖는다. 그래서
+  :host 에 둔 박스 프로퍼티는 라이브러리 안에서는 잘 보이고 소비자 프로젝트에서만
+  사라진다. 0.2.0 의 ns-sidebar 경계선과 ns-nav-group 그룹 간격이 그렇게 죽었다.
+  배경·색·너비는 preflight 가 건드리지 않으므로 대상이 아니다. 박스는 shadow 안의
+  요소가 갖게 하면 문서 규칙이 닿지 못한다 — ns-header 가 처음부터 그 모양이라
+  같은 사고를 겪지 않았다.
+
   한계:
     - 참조가 규칙을 지키는지만 본다. 그 토큰이 화면에서 옳은 값인지는
       index.html 육안 확인의 몫이다.
@@ -66,6 +80,13 @@
     - ③ 의 수집 범위는 위 세 곳뿐이다. 컴포넌트가 JS 로 질의하는 훅
       (data-ns-row-id·data-ns-page 등)은 CSS 가 아니라 코드가 짝이므로
       대상이 아니고, 그래서 셋 중 어디에도 나타나지 않는다.
+    - ④ 는 :host 자신을 겨냥한 선택자만 본다. `:host(…) .row` 처럼 후손을
+      고르는 것은 shadow 안이라 대상이 아니다. 값이 0 이나 none 인 선언도
+      넘긴다 — preflight 가 넣으려는 값과 같아서 지워져도 달라지지 않는다.
+    - ④ 는 border-radius·border-collapse·border-spacing·border-image 를
+      제외한다. preflight 의 `border: 0 solid` 는 width·style·color 만 덮는다.
+    - ④ 는 이 저장소의 :host 만 본다. 소비자가 자기 문서에서 ns-* 태그에
+      박스를 주는 것은 정상적인 override 이고 막을 이유가 없다.
     - ①② 의 참조 수집은 주석을 지우지 않는다. 주석 속 var() 는 죽은 참조라
       실패시켜도 손해가 없는 방향이라서 그대로 둔다. ② 의 *정의* 수집은
       반대다 — 주석 속 정의가 실재하는 것처럼 보이면 없는 토큰이 통과하므로
@@ -190,7 +211,86 @@ if (mismatched.length > 0) {
   process.exit(1);
 }
 
+/* ④ :host 자신에 박스 프로퍼티를 두지 않았는지 본다. */
+
+/*
+  선택자와 선언을 짝지어 걷는다. ns-skeleton 이 @media 를 쓰므로 중첩이 한 단계
+  있고, 그래서 평평한 정규식 대신 중괄호를 센다. 여는 괄호 직전까지가 선택자,
+  괄호 안에서 다음 중괄호를 만나기 전까지가 그 블록의 선언이다.
+
+  각 파일의 첫 블록 앞에는 `export const styles = css\`` 가 붙어 있다. 백틱과
+  세미콜론은 선택자에 나올 수 없으므로 마지막 것 뒤만 남긴다. 이 손질이 없으면
+  파일마다 첫 :host 블록이 통째로 검사에서 빠진다.
+*/
+const blocks = (css) => {
+  const out = [];
+  const open = [];
+  let buf = "";
+  for (const ch of css) {
+    if (ch === "{") {
+      open.push(buf.split(/[`;]/).pop().trim());
+      buf = "";
+    } else if (ch === "}") {
+      if (open.length > 0) out.push({ selector: open[open.length - 1], body: buf });
+      open.pop();
+      buf = "";
+    } else {
+      buf += ch;
+    }
+  }
+  return out;
+};
+
+/*
+  `:host` 와 `:host(…)` 만 호스트 자신을 고른다. 괄호 안에 `:not([a]):not([b])`
+  처럼 괄호가 또 들어가므로 정규식으로 벗기지 않고 짝을 세어 잘라낸다.
+  잘라낸 나머지가 비어 있지 않으면 후손 선택자다 — shadow 안이라 안전하다.
+*/
+const targetsHost = (selector) =>
+  selector.split(",").some((part) => {
+    const s = part.trim();
+    if (!s.startsWith(":host")) return false;
+    let i = ":host".length;
+    if (s[i] === "(") {
+      let depth = 0;
+      for (; i < s.length; i++) {
+        if (s[i] === "(") depth++;
+        else if (s[i] === ")" && --depth === 0) {
+          i++;
+          break;
+        }
+      }
+    }
+    return s.slice(i).trim() === "";
+  });
+
+const BOX = /(?:^|;)\s*((?:border|margin|padding)(?:-[a-z-]+)?)\s*:\s*([^;]+)/g;
+const BORDER_OK = /^border-(radius|collapse|spacing|image)/;
+const NO_OP = /^(?:(?:0[a-z%]*|none)\s*)+$/;
+
+const hostBoxes = [];
+for (const file of walk("src/components").filter((p) => p.endsWith(".styles.ts"))) {
+  const source = strip(readFileSync(file, "utf8"), { line: true });
+  for (const { selector, body } of blocks(source)) {
+    if (!targetsHost(selector)) continue;
+    for (const [, prop, value] of body.matchAll(BOX)) {
+      if (BORDER_OK.test(prop)) continue;
+      if (NO_OP.test(value.trim())) continue;
+      hostBoxes.push(`${file}: ${selector} { ${prop}: ${value.trim()} }`);
+    }
+  }
+}
+
+if (hostBoxes.length > 0) {
+  console.error(
+    ":host 에 박스 프로퍼티가 있습니다. 소비자 문서 규칙(Tailwind preflight 등)이\n" +
+      "호스트에 대해서는 :host 를 이기므로 조용히 지워집니다. shadow 안의 요소로 옮기세요:\n  " +
+      hostBoxes.sort().join("\n  "),
+  );
+  process.exit(1);
+}
+
 console.log(
   `토큰 참조 확인 완료: ${defined.size} 개 정의, ${targets.length} 개 파일 검사, ` +
-    `data-ns-* 훅 ${groups[0].found.size} 개 세 곳 일치`,
+    `data-ns-* 훅 ${groups[0].found.size} 개 세 곳 일치, :host 박스 없음`,
 );
