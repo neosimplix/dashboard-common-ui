@@ -170,6 +170,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <NsIcon name="menu" />
             </Button>
             <ButtonLink href="/login" variant="outline" fullWidth>로그인</ButtonLink>
+            <Button variant="danger" size="sm" onClick={() => log("delete")}>삭제</Button>
             <Dialog
               open={dialogOpen}
               title="사용자 승인"

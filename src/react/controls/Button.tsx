@@ -2,7 +2,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
 
 import { cx } from "../cx.js";
 
-export type ButtonVariant = "solid" | "outline" | "ghost" | "icon";
+export type ButtonVariant = "solid" | "outline" | "ghost" | "icon" | "danger";
 export type ButtonSize = "sm" | "md";
 
 type ButtonBase = {

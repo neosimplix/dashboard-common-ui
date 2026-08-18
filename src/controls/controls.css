@@ -131,6 +131,20 @@
     color: var(--ns-color-fg);
   }
 
+  /*
+    파괴적 확인. nsConfirm({ tone: "danger" }) 의 확인 버튼이 쓴다.
+
+    hover 에서 배경을 바꾸지 않는다. --ns-color-danger-hover 를 만들려면
+    라이트·다크 두 값을 정해야 하는데 지금 그 값을 정할 근거가 없다.
+    비활성은 --solid 와 같이 배경을 죽인다.
+  */
+  .ns-button--danger {
+    background: var(--ns-color-danger);
+    color: var(--ns-color-danger-fg);
+  }
+  .ns-button--danger:disabled,
+  .ns-button--danger[aria-disabled="true"] { background: var(--ns-color-disabled); }
+
   .ns-button--full { width: 100%; }
 
   /*
