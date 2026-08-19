@@ -123,7 +123,6 @@ export class NsTable extends ReactiveElement {
     });
     // 위임이라 소비자가 행을 다시 그려도 리스너를 다시 붙일 필요가 없다.
     this.addEventListener("click", this.#onClick);
-    this.addEventListener("change", this.#onChange);
 
     /*
       updated() 는 반응형 프로퍼티가 바뀔 때만 돈다. 소비자가 정렬·선택과 무관한
@@ -151,7 +150,6 @@ export class NsTable extends ReactiveElement {
 
   override disconnectedCallback(): void {
     this.removeEventListener("click", this.#onClick);
-    this.removeEventListener("change", this.#onChange);
     this.#observer?.disconnect();
     super.disconnectedCallback();
   }
@@ -226,12 +224,45 @@ export class NsTable extends ReactiveElement {
   }
 
   /*
-    <th data-ns-sort-key> 안의 클릭을 받는다. 안쪽 <button> 뿐 아니라 <th> 의
-    여백을 눌러도 동작한다 — 마우스 타깃이 넓어지고, 키보드 도달은 <button> 이
-    담당한다. 소비자가 훅을 붙인 <th> 만 대상이다.
+    클릭 하나로 두 가지를 받는다.
+
+    ① 체크박스 — **`change` 가 아니라 여기서 처리하는 것이 중요하다.**
+       체크박스의 활성화 동작은 순서가 정해져 있다: checked 를 뒤집고 →
+       click 을 디스패치하고 → 그 다음 input·change 를 디스패치한다.
+       React 의 제어 입력 구현은 루트 컨테이너에서 click 을 처리하고 그
+       처리가 끝나는 시점에 DOM 을 프롭 값으로 되돌리므로, change 시점에는
+       사용자가 만든 값이 이미 사라져 있다 — change 를 듣는 어떤 코드도
+       그 클릭을 볼 수 없다. 이 리스너는 호스트에 붙어 있어 버블 경로에서
+       루트보다 먼저 지나가므로 되돌리기 전의 값을 읽는다.
+
+       Space 키도 브라우저가 click 을 디스패치하므로 경로가 하나로 족하다.
+
+       대가 하나를 받아들인다: 누군가 click 에서 preventDefault() 를 부르면
+       체크가 되돌아가는데 우리는 이미 읽은 뒤다. 그 경우 change 는 아예
+       나지 않으므로 전에는 **아무 일도 일어나지 않았다** — 조용히 어긋나는
+       쪽으로 바뀌지만, 그 마크업은 애초에 체크박스가 동작하지 않는다.
+
+       라벨 클릭은 두 번 처리되지 않는다. `.ns-checkbox` 는 <label> 이
+       <input> 을 감싸는 모양인데, 라벨의 click 은 타깃이 라벨이라
+       closest("input") 이 비어 무시되고, 그 뒤 전달된 input 의 click 만
+       처리된다.
+
+    ② 정렬 헤더 — <th data-ns-sort-key> 안의 클릭을 받는다. 안쪽 <button>
+       뿐 아니라 <th> 의 여백을 눌러도 동작한다. 마우스 타깃이 넓어지고,
+       키보드 도달은 <button> 이 담당한다.
+
+    체크박스를 먼저 본다. 정렬 훅이 붙은 <th> 안에 체크박스를 넣은 마크업에서
+    순서가 결과를 바꾸기 때문이다.
   */
   #onClick = (e: Event): void => {
     const target = e.target as Element | null;
+
+    const box = target?.closest<HTMLInputElement>('input[type="checkbox"]');
+    if (box && this.#owns(box)) {
+      this.#onCheckbox(box);
+      return;
+    }
+
     const th = target?.closest<HTMLElement>("th[data-ns-sort-key]");
     if (!th || !this.#owns(th)) return;
 
@@ -278,7 +309,7 @@ export class NsTable extends ReactiveElement {
     /*
       .find 가 아니라 .filter 다. 전체 선택 박스는 하나가 보통이지만 <tfoot> 의
       두 번째 전체 선택이나 sticky 헤더 복제처럼 정당한 마크업도 있다.
-      #onChange 는 data-ns-select-all 속성으로 판정해 **모든** 박스에 반응하므로,
+      #onCheckbox 는 data-ns-select-all 속성으로 판정해 **모든** 박스에 반응하므로,
       여기서 첫 번째만 갱신하면 두 번째 박스가 "누르면 동작하지만 3-상태는
       절대 갱신되지 않는" 반쪽이 된다. 두 경로를 대칭으로 맞춘다.
     */
@@ -371,12 +402,12 @@ export class NsTable extends ReactiveElement {
     );
   }
 
-  #onChange = (e: Event): void => {
-    const box = (e.target as Element | null)?.closest<HTMLInputElement>(
-      'input[type="checkbox"]',
-    );
-    if (!box || !this.#owns(box)) return;
-
+  /**
+   * 체크박스 하나가 활성화됐다. `box.checked` 는 **이미 뒤집힌 뒤**다.
+   *
+   * `change` 가 아니라 `click` 에서 부른다 — 근거는 `#onClick` 주석에 있다.
+   */
+  #onCheckbox(box: HTMLInputElement): void {
     const boxes = this.#rowBoxes();
 
     if (box.hasAttribute("data-ns-select-all")) {
@@ -415,7 +446,7 @@ export class NsTable extends ReactiveElement {
     ids = boxes.map((row) => this.#rowId(row)).filter((rowId) => next.has(rowId));
 
     this.#emitSelect(ids);
-  };
+  }
 }
 
 register("ns-table", NsTable);

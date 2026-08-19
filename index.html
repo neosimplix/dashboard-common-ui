@@ -2086,11 +2086,36 @@
   </p>
   <p>
     <strong>그래서 제어 모드는 "소비자가 <code>ns-select-change</code> 를 받아 각 행의
-    <code>checked</code> 를 다시 그린다" 를 전제한다.</strong> React 의 렌더 루프가 그것을
-    거저 해 주지만, 순수 HTML 에서 <code>el.selected = [...]</code> 로만 제어하고 되돌려
-    그리는 코드를 두지 않으면 <strong>사용자가 누른 박스가 <code>selected</code> 와 어긋난 채로
-    남는다</strong> — 컴포넌트는 그 박스를 되돌리지 않는다. 되돌려 그릴 생각이 없다면
-    <code>selected</code> 를 설정하지 말고 비제어로 두고 이벤트만 듣는 편이 맞다.
+    <code>checked</code> 를 다시 그린다" 를 전제한다.</strong> React 에서는 그것이
+    제어 입력 그대로다 — <code>checked={selected.includes(id)}</code> 에
+    no-op <code>onChange</code> 를 붙이는 보통의 모양이 맞는 사용법이고, 상태를 갱신하는 것은
+    <code>onNsSelectChange</code> 다. 순수 HTML 에서 <code>el.selected = [...]</code> 로만
+    제어하고 되돌려 그리는 코드를 두지 않으면 <strong>사용자가 누른 박스가
+    <code>selected</code> 와 어긋난 채로 남는다</strong> — 컴포넌트는 그 박스를 되돌리지
+    않는다. 되돌려 그릴 생각이 없다면 <code>selected</code> 를 설정하지 말고 비제어로 두고
+    이벤트만 듣는 편이 맞다.
+  </p>
+  <p>
+    <strong>0.2.5 에서는 바로 그 React 제어 체크박스가 동작하지 않았다.</strong>
+    행을 눌러도 체크되지 않고 <code>ns-select-change</code> 의 <code>ids</code> 가 언제나
+    그대로였다 — 콘솔도 타입 검사도 조용했다. 체크박스의 활성화는 순서가 정해져 있어서
+    <code>checked</code> 를 뒤집고 → <code>click</code> 을 디스패치하고 → 그 다음
+    <code>input</code>·<code>change</code> 를 디스패치하는데, React 의 제어 입력 구현은
+    루트 컨테이너에서 <code>click</code> 을 처리하고 그 처리가 끝나는 시점에 DOM 을 프롭
+    값으로 되돌린다. 0.2.5 의 <code>ns-table</code> 은 <code>change</code> 에서
+    <code>checked</code> 를 읽었으므로 <strong>언제나 되돌려진 값을 봤다.</strong>
+    지금은 <code>click</code> 에서 읽는다. 그 리스너는 <code>ns-table</code> 호스트에 붙어
+    있어 버블 경로에서 React 의 루트보다 먼저 지나가므로 되돌리기 전의 값을 읽는다.
+  </p>
+  <p>
+    <strong>0.2.5 에서 <code>defaultChecked</code> 와 <code>ref</code> 로 DOM 에 직접
+    <code>checked</code> 를 쓰는 우회를 했다면 되돌려도 된다.</strong> 이제
+    <code>checked</code> 프롭이 정상 경로다.
+  </p>
+  <p>
+    <strong>프로그램으로 <code>input.checked</code> 를 바꾼 뒤 <code>change</code> 를 직접
+    디스패치하는 방식은 지원하지 않는다.</strong> 이 컴포넌트는 <code>click</code> 만 듣는다.
+    선택을 코드로 바꾸려면 <code>selected</code> 프로퍼티를 쓴다.
   </p>
 
   <h3>접근성</h3>
