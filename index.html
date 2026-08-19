@@ -36,8 +36,13 @@
     데모 안의 꾸미지 않은 <p> 는 이제 body 에서 상속받는다. 스타일 없는 <p> 가
     소비자 페이지에서 갖는 값이 바로 그것이므로 데모로서 더 정확하다.
 
-    같은 성질의 문제가 table/th/td 규칙에도 남아 있다. 이번 라운드에서 건드리지
-    않은 이유는 보고서에 적었다.
+    아래 code/table/th/td 도 같은 이유로 같은 가드를 받는다. 표 쪽은 실제로
+    보이던 결함이었다 — .ns-table tbody tr:last-child td { border-bottom: 0 } 이
+    이 페이지의 th, td 규칙에 져서, **데모 표 전부가 컴포넌트가 지운 마지막 행
+    구분선을 그리고 있었다.** td 의 vertical-align 도 middle 대신 top 이었고,
+    글자 크기도 .ns-table 의 sm 대신 이 페이지의 xs 였다. code 는 지금 어느
+    데모 안에도 없어서 가드를 붙여도 보이는 변화가 없다 — 다음에 들어올 때를
+    위해 같은 줄에 맞춰 둔다.
   */
   h1:not(:where(.demo *)) { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
   h2:not(:where(.demo *)) {
@@ -49,10 +54,10 @@
   }
   h3:not(:where(.demo *)), h4:not(:where(.demo *)) { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
   p:not(:where(.demo *)), li:not(:where(.demo *)) { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
-  code { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
+  code:not(:where(.demo *)) { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
 
-  table { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
-  th, td {
+  table:not(:where(.demo *)) { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
+  th:not(:where(.demo *)), td:not(:where(.demo *)) {
     border-bottom: 1px solid var(--ns-color-line);
     padding: var(--ns-space-2) var(--ns-space-3);
     text-align: left;
@@ -60,8 +65,8 @@
     line-height: var(--ns-line-height-sm);
     vertical-align: top;
   }
-  th { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
-  td code { background: none; padding: 0; }
+  th:not(:where(.demo *)) { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
+  td code:not(:where(.demo *)) { background: none; padding: 0; }
 
   /* 데모는 반드시 높이를 고정한다. tokens.css 의 ns-sidebar 규칙은 전역
      element 선택자라 데모 사이드바에도 적용되는데, 높이를 안 잡으면
