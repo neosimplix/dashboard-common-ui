@@ -251,13 +251,24 @@ export class NsTable extends ReactiveElement {
        뿐 아니라 <th> 의 여백을 눌러도 동작한다. 마우스 타깃이 넓어지고,
        키보드 도달은 <button> 이 담당한다.
 
-    체크박스를 먼저 본다. 정렬 훅이 붙은 <th> 안에 체크박스를 넣은 마크업에서
-    순서가 결과를 바꾸기 때문이다.
+    체크박스를 먼저 본다. 전체 선택 체크박스는 <th> 안에 있으므로, 정렬 훅이
+    붙은 <th> 에 그것을 넣은 마크업에서 순서가 결과를 바꾼다.
+
+    **그래서 훅이 붙은 체크박스만 먼저 본다.** 이 컴포넌트가 아는 체크박스는
+    data-ns-select-all 과 data-ns-row-id 둘뿐이고, 둘 다 없는 체크박스는
+    ns-table 에게 그냥 소비자 내용이다. 넓게 잡으면 정렬 헤더 안의 그런
+    체크박스가 클릭을 삼켜 정렬이 죽는다 — "정렬 헤더 안의 다른 상호작용
+    요소를 눌러도 정렬이 일어난다" 는 문서화된 동작이 조용히 깨지는 것이다.
+    선택자에 훅을 함께 적어 이 갈래가 스스로를 설명하게 둔다. #onCheckbox
+    안쪽의 data-ns-row-id 검사는 그대로 두되, 이제 이 갈래를 통과한 뒤의
+    두 번째 방어선이다.
   */
   #onClick = (e: Event): void => {
     const target = e.target as Element | null;
 
-    const box = target?.closest<HTMLInputElement>('input[type="checkbox"]');
+    const box = target?.closest<HTMLInputElement>(
+      'input[type="checkbox"][data-ns-select-all], input[type="checkbox"][data-ns-row-id]',
+    );
     if (box && this.#owns(box)) {
       this.#onCheckbox(box);
       return;
