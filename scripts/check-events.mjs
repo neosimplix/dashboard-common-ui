@@ -12,6 +12,9 @@
   - 컴포넌트별 매핑이 아니라 전체 이벤트 이름 집합끼리만 비교한다.
     예를 들어 어떤 컴포넌트가 "ns-navigate"를 발생시키지 않는데도 다른
     컴포넌트의 "ns-navigate" 매핑을 자기 것으로 착각해 통과할 수 있다.
+  - strip() 은 주석만 지운다. 문자열 리터럴 안에 `onFoo: "ns-foo"` 처럼
+    매핑과 같은 모양이 들어 있으면 여전히 매핑으로 잡힌다 — 이 저장소에서
+    래퍼가 그렇게 쓰이지 않으므로 감수한다.
 */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -23,15 +26,26 @@ const walk = (dir) =>
     return p.endsWith(".ts") ? [p] : [];
   });
 
+/*
+  check-tokens.mjs 의 strip() 과 같은 idiom 이다. 주석에 적힌 예시가 실제
+  코드처럼 잡히면 안 되므로(주석 처리로 지운 매핑이 계속 통과하면 이 검사가
+  무력해진다) 매칭 전에 CSS/JS 블록 주석과 `//` 줄 주석을 지운다. `://` 로
+  시작하는 URL 을 줄 주석으로 오인하지 않도록 앞 글자가 `:` 가 아닐 때만 자른다.
+*/
+const strip = (source) =>
+  source
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+
 const emitted = new Set();
 for (const file of walk("src/components")) {
-  const source = readFileSync(file, "utf8");
+  const source = strip(readFileSync(file, "utf8"));
   for (const m of source.matchAll(/new CustomEvent\(\s*["']([^"']+)["']/g)) {
     emitted.add(m[1]);
   }
 }
 
-const wrapper = readFileSync("src/react/elements.ts", "utf8");
+const wrapper = strip(readFileSync("src/react/elements.ts", "utf8"));
 const mapped = new Set(
   [...wrapper.matchAll(/on[A-Za-z0-9]+:\s*["']([^"']+)["']/g)].map((m) => m[1]),
 );
