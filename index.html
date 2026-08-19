@@ -164,7 +164,7 @@
     폴백 없이 참조하므로 둘 중 하나라도 빠지면 레이아웃이 무너진다.
   </p>
   <script type="text/plain">
-    /* Next.js — app/globals.css */
+    /* 아래 Tailwind 절의 레이어 순서 선언과 같은 파일에 둔다 (app/globals.css 등) */
     @import "@neosimplix/common-ui/tokens.css";
     @import "@neosimplix/common-ui/controls.css";
   </script>
@@ -413,19 +413,24 @@
     않는다. <strong>Tailwind 를 쓰면 이 자리 차이 하나가 <code>.ns-*</code> 의 테두리와 여백을
     통째로 지운다.</strong>
   </p>
+  <p>
+    <strong>아래 블록의 앞 두 줄은 Tailwind 를 쓸 때만 해당한다</strong> —
+    <code>@layer</code> 선언과 <code>@import "tailwindcss"</code> 다. Tailwind 를 쓰지 않으면
+    그 두 줄을 지우고 나머지는 그대로 둔다.
+  </p>
   <script type="text/plain">
     /* app/globals.css — 임포트와 레이어 순서를 이 파일 하나에서 정한다 */
-    @layer theme, base, ns-controls, components, utilities;
 
+    /* 다음 두 줄은 Tailwind 를 쓸 때만. 안 쓰면 지운다 */
+    @layer theme, base, ns-controls, components, utilities;
     @import "tailwindcss";
+
     @import "@neosimplix/common-ui/tokens.css";
     @import "@neosimplix/common-ui/controls.css";
   </script>
   <p>
     Tailwind v4 의 임포트 리졸버가 bare specifier 를 해석하므로
     <code>@import "@neosimplix/…"</code> 가 <code>node_modules</code> 에서 그대로 풀린다.
-    Tailwind 를 쓰지 않으면 <code>@layer</code> 선언과 <code>@import "tailwindcss"</code> 두 줄만
-    빠지고 나머지는 같다.
   </p>
   <p>
     <strong>레이어 순서는 첫 등장 순서로 정해진다.</strong> 위의
