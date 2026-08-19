@@ -43,7 +43,7 @@ export function Card({
     return <div className={cx("ns-card", className)}>{children}</div>;
   }
 
-  const Heading = (headingLevel === 3 ? "h3" : "h2") as "h2" | "h3";
+  const Heading = headingLevel === 3 ? "h3" : "h2";
 
   return (
     <div className={cx("ns-card", className)}>

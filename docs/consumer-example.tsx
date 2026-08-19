@@ -338,6 +338,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Card
               heading="최근 주문"
               description="최근 30일"
+              headingLevel={3}
               actions={<ButtonLink href="/orders" variant="ghost" size="sm">전체 보기</ButtonLink>}
             >
               <p>본문</p>
