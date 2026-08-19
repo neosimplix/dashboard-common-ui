@@ -14,16 +14,41 @@
     background: var(--ns-color-surface-sunken);
   }
   main { max-width: 56rem; margin: 0 auto; padding: var(--ns-space-8) var(--ns-space-6) 6rem; }
-  h1 { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
-  h2 {
+  /*
+    이 페이지의 산문 타이포그래피는 .demo 안으로 내려가지 않는다.
+
+    dist/controls.css 는 @layer ns-controls 에 들어 있고 이 <style> 은 레이어에
+    들지 않는다. **레이어에 들지 않은 author 선언은 레이어에 든 선언을 특정도와
+    무관하게 이긴다** — controls.css 가 맨 위에서 설명하는 바로 그 메커니즘이다.
+    그래서 이 페이지의 h2 규칙이 .ns-card__title 을 이겨 제목 위에 엉뚱한
+    border-top 과 3.5rem 가까운 빈 공간을 만들었고, p 규칙이
+    .ns-card__description · .ns-message p · .ns-multi-select__empty 의 색과
+    크기를 덮었다. 데모가 라이브러리가 아닌 것을 보여주고 있었다.
+
+    고치는 자리는 controls.css 가 아니라 여기다. 라이브러리는 제대로 동작하고
+    있고, 문서 페이지의 타이포그래피가 자기 것이 아닌 데모 내용에 손을 뻗은
+    것이 원인이다.
+
+    :where() 는 특정도가 0 이라 이 가드를 붙여도 규칙의 특정도가 그대로다 —
+    문서 산문 쪽 캐스케이드는 한 곳도 바뀌지 않는다. :not(.demo *) 로 쓰면
+    특정도가 (0,1,1) 로 올라가 그게 깨진다.
+
+    데모 안의 꾸미지 않은 <p> 는 이제 body 에서 상속받는다. 스타일 없는 <p> 가
+    소비자 페이지에서 갖는 값이 바로 그것이므로 데모로서 더 정확하다.
+
+    같은 성질의 문제가 table/th/td 규칙에도 남아 있다. 이번에 건드리지 않은
+    이유는 보고서에 적었다.
+  */
+  h1:not(:where(.demo *)) { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
+  h2:not(:where(.demo *)) {
     margin-top: var(--ns-space-8);
     padding-top: var(--ns-space-6);
     border-top: 1px solid var(--ns-color-line);
     font-size: var(--ns-font-size-lg);
     line-height: var(--ns-line-height-lg);
   }
-  h3, h4 { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
-  p, li { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
+  h3:not(:where(.demo *)), h4:not(:where(.demo *)) { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  p:not(:where(.demo *)), li:not(:where(.demo *)) { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
   code { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
 
   table { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
