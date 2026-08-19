@@ -37,13 +37,19 @@
     데모 안의 꾸미지 않은 <p> 는 이제 body 에서 상속받는다. 스타일 없는 <p> 가
     소비자 페이지에서 갖는 값이 바로 그것이므로 데모로서 더 정확하다.
 
-    아래 code/table/th/td 도 같은 이유로 같은 가드를 받는다. 표 쪽은 실제로
-    보이던 결함이었다 — .ns-table tbody tr:last-child td { border-bottom: 0 } 이
+    아래 table/th/td 도 같은 이유로 같은 가드를 받는다. 실제로 보이던
+    결함이었다 — .ns-table tbody tr:last-child td { border-bottom: 0 } 이
     이 페이지의 th, td 규칙에 져서, **데모 표 전부가 컴포넌트가 지운 마지막 행
-    구분선을 그리고 있었다.** td 의 vertical-align 도 middle 대신 top 이었고,
-    글자 크기도 .ns-table 의 sm 대신 이 페이지의 xs 였다. code 는 지금 어느
-    데모 안에도 없어서 가드를 붙여도 보이는 변화가 없다 — 다음에 들어올 때를
-    위해 같은 줄에 맞춰 둔다.
+    구분선을 그리고 있었다.** vertical-align 도 th·td 양쪽이 middle 대신 top,
+    td 글자 크기는 .ns-table 의 sm 대신 xs, th 줄높이는 xs 대신 sm 이었다.
+
+    **code 에는 가드를 붙이지 않는다.** 판단 기준은 "레이어에 든 라이브러리
+    규칙이 이 규칙에 지고 있는가" 하나인데, controls.css 에도 tokens.css 에도
+    code 규칙이 **아예 없다.** 지켜 줄 상대가 없으므로 가드는 보호가 아니라
+    순수한 손실이다 — 바로 위 #tokens 절의 스와치 라벨 19 개가 이 규칙으로
+    칩 모양을 얻는데(배선 스크립트가 <code> 로 만든다) 가드를 붙이면 그게
+    벗겨진다. 데모 안에 <code> 가 없다고 읽으면 안 된다. 그 19 개는 마크업이
+    아니라 런타임에 #token-swatches 안에 생기고, 그 컨테이너는 .demo 안이다.
 
     ns-dialog 가 목록에 따로 있는 이유. nsAlert·nsConfirm 은 <p> 하나를 만들어
     ns-dialog 에 넣고 그 요소를 document.body 에 붙이므로, 그 <p> 는 어떤 .demo
@@ -54,9 +60,10 @@
     ns-dialog * 를 목록에 넣으면 양쪽 다 대화상자에서 상속받아 크기가 같아지고,
     그 값은 소비자가 자기 페이지에서 실제로 보게 될 값이다.
 
-    가드는 아홉 규칙 전부에 같은 목록으로 붙인다. 지금 ns-dialog 안에 실제로
-    걸리는 것은 p 하나뿐이지만, 규칙마다 "이건 걸리나" 를 따져 목록을 다르게
-    두면 데모가 늘 때마다 그 감사를 다시 해야 한다.
+    가드를 붙인 일곱 규칙에는 같은 목록을 쓴다. 지금 ns-dialog 안에 실제로
+    걸리는 것은 p 하나뿐이지만, 가드를 붙이기로 한 규칙끼리 목록을 다르게
+    두면 데모가 늘 때마다 그 감사를 다시 해야 한다. **어느 규칙에 가드를
+    붙일지는 그것과 별개 판단이고, 기준은 위의 code 문단에 적은 하나다.**
   */
   h1:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
   h2:not(:where(.demo *, ns-dialog *)) {
@@ -68,7 +75,7 @@
   }
   h3:not(:where(.demo *, ns-dialog *)), h4:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
   p:not(:where(.demo *, ns-dialog *)), li:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
-  code:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
+  code { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
 
   table:not(:where(.demo *, ns-dialog *)) { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
   th:not(:where(.demo *, ns-dialog *)), td:not(:where(.demo *, ns-dialog *)) {
@@ -80,7 +87,7 @@
     vertical-align: top;
   }
   th:not(:where(.demo *, ns-dialog *)) { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
-  td code:not(:where(.demo *, ns-dialog *)) { background: none; padding: 0; }
+  td code { background: none; padding: 0; }
 
   /* 데모는 반드시 높이를 고정한다. tokens.css 의 ns-sidebar 규칙은 전역
      element 선택자라 데모 사이드바에도 적용되는데, 높이를 안 잡으면
