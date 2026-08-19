@@ -31,13 +31,16 @@ ls node_modules/@neosimplix/common-ui/dist/tokens.css             # 있어야 �
 CSS 두 개를 모두 불러온다.
 
 ```css
+/* app/globals.css — 아래 Tailwind 절의 레이어 순서 선언과 같은 파일에 둔다 */
 @import "@neosimplix/common-ui/tokens.css";
 @import "@neosimplix/common-ui/controls.css";
 ```
 
 `tokens.css` 는 색·치수의 단일 출처이고 `controls.css` 는 네이티브 요소용 `.ns-*` 클래스다. 컴포넌트 스타일이 토큰을 폴백 없이 참조하므로 둘 중 하나라도 빠지면 레이아웃이 무너진다.
 
-**임포트 순서는 결과를 바꾸지 않는다.** 토큰 이름이 전부 `--ns-` 접두사를 쓰므로 소비자 문서의 `:root` 와 이름이 겹치지 않는다. 0.1.5 까지는 접두사가 없어 `tokens.css` 를 소비자 CSS 뒤에 두어야만 셸 색이 살아나는 프로젝트가 있었다 — 그 제약이 사라졌다.
+**두 파일 사이의 순서는 결과를 바꾸지 않는다.** 토큰 이름이 전부 `--ns-` 접두사를 쓰므로 소비자 문서의 `:root` 와 이름이 겹치지 않는다. 0.1.5 까지는 접두사가 없어 `tokens.css` 를 소비자 CSS 뒤에 두어야만 셸 색이 살아나는 프로젝트가 있었다 — 그 제약이 사라졌다.
+
+**그러나 Tailwind 를 쓰면 두 파일을 *어디서* 임포트하는지는 결과를 바꾼다.** 없어진 것은 이름 충돌이지 레이어 순서가 아니다. 레이어 순서는 첫 등장 순서로 정해지므로, `controls.css` 가 순서 선언보다 먼저 나오면 `ns-controls` 가 preflight 앞으로 가서 `.ns-*` 의 테두리·여백이 전부 사라진다. 자리는 하나다 — 아래 **Tailwind 를 쓰면 레이어 순서를 선언해야 한다** 가 보이는 `globals.css` 한 파일. Next.js 라면 `layout.tsx` 에서 이 두 줄을 JS `import` 하지 않는다.
 
 이미 무접두사 이름(`var(--space-3)` 등)을 직접 참조하는 CSS 가 있는 프로젝트만 별칭 파일을 **선택적으로** 함께 불러온다.
 
@@ -50,13 +53,18 @@ CSS 두 개를 모두 불러온다.
 
 브라우저 요구사항은 **Chrome 123 · Safari 17.5 · Firefox 121** 이상이다. Chrome·Safari 는 `light-dark()`, Firefox 는 `controls.css` 가 쓰는 `:has()` 가 하한을 정한다.
 
-**Tailwind 를 쓰면 레이어 순서를 선언해야 한다.** `controls.css` 는 `@layer ns-controls` 로 감싸 배포되므로, 이 한 줄이 없으면 Tailwind preflight 가 클래스 스타일을 지운다.
+**Tailwind 를 쓰면 레이어 순서를 선언해야 한다.** `controls.css` 는 `@layer ns-controls` 로 감싸 배포되므로, 이 선언이 없으면 Tailwind preflight 가 클래스 스타일을 지운다. **선언과 임포트는 한 파일에 함께 둔다** — 순서 선언은 그 레이어 이름들이 아직 나오지 않았을 때만 효력이 있어서, 임포트가 다른 파일에 흩어지면 어느 것이 먼저 번들에 들어가는지에 결과가 매달린다. 위의 두 `@import` 도 여기 함께 온다.
 
 ```css
-/* Tailwind import 보다 위 */
+/* app/globals.css — 선언이 맨 위, 임포트가 그 아래. 이 파일 하나로 끝난다 */
 @layer theme, base, ns-controls, components, utilities;
+
 @import "tailwindcss";
+@import "@neosimplix/common-ui/tokens.css";
+@import "@neosimplix/common-ui/controls.css";
 ```
+
+Tailwind v4 의 임포트 리졸버가 bare specifier 를 해석하므로 `@import "@neosimplix/…"` 가 `node_modules` 에서 그대로 풀린다. 순서가 뒤집혔는지는 `.ns-button--outline` 하나를 골라 `getComputedStyle(el).borderTopWidth` 를 읽어 확인한다 — `1px` 이어야 하고 `0px` 이면 preflight 가 이긴 것이다. **경고도 에러도 없다.**
 
 ## 다크모드
 

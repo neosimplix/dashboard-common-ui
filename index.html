@@ -169,10 +169,19 @@
     @import "@neosimplix/common-ui/controls.css";
   </script>
   <p>
-    <strong>순서는 상관없다.</strong> 토큰 이름이 전부 <code>--ns-</code> 접두사를
-    쓰므로 소비자 문서의 <code>:root</code> 와 겹치지 않는다. 0.1.5 까지는 접두사가
+    <strong>두 파일 사이의 순서는 상관없다.</strong> 토큰 이름이 전부 <code>--ns-</code>
+    접두사를 쓰므로 소비자 문서의 <code>:root</code> 와 겹치지 않는다. 0.1.5 까지는 접두사가
     없어, 같은 이름을 다른 뜻으로 쓰던 프로젝트가 <code>tokens.css</code> 를 자기
-    CSS 뒤에 두어야만 셸 색이 살아났다.
+    CSS 뒤에 두어야만 셸 색이 살아났다 — 그 제약이 사라졌다.
+  </p>
+  <p>
+    <strong>그러나 Tailwind 를 쓰면 두 파일을 <em>어디서</em> 임포트하는지는 상관있다.</strong>
+    없어진 것은 이름 충돌이지 레이어 순서가 아니다. 레이어 순서는 첫 등장 순서로 정해지므로,
+    <code>controls.css</code> 가 <code>@layer</code> 선언보다 먼저 나오면
+    <code>ns-controls</code> 가 preflight 앞으로 가서 <code>.ns-*</code> 의 테두리·여백이 전부
+    사라진다. 자리는 하나다 — <code>globals.css</code>, 레이어 순서를 선언하는 그 파일이다.
+    아래 <strong>Tailwind 를 쓰면 레이어 순서를 선언해야 한다</strong> 절과
+    <a href="#usage">환경별 연동</a> 의 Next.js 예시가 같은 형태를 보인다.
   </p>
   <p>
     이미 무접두사 이름(<code>var(--space-3)</code> 등)을 직접 참조하는 CSS 가 있는
@@ -193,10 +202,18 @@
     preflight 가 이 클래스들을 지운다. <strong>이 한 줄이 빠졌는지는 자바스크립트로
     감지할 수 없다</strong> — 유틸이 클래스를 이기는지 화면으로 확인하는 것이 유일한 수단이다.
   </p>
+  <p>
+    <strong>선언과 임포트를 한 파일에 함께 둔다.</strong> 순서 선언은 그 레이어 이름들이 아직
+    나오지 않았을 때만 효력이 있으므로, 임포트가 다른 파일에 흩어져 있으면 어느 것이 먼저
+    번들에 들어가는지에 결과가 매달린다. 위 절의 두 <code>@import</code> 도 여기 함께 온다.
+  </p>
   <script type="text/plain">
-    /* app/globals.css — Tailwind import 보다 위 */
+    /* app/globals.css — 선언이 맨 위, 임포트가 그 아래. 이 파일 하나로 끝난다 */
     @layer theme, base, ns-controls, components, utilities;
+
     @import "tailwindcss";
+    @import "@neosimplix/common-ui/tokens.css";
+    @import "@neosimplix/common-ui/controls.css";
   </script>
 
   <h2 id="migration-0-2-2">0.2.1 → 0.2.2 이관</h2>
@@ -389,11 +406,47 @@
   </p>
 
   <h3>Next.js (App Router)</h3>
+  <p>
+    <strong>두 CSS 는 <code>app/globals.css</code> 안에서 <code>@import</code> 한다.</strong>
+    <code>layout.tsx</code> 는 그 <code>globals.css</code> 하나만 import 하고,
+    <code>tokens.css</code>·<code>controls.css</code> 를 거기서 따로 JS <code>import</code> 하지
+    않는다. <strong>Tailwind 를 쓰면 이 자리 차이 하나가 <code>.ns-*</code> 의 테두리와 여백을
+    통째로 지운다.</strong>
+  </p>
   <script type="text/plain">
-    // app/layout.tsx
-    import "@neosimplix/common-ui/tokens.css";
-    import "@neosimplix/common-ui/controls.css";
+    /* app/globals.css — 임포트와 레이어 순서를 이 파일 하나에서 정한다 */
+    @layer theme, base, ns-controls, components, utilities;
 
+    @import "tailwindcss";
+    @import "@neosimplix/common-ui/tokens.css";
+    @import "@neosimplix/common-ui/controls.css";
+  </script>
+  <p>
+    Tailwind v4 의 임포트 리졸버가 bare specifier 를 해석하므로
+    <code>@import "@neosimplix/…"</code> 가 <code>node_modules</code> 에서 그대로 풀린다.
+    Tailwind 를 쓰지 않으면 <code>@layer</code> 선언과 <code>@import "tailwindcss"</code> 두 줄만
+    빠지고 나머지는 같다.
+  </p>
+  <p>
+    <strong>레이어 순서는 첫 등장 순서로 정해진다.</strong> 위의
+    <code>@layer theme, base, ns-controls, …</code> 는 그 이름들이 아직 한 번도 나오지 않았을 때만
+    순서를 정할 수 있다. <code>layout.tsx</code> 에서 <code>controls.css</code> 를
+    <code>globals.css</code> 보다 먼저 import 하면 번들에 <code>@layer ns-controls { … }</code> 가
+    순서 선언보다 앞서 들어가고, <strong>뒤늦은 선언은 이미 자리를 잡은 레이어를 되돌리지
+    못한다.</strong> 그러면 <code>ns-controls</code> 가 Tailwind 의
+    <code>base</code>(preflight)보다 앞으로 가서 preflight 의
+    <code>*, ::before, ::after, ::backdrop { border: 0 solid; margin: 0; padding: 0 }</code> 가
+    이긴다 — <code>controls.css</code> 가 준 테두리·여백·안쪽 여백이 전부 사라진다.
+  </p>
+  <p>
+    <strong>경고도 에러도 없다.</strong> 빌드는 통과하고 화면만 "테두리를 안 쓰는 디자인"
+    처럼 보인다. 확인은 <code>.ns-button--outline</code> 하나를 골라
+    <code>getComputedStyle(el).borderTopWidth</code> 를 읽는 것이다 — <code>1px</code> 이어야
+    하고, <code>0px</code> 이면 순서가 뒤집힌 것이다. JS <code>import</code> 순서에 기대는 것
+    자체도 위태롭다 — import 정렬 규칙 하나로 뒤집힌다. 한 파일로 모으면 순서가 그 파일 안에
+    눈에 보이는 채로 남는다.
+  </p>
+  <script type="text/plain">
     // app/shell.tsx
     "use client";
     import { useState } from "react";
@@ -424,6 +477,36 @@
       );
     }
   </script>
+
+  <h4 id="usage-use-client">React 래퍼는 전부 클라이언트 경계다</h4>
+  <p>
+    <code>dist/react.js</code> 최상단에 <code>"use client"</code> 배너가 있다.
+    <code>@lit/react</code> 의 <code>createComponent</code> 가 훅을 쓰므로 필요하고 없앨 수 없다.
+    <strong>배너는 파일 단위라 그 진입점이 export 하는 것 전부에 걸린다</strong> — 훅을 쓰지
+    않는 것도 함께 걸린다. <code>&lt;div class="ns-card"&gt;</code> 하나를 그리는
+    <code>Card</code>, 상호작용이 전혀 없는 <code>PageHeading</code> 도 그래서 클라이언트
+    경계다.
+  </p>
+  <p>
+    <strong>서버 컴포넌트에서 쓰는 것 자체는 정상이다</strong> — 배너는 막는 것이 아니라
+    경계를 여는 표시다. 걸리는 것은 <strong>그 경계 너머로 함수를 넘기는 것</strong>이다.
+    표 칼럼을 <code>{ render, sortValue }</code> 처럼 함수를 담은 값으로 정의해 서버 페이지에서
+    넘기면 빌드가 이렇게 깨진다.
+  </p>
+  <script type="text/plain">
+    Error: Functions cannot be passed directly to Client Components
+  </script>
+  <p>
+    라이브러리에 칼럼 API 가 있는 것은 아니다 — 소비자가 자기 표 추상을 그렇게 만들었을 때
+    나는 오류다. 우회는 <strong>칼럼 정의를 <code>"use client"</code> 파일로 내리고 서버
+    페이지는 데이터만 넘기는 것</strong>이다. 함수가 클라이언트 쪽에서 만들어지므로 경계를
+    넘지 않는다.
+  </p>
+  <p>
+    <strong>셸을 이 라이브러리로 바꾸면 표시 전용 컴포넌트까지 클라이언트로 끌려온다.</strong>
+    도입 전에 알아야 하는 사실이라 여기 적어 둔다. 순수 HTML 로 커스텀 엘리먼트를 직접 쓰는
+    경로에는 해당하지 않는다 — 경계는 React 래퍼에만 있다.
+  </p>
 
   <h3 id="usage-ssr-sidebar">SSR 과 사이드바 너비</h3>
   <p>
