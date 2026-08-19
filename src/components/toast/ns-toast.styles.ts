@@ -61,10 +61,16 @@ export const styles = css`
   /*
     tone 은 왼쪽 색 띠 하나로만 표현한다. 배경을 칠하면 글자 대비를 다시 정해야 한다.
 
-    neutral 도 같은 두께의 투명한 띠를 갖는다. 없으면 색 있는 것만 3px 두꺼워져
-    쌓였을 때 neutral 만 안쪽 폭이 좁고 글자 시작점이 어긋난다.
+    neutral 도 같은 두께의 띠를 갖는다. 없으면 색 있는 것만 3px 두꺼워져
+    쌓였을 때 neutral 만 안쪽 폭이 넓고 글자 시작점이 어긋난다.
+
+    색은 var(--ns-color-line) 이다 — .toast 의 다른 세 변과 같은 색이라 눈이
+    "이 변만 두껍다" 로 읽지 "색 띠가 있다" 로 읽지 않는다. --ns-color-line 은
+    채도가 0.004–0.006 로 무채색에 가깝고 모든 tone 은 유채색이라 neutral 이
+    tone 처럼 보일 일도 없다. transparent 를 쓰면 밝은 모드에서 토스트 표면과
+    페이지의 sunken 배경 명도차가 1.5%p 뿐이라 왼쪽 변이 사실상 사라진다.
   */
-  .toast          { border-left: 3px solid transparent; }
+  .toast          { border-left: 3px solid var(--ns-color-line); }
   .toast.success  { border-left-color: var(--ns-color-success); }
   .toast.danger   { border-left-color: var(--ns-color-danger); }
   .toast.warn     { border-left-color: var(--ns-color-warn); }
