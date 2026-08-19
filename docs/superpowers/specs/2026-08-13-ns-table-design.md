@@ -124,6 +124,8 @@ ns-table { display: block; overflow-x: auto; }
 
 ### 5.3 `aria-sort` 의 유일한 작성자는 컴포넌트다
 
+> **2026-08-19 갱신 — 아래 문단의 `none` 은 더 이상 쓰지 않는다.** 정렬 중이 아닌 `<th>` 에서는 속성을 쓰지 않고 **지운다.** 작성자가 하나라는 이 절의 결정은 그대로이고 쓰는 값만 둘로 줄었다. `aria-sort="none"` 이 upgrade 때 서버 마크업에 없던 속성을 만들어 React 하이드레이션이 깨진 경위는 `2026-08-19-consumer-feedback-0.2.5-design.md` §2 에 있다.
+
 활성 `<th>` 에 `ascending` / `descending` / `none` 을 쓴다. **소비자는 `aria-sort` 를 쓰지 않는다** — 작성자가 하나라 React 와 싸우지 않는다.
 
 삼각형은 `aria-sort` 를 받아 CSS 가 그린다.
