@@ -331,6 +331,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <div style={{ display: "flex", height: "6rem" }}>
               <Message>표시할 항목이 없습니다.</Message>
             </div>
+            {/*
+              머리 있는 형태. 바깥의 <Card> 가 프롭 없이 그대로 컴파일되는 것이
+              「heading 이 없으면 예전과 같다」의 검사이고, 이쪽이 새 갈래의 검사다.
+            */}
+            <Card
+              heading="최근 주문"
+              description="최근 30일"
+              actions={<ButtonLink href="/orders" variant="ghost" size="sm">전체 보기</ButtonLink>}
+            >
+              <p>본문</p>
+            </Card>
           </Card>
         </main>
       </div>

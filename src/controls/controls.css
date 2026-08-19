@@ -651,6 +651,58 @@
   }
 
   /*
+    카드 머리. 제목 묶음이 왼쪽, 액션이 오른쪽이다.
+
+    **구분선을 카드 폭 전체로 긋지 않는다.** .ns-card 는 자기 자신에
+    --ns-card-padding 을 갖고 있어서, 전체 폭으로 그으려면 그 패딩을
+    __header·__body 로 내려야 한다 — 그러면 머리 없이 .ns-card 만 쓰던 기존
+    호출부의 패딩이 경고 없이 사라진다. 음수 마진 우회는 쓰지 않는다.
+    안쪽까지만 긋는 선은 대시보드 카드에 흔한 모양이기도 하다.
+
+    __title 과 __description 에 이름을 붙이는 이유: 요소 타입으로 특정되지
+    않는다. 제목 레벨은 소비자가 정하므로(h2 일지 h3 일지 모른다) 요소
+    선택자를 쓸 수 없고, __actions 안에도 <p> 가 들어올 수 있다.
+  */
+  .ns-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ns-space-4);
+    padding-bottom: var(--ns-space-4);
+    margin-bottom: var(--ns-space-6);
+    border-bottom: 1px solid var(--ns-color-line);
+  }
+
+  .ns-card__title {
+    margin: 0;
+    font-size: var(--ns-font-size-base);
+    line-height: var(--ns-line-height-base);
+    font-weight: var(--ns-weight-semibold);
+    color: var(--ns-color-fg);
+  }
+
+  .ns-card__description {
+    margin: var(--ns-space-1) 0 0;
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    color: var(--ns-color-fg-muted);
+  }
+
+  /* 제목이 길어도 액션이 줄바꿈되거나 찌그러지지 않게 한다. */
+  .ns-card__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ns-space-2);
+    flex-shrink: 0;
+  }
+
+  .ns-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ns-space-4);
+  }
+
+  /*
     접히는 섹션. 네이티브 <details>/<summary> 라 열림 상태·키보드·삼각형 표식을
     브라우저가 갖는다 — 우리 JS 가 한 줄도 실행되지 않으므로 태그가 아니라
     클래스다. .ns-checkbox 가 눌리면 체크되는데도 클래스인 것과 같다.

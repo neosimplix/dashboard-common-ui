@@ -1248,6 +1248,12 @@
     카드 표면. 감싸는 <code>div</code> 하나에 스타일뿐이라 클래스다.
     여백(<code>margin</code>)은 제공하지 않는다 — 카드 사이 간격은 배치하는 쪽이 정한다.
   </p>
+  <p>
+    제목 · 설명 · 우측 액션이 필요하면 <code>__header</code> 와 <code>__body</code> 로 나눈다.
+    <strong>제목 레벨은 쓰는 쪽이 정한다</strong> — 페이지에 이미 <code>ns-page-heading</code> 의
+    <code>h1</code> 이 있으므로 대개 <code>h2</code> 지만, 그 화면의 문서 개요를 아는 쪽만 안다.
+    그래서 태그가 아니라 클래스다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">
@@ -1258,24 +1264,85 @@
   <div class="demo block" id="card-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
 
+  <h3>데모 — 머리 있는 카드</h3>
+  <template class="ex">
+    <div class="ns-card">
+      <div class="ns-card__header">
+        <div>
+          <h2 class="ns-card__title">최근 주문</h2>
+          <p class="ns-card__description">최근 30일</p>
+        </div>
+        <div class="ns-card__actions">
+          <a class="ns-button ns-button--ghost ns-button--sm" href="#ns-card">전체 보기</a>
+        </div>
+      </div>
+      <div class="ns-card__body">
+        <p style="margin:0">본문.</p>
+      </div>
+    </div>
+  </template>
+  <div class="demo block" id="card-header-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
   <h3>클래스</h3>
   <table>
     <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
     <tr><td><code>.ns-card</code></td><td><code>div</code></td><td>테두리·반경·표면색·<code>--ns-card-padding</code>·그림자</td></tr>
+    <tr><td><code>.ns-card__header</code></td><td><code>div</code></td><td>제목 묶음이 왼쪽, 액션이 오른쪽. 아래에 구분선을 갖는다 — <strong>선은 내용 폭까지만 그어진다</strong></td></tr>
+    <tr><td><code>.ns-card__title</code></td><td><code>h2</code> / <code>h3</code></td><td>카드 제목. <strong>레벨은 소비자가 정한다</strong>(대개 <code>h2</code>)</td></tr>
+    <tr><td><code>.ns-card__description</code></td><td><code>p</code></td><td>제목 아래 한 줄 보조 설명. 없으면 쓰지 않는다</td></tr>
+    <tr><td><code>.ns-card__actions</code></td><td><code>div</code></td><td>머리 오른쪽의 버튼·링크 묶음. 제목이 길어도 줄어들지 않는다. 없으면 쓰지 않는다</td></tr>
+    <tr><td><code>.ns-card__body</code></td><td><code>div</code></td><td>머리 아래 본문. 자식을 세로로 쌓고 간격을 준다</td></tr>
   </table>
 
   <h3>HTML</h3>
   <script type="text/plain">
     <div class="ns-card">내용</div>
+
+    <div class="ns-card">
+      <div class="ns-card__header">
+        <div>
+          <h2 class="ns-card__title">최근 주문</h2>
+          <p class="ns-card__description">최근 30일</p>
+        </div>
+        <div class="ns-card__actions">
+          <a class="ns-button ns-button--ghost ns-button--sm" href="/orders">전체 보기</a>
+        </div>
+      </div>
+      <div class="ns-card__body">내용</div>
+    </div>
   </script>
 
   <h3>React</h3>
   <script type="text/plain">
-    import { Card } from "@neosimplix/common-ui/react";
+    import { ButtonLink, Card } from "@neosimplix/common-ui/react";
 
     <Card>내용</Card>
     <Card className="mt-8">유틸로 여백을 준다</Card>
+
+    <Card heading="최근 주문" description="최근 30일"
+          actions={<ButtonLink href="/orders" variant="ghost" size="sm">전체 보기</ButtonLink>}>
+      <RecentOrders />
+    </Card>
   </script>
+
+  <h3>주의</h3>
+  <ul>
+    <li>
+      <code>heading</code> 없이 <code>description</code>·<code>actions</code> 만 주는 것은
+      타입이 막는다. 머리는 <code>heading</code> 이 있을 때만 렌더되므로, 셋만 주면 아무것도
+      나오지 않아 조용히 사라진다.
+    </li>
+    <li>
+      구분선은 <strong>내용 폭까지만</strong> 그어진다. 카드 폭 전체로 그으려면
+      <code>.ns-card</code> 가 자기 자신에 갖고 있는 <code>--ns-card-padding</code> 을 하위
+      요소로 내려야 하고, 그러면 머리 없이 쓰던 기존 호출부의 패딩이 경고 없이 사라진다.
+    </li>
+    <li>
+      <code>headingLevel</code> 은 <code>2</code> 또는 <code>3</code> 이고 기본은 <code>2</code> 다.
+      <strong><code>1</code> 은 없다</strong> — 카드 제목이 페이지 제목일 수는 없다.
+    </li>
+  </ul>
 
   <h2 id="ns-accordion">.ns-accordion</h2>
   <p>
