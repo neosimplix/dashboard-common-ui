@@ -15,7 +15,8 @@
   }
   main { max-width: 56rem; margin: 0 auto; padding: var(--ns-space-8) var(--ns-space-6) 6rem; }
   /*
-    이 페이지의 산문 타이포그래피는 .demo 안으로 내려가지 않는다.
+    이 페이지의 산문 타이포그래피는 라이브러리가 그리는 영역 안으로 내려가지
+    않는다. 그 영역은 둘이다 — .demo 안, 그리고 ns-dialog 안.
 
     dist/controls.css 는 @layer ns-controls 에 들어 있고 이 <style> 은 레이어에
     들지 않는다. **레이어에 들지 않은 author 선언은 레이어에 든 선언을 특정도와
@@ -43,21 +44,34 @@
     글자 크기도 .ns-table 의 sm 대신 이 페이지의 xs 였다. code 는 지금 어느
     데모 안에도 없어서 가드를 붙여도 보이는 변화가 없다 — 다음에 들어올 때를
     위해 같은 줄에 맞춰 둔다.
+
+    ns-dialog 가 목록에 따로 있는 이유. nsAlert·nsConfirm 은 <p> 하나를 만들어
+    ns-dialog 에 넣고 그 요소를 document.body 에 붙이므로, 그 <p> 는 어떤 .demo
+    안에도 없다 — .demo 가드가 닿지 않아 같은 페이지의 대화상자 둘이 본문 크기가
+    서로 달라졌다. #dialog-demo 의 <p> 는 대화상자에서 상속받고, 명령형 쪽만
+    이 페이지의 p 규칙(sm · 1.7)을 계속 받았다. 색은 무승부라 눈에 띄지 않았다 —
+    ns-dialog 의 shadow 가 <dialog> 에 --ns-color-fg-body 를 이미 세운다.
+    ns-dialog * 를 목록에 넣으면 양쪽 다 대화상자에서 상속받아 크기가 같아지고,
+    그 값은 소비자가 자기 페이지에서 실제로 보게 될 값이다.
+
+    가드는 아홉 규칙 전부에 같은 목록으로 붙인다. 지금 ns-dialog 안에 실제로
+    걸리는 것은 p 하나뿐이지만, 규칙마다 "이건 걸리나" 를 따져 목록을 다르게
+    두면 데모가 늘 때마다 그 감사를 다시 해야 한다.
   */
-  h1:not(:where(.demo *)) { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
-  h2:not(:where(.demo *)) {
+  h1:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
+  h2:not(:where(.demo *, ns-dialog *)) {
     margin-top: var(--ns-space-8);
     padding-top: var(--ns-space-6);
     border-top: 1px solid var(--ns-color-line);
     font-size: var(--ns-font-size-lg);
     line-height: var(--ns-line-height-lg);
   }
-  h3:not(:where(.demo *)), h4:not(:where(.demo *)) { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
-  p:not(:where(.demo *)), li:not(:where(.demo *)) { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
-  code:not(:where(.demo *)) { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
+  h3:not(:where(.demo *, ns-dialog *)), h4:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  p:not(:where(.demo *, ns-dialog *)), li:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
+  code:not(:where(.demo *, ns-dialog *)) { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
 
-  table:not(:where(.demo *)) { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
-  th:not(:where(.demo *)), td:not(:where(.demo *)) {
+  table:not(:where(.demo *, ns-dialog *)) { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
+  th:not(:where(.demo *, ns-dialog *)), td:not(:where(.demo *, ns-dialog *)) {
     border-bottom: 1px solid var(--ns-color-line);
     padding: var(--ns-space-2) var(--ns-space-3);
     text-align: left;
@@ -65,8 +79,8 @@
     line-height: var(--ns-line-height-sm);
     vertical-align: top;
   }
-  th:not(:where(.demo *)) { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
-  td code:not(:where(.demo *)) { background: none; padding: 0; }
+  th:not(:where(.demo *, ns-dialog *)) { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
+  td code:not(:where(.demo *, ns-dialog *)) { background: none; padding: 0; }
 
   /* 데모는 반드시 높이를 고정한다. tokens.css 의 ns-sidebar 규칙은 전역
      element 선택자라 데모 사이드바에도 적용되는데, 높이를 안 잡으면
