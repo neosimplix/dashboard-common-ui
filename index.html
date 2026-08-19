@@ -2115,7 +2115,12 @@
   <p>
     <strong>프로그램으로 <code>input.checked</code> 를 바꾼 뒤 <code>change</code> 를 직접
     디스패치하는 방식은 지원하지 않는다.</strong> 이 컴포넌트는 <code>click</code> 만 듣는다.
-    선택을 코드로 바꾸려면 <code>selected</code> 프로퍼티를 쓴다.
+    길은 둘이다. <strong>비제어로 두고 있었다면 <code>box.click()</code> 이 그대로 동작한다</strong> —
+    브라우저가 <code>checked</code> 를 뒤집고 <code>click</code> 을 디스패치하므로 사용자가 누른
+    것과 같은 경로이고, 0.2.5 에서도 지금도 같다. 이관이 한 줄로 끝난다.
+    <code>selected</code> 프로퍼티를 쓰는 것도 물론 되지만, 그것은
+    <strong>비제어였던 표를 제어 모드로 옮기는 것</strong>이라 계약이 달라진다 — 그 순간부터
+    컴포넌트는 행 <code>checked</code> 를 쓰지 않고 소비자가 매번 되돌려 그려야 한다.
   </p>
 
   <h3>접근성</h3>
