@@ -209,9 +209,28 @@ export class NsTable extends ReactiveElement {
   }
 
   /*
-    활성 <th> 에 aria-sort 를 쓴다. 컴포넌트가 유일한 작성자다 — 소비자는 이
+    활성 <th> 에만 aria-sort 를 쓴다. 컴포넌트가 유일한 작성자다 — 소비자는 이
     속성을 쓰지 않으므로 React 와 싸우지 않는다. 삼각형은 controls.css 가
     이 속성을 받아 그린다.
+
+    **정렬 중이 아닌 칼럼에는 "none" 을 쓰지 않고 속성을 지운다.** 근거가 둘이다.
+
+    ① aria-sort="none" 은 ARIA 의 기본값이라 속성이 없는 것과 의미가 같다.
+       화면낭독기에 달라지는 것이 없다.
+    ② controls.css 는 "none" 을 보지 않는다 — 삼각형은 [aria-sort="ascending"]
+       과 [aria-sort="descending"] 두 규칙이 그린다. 자리는 .ns-table__sort::after
+       가 opacity: 0 으로 늘 잡아 두므로 속성이 없어도 헤더 폭이 그대로다.
+
+    그래서 지우는 편이 얻는 것이 있다. customElements.define 은 모듈 평가
+    시점에 실행되므로 hydrateRoot 보다 먼저다. "none" 을 쓰면 upgrade 때
+    서버 마크업에 없던 속성이 모든 정렬 칼럼에 생겨 React 가 하이드레이션
+    불일치를 보고한다 — 정렬 헤더를 쓰는 Next.js 소비자 전부가 그 에러를 봤다.
+    지우면 첫 페인트에 아무것도 정렬돼 있지 않은 보통의 경우에 이 컴포넌트가
+    <th> 를 아예 건드리지 않으므로 마크업이 그대로 일치한다.
+
+    default-sort-key 로 처음부터 정렬된 표는 여전히 upgrade 때 속성이 생긴다.
+    그것은 진짜 상태이므로 지울 수 없다 — 그 소비자는 서버 마크업에 같은
+    속성을 직접 렌더한다(index.html 의 SSR 안내).
   */
   #syncAriaSort(): void {
     const key = this.#key;
@@ -219,7 +238,16 @@ export class NsTable extends ReactiveElement {
 
     for (const th of this.querySelectorAll<HTMLElement>("th[data-ns-sort-key]")) {
       if (!this.#owns(th)) continue;
-      th.setAttribute("aria-sort", th.dataset.nsSortKey === key ? direction : "none");
+      /*
+        direction 이 none 이면 #key 가 "" 라 어느 칼럼도 맞지 않지만, 두
+        조건을 함께 본다 — 반쪽 제어(sortDirection 만 설정)에서 그 불변이
+        깨질 수 있고, 그때 aria-sort="none" 을 쓰는 것은 위 ①에 어긋난다.
+      */
+      if (th.dataset.nsSortKey === key && direction !== "none") {
+        th.setAttribute("aria-sort", direction);
+      } else {
+        th.removeAttribute("aria-sort");
+      }
     }
   }
 

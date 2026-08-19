@@ -1004,9 +1004,16 @@
   <h3>정렬 헤더의 모양</h3>
   <p>
     정렬 <strong>동작</strong>은 <code>ns-table</code> 태그가 붙여 준다(별도 절).
-    여기서는 <code>aria-sort</code> 세 상태의 <strong>모양만</strong> 정적으로 보여준다 —
+    여기서는 정렬 세 상태의 <strong>모양만</strong> 정적으로 보여준다 —
     삼각형이 <code>border</code> 로 그려지고, 정렬되지 않은 칼럼에서도 자리를 차지해
     헤더 폭이 흔들리지 않는 것을 확인하는 자리다.
+  </p>
+  <p>
+    <strong>정렬되지 않은 칼럼에는 <code>aria-sort</code> 를 아예 쓰지 않는다.</strong>
+    <code>aria-sort="none"</code> 은 ARIA 의 기본값이라 속성이 없는 것과 의미가 같고,
+    삼각형 자리는 <code>.ns-table__sort::after</code> 가 <code>opacity: 0</code> 으로
+    늘 잡아 둔다. <code>ns-table</code> 태그도 같은 이유로 그 칼럼에서 속성을 지우므로,
+    이 데모의 셋째 칼럼이 그 상태 그대로다.
   </p>
   <p>
     이 데모는 <code>ns-table</code> 로 감싸지 않는다 — 그 컴포넌트가
@@ -1018,7 +1025,7 @@
         <tr>
           <th aria-sort="ascending"><button class="ns-table__sort" type="button">오름차순</button></th>
           <th aria-sort="descending"><button class="ns-table__sort" type="button">내림차순</button></th>
-          <th aria-sort="none"><button class="ns-table__sort" type="button">정렬 안 됨</button></th>
+          <th><button class="ns-table__sort" type="button">정렬 안 됨</button></th>
           <th>버튼 없는 칼럼</th>
         </tr>
       </thead>
@@ -2128,6 +2135,25 @@
     <code>aria-sort</code> 의 <strong>유일한 작성자가 컴포넌트다.</strong> 소비자는 쓰지 않는다.
     삼각형은 <code>content</code> 문자가 아니라 <code>border</code> 로 그린다 — 생성된 텍스트는
     일부 브라우저에서 화면낭독기에 읽혀 <code>aria-sort</code> 와 중복 안내가 된다.
+  </p>
+  <p>
+    <strong>정렬되지 않은 칼럼에는 <code>aria-sort</code> 가 붙지 않는다.</strong>
+    <code>none</code> 은 ARIA 의 기본값이라 속성이 없는 것과 의미가 같고, 굳이 붙이면
+    SSR 마크업에 없던 속성이 upgrade 때 생겨 React 가 하이드레이션 불일치를 보고한다 —
+    <code>customElements.define</code> 은 모듈 평가 시점에 실행되므로
+    <code>hydrateRoot</code> 보다 먼저다. 0.2.5 는 <code>"none"</code> 을 썼고, 정렬 헤더가
+    있는 Next.js 페이지 전부에서 그 경고가 떴다.
+    <code>suppressHydrationWarning</code> 으로는 막을 수 없다 — 그 프롭은 한 단계 아래로
+    내려가지 않고 속성의 주인은 <code>&lt;th&gt;</code> 다.
+  </p>
+  <p>
+    <strong>그 불일치가 남는 경우는 하나다 — <code>default-sort-key</code> 로 처음부터
+    정렬된 표.</strong> 그때 생기는 <code>aria-sort="ascending"</code> 은 진짜 상태라 지울 수
+    없다. 서버 마크업의 해당 <code>&lt;th&gt;</code> 에 같은 값을 직접 렌더하면 맞는다.
+  </p>
+  <p>
+    <strong>소비자가 <code>aria-sort="none"</code> 을 직접 쓰지 않는다.</strong>
+    컴포넌트가 그것을 지우므로 손으로 쓴 값 자체가 불일치가 된다.
   </p>
 
   <h3>HTML — 마크업</h3>
