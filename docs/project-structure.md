@@ -26,7 +26,7 @@
 | `.ns-input` `.ns-select` `.ns-textarea` | 같은 이름의 네이티브 컨트롤 |
 | `.ns-checkbox` | `label` (내부에 `input[type=checkbox]`) |
 | `.ns-field` | `div`. `__label` `__hint` `__error` 를 함께 쓴다 |
-| `.ns-card` | `div` |
+| `.ns-card` | `div`. 머리를 두면 `__header` `__title` `__description` `__actions` `__body` 를 함께 쓴다 |
 | `.ns-table` | `table`. `th`/`td` 는 자손 선택자 |
 | `.ns-table__sort` | `th` 안의 `button` |
 | `.ns-accordion` | `details` (+ `--card` / `--plain` 중 하나를 반드시 함께) |
