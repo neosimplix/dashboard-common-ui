@@ -36,8 +36,8 @@
     데모 안의 꾸미지 않은 <p> 는 이제 body 에서 상속받는다. 스타일 없는 <p> 가
     소비자 페이지에서 갖는 값이 바로 그것이므로 데모로서 더 정확하다.
 
-    같은 성질의 문제가 table/th/td 규칙에도 남아 있다. 이번에 건드리지 않은
-    이유는 보고서에 적었다.
+    같은 성질의 문제가 table/th/td 규칙에도 남아 있다. 이번 라운드에서 건드리지
+    않은 이유는 보고서에 적었다.
   */
   h1:not(:where(.demo *)) { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
   h2:not(:where(.demo *)) {
@@ -1314,6 +1314,7 @@
     <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
     <tr><td><code>.ns-card</code></td><td><code>div</code></td><td>테두리·반경·표면색·<code>--ns-card-padding</code>·그림자</td></tr>
     <tr><td><code>.ns-card__header</code></td><td><code>div</code></td><td>제목 묶음이 왼쪽, 액션이 오른쪽. 아래에 구분선을 갖는다 — <strong>선은 내용 폭까지만 그어진다</strong></td></tr>
+    <tr><td>(이름 없음)</td><td><code>div</code></td><td><code>__title</code> 과 <code>__description</code> 을 감싸는 묶음. <strong>클래스는 없지만 생략하면 안 된다</strong> — <code>__header</code> 가 <code>space-between</code> 이라 둘이 따로 놓이면 설명이 오른쪽 끝으로 밀린다</td></tr>
     <tr><td><code>.ns-card__title</code></td><td><code>h2</code> / <code>h3</code></td><td>카드 제목. <strong>레벨은 소비자가 정한다</strong>(대개 <code>h2</code>)</td></tr>
     <tr><td><code>.ns-card__description</code></td><td><code>p</code></td><td>제목 아래 한 줄 보조 설명. 없으면 쓰지 않는다</td></tr>
     <tr><td><code>.ns-card__actions</code></td><td><code>div</code></td><td>머리 오른쪽의 버튼·링크 묶음. 제목이 길어도 줄어들지 않는다. 없으면 쓰지 않는다</td></tr>
@@ -1366,6 +1367,23 @@
     <li>
       <code>headingLevel</code> 은 <code>2</code> 또는 <code>3</code> 이고 기본은 <code>2</code> 다.
       <strong><code>1</code> 은 없다</strong> — 카드 제목이 페이지 제목일 수는 없다.
+    </li>
+    <li>
+      순수 HTML 에서 <code>__title</code>·<code>__description</code> 을 감싸는
+      <strong>이름 없는 <code>div</code> 를 생략하지 않는다.</strong> <code>__header</code> 가
+      <code>space-between</code> 이라 둘이 형제로 놓이면 설명이 카드 오른쪽 끝으로 밀린다 —
+      에러 없이 배치만 틀어진다. React 의 <code>Card</code> 는 이 <code>div</code> 를 항상
+      내보내므로 손으로 쓰는 HTML 에서만 생기는 문제다.
+    </li>
+    <li>
+      <code>.ns-card__title</code> 은 이 라이브러리가 <strong>제목 요소에 붙이는 첫 클래스</strong>다.
+      소비자의 전역 CSS 에 <code>h2 { … }</code> 가 <strong>레이어 없이</strong> 있으면 그것이
+      <code>.ns-card__title</code> 을 이긴다 — 레이어에 들지 않은 선언은 레이어에 든 선언을
+      특정도와 무관하게 이기기 때문이다. Tailwind 는 preflight 가
+      <code>@layer base</code> 에 있고 문서가 안내하는 순서
+      (<code>@layer theme, base, ns-controls, components, utilities;</code>)가 <code>base</code> 를
+      <code>ns-controls</code> 앞에 두므로 안전하다. 문제가 되는 것은 레이어를 쓰지 않는
+      <code>globals.css</code> 다. 그 경우 그 규칙을 레이어에 넣거나 카드 제목을 선택자에서 뺀다.
     </li>
   </ul>
 
