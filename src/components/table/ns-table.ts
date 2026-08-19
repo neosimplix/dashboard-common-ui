@@ -240,8 +240,11 @@ export class NsTable extends ReactiveElement {
       if (!this.#owns(th)) continue;
       /*
         direction 이 none 이면 #key 가 "" 라 어느 칼럼도 맞지 않지만, 두
-        조건을 함께 본다 — 반쪽 제어(sortDirection 만 설정)에서 그 불변이
-        깨질 수 있고, 그때 aria-sort="none" 을 쓰는 것은 위 ①에 어긋난다.
+        조건을 함께 본다 — 그 불변이 깨지는 경로가 둘이다. 반쪽
+        제어(sortDirection 만 설정)가 하나고, **정상적인 완전 제어도 하나다**:
+        sortKey="name" 과 sortDirection="none" 은 둘 다 설정한 올바른 조합이고
+        "이 칼럼을 기준으로 두되 지금은 정렬하지 않는다" 를 뜻한다. 어느
+        쪽이든 aria-sort="none" 을 쓰는 것은 위 ①에 어긋난다.
       */
       if (th.dataset.nsSortKey === key && direction !== "none") {
         th.setAttribute("aria-sort", direction);
@@ -294,8 +297,15 @@ export class NsTable extends ReactiveElement {
 
     **그래서 두 훅을 정렬 훅이 붙은 <th> 안에 두지 않는다.** 선택 칼럼에는
     data-ns-sort-key 를 붙이지 않는 것이 답이고, index.html 의 데모 마크업이
-    이미 그렇게 돼 있다. 코드로 막을 수 있는 것이 아니다 — 라벨 영역 클릭의
-    타깃은 정말로 라벨이다.
+    이미 그렇게 돼 있다.
+
+    코드로 못 막는 것은 아니다. controls.css 가 이미 :has() 를 쓰므로 브라우저
+    하한이 그것을 보장하고, 아래 closest() 선택자에
+    label:has(> input[data-ns-select-all]) 같은 항을 더하면 라벨 타깃도 체크박스
+    갈래가 먼저 가져갈 수 있다. 하지 않는 이유는 그 선택자가 **소비자의 라벨
+    구조를 가정하기 때문이다** — 감싸는 라벨만 잡히고 for= 로 잇는 라벨은 그대로
+    빠져서, 막았다고 믿을 수 있는 범위가 마크업마다 다르다. 권하지 않는 마크업
+    하나를 반만 막자고 그 가정을 들이지 않는다.
 
     **그래서 훅이 붙은 체크박스만 먼저 본다.** 이 컴포넌트가 아는 체크박스는
     data-ns-select-all 과 data-ns-row-id 둘뿐이고, 둘 다 없는 체크박스는
