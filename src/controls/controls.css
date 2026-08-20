@@ -895,6 +895,44 @@
     background: var(--ns-color-accent-fill-hover);
   }
 
+  /*
+    선택 표시 체크.
+
+    다크에서 채움면이 37% 로 내려가면서 배경만으로는 선택이 약하게 읽힌다.
+    그 신호를 이 표시가 진다.
+
+    **테두리로 그린다. content 에 ✓ 문자를 넣지 않는다.** .ns-table__sort::after
+    의 삼각형과 같은 이유다 — 생성된 텍스트가 일부 화면낭독기에 읽혀 이미
+    aria-checked 가 하고 있는 안내와 중복된다. 테두리로 그린 표시는 텍스트
+    노드가 없어 안내되지 않고, 의미는 aria-checked 하나가 담는다.
+
+    **자리는 선택 여부와 무관하게 늘 잡아 둔다.** 같은 자리에서 같은 이유다 —
+    선택할 때마다 칩 폭이 변하면 칩이 줄바꿈으로 배치돼 있는 화면에서 행 전체가
+    다시 흐른다. 선택 전에는 opacity: 0 이라 보이지 않고 자리만 남는다.
+
+    **[aria-checked] 는 토글 갈래에만 붙는다.** 제거 갈래와 읽기 전용 갈래는
+    <span> 이고 이 속성이 없으므로(ns-multi-select 가 렌더하는 칩이 그것이다)
+    이 선택자가 닿지 않는다 — 자리도 잡지 않는다.
+
+    회전한 ㄴ 자라 시각적 무게가 기하 중심보다 아래에 쏠린다. 살짝 끌어올린다.
+    2px·치수 리터럴은 삼각형과 같은 성격의 구조 상수다.
+  */
+  .ns-chip[aria-checked]::before {
+    content: "";
+    flex: none;
+    width: .3rem;
+    height: .55rem;
+    border-inline-end: 2px solid currentColor;
+    border-block-end: 2px solid currentColor;
+    rotate: 45deg;
+    translate: 0 -.1rem;
+    opacity: 0;
+  }
+
+  .ns-chip[aria-checked="true"]::before {
+    opacity: 1;
+  }
+
   /* 토글 갈래는 자신이 disabled 되고, 제거 갈래는 안쪽 버튼이 disabled 된다. */
   .ns-chip:disabled,
   .ns-chip:has(:disabled) {
