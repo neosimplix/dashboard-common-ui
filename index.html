@@ -2820,8 +2820,9 @@
   <h3 id="overlays-toast">nsToast</h3>
   <p>
     <strong>기본은 상단 중앙</strong>이고 네 자리 중에서 고를 수 있다.
-    <strong>마우스가 올라가 있거나 안쪽에 포커스가 있는 동안 자동 소멸이 멈춘다</strong>
+    <strong>마우스를 움직여 올라가 있거나 안쪽에 포커스가 있는 동안 자동 소멸이 멈춘다</strong>
     — 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는 중에 사라진다.
+    <strong>"움직여서" 가 조건인 이유는 아래 주의에 있다.</strong>
   </p>
   <div class="demo block" id="toast-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-3);padding:var(--ns-space-4)">
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-neutral">기본</button>
@@ -2923,6 +2924,18 @@
       가려진 토스트는 보이지도 눌리지도 않는다. 대화상자를 닫은 뒤에 띄우거나, 그 메시지를
       대화상자 안에 표시한다. (<code>nsAlert</code>·<code>nsConfirm</code> 도 같은
       <code>showModal()</code> 경로다.)
+    </li>
+    <li>
+      <strong>세워 둔 커서 자리에 뜬 토스트는 멈추지 않는다.</strong> 정지는 리전 위의
+      <strong>마우스 움직임</strong>으로 걸린다. 브라우저는 포인터가 전혀 움직이지 않아도
+      레이아웃이 바뀌면 <code>mouseenter</code> 를 내는데, 그것으로 멈추면 <strong>다시 켤
+      이벤트가 영영 오지 않아</strong> 토스트가 화면에 굳는다 — 커서가 그대로인 한 그다음
+      포인터 이벤트가 없기 때문이다. 그래서 움직여서 올라온 포인터만 멈춤으로 친다.
+      <strong>가만히 있는 커서는 누가 읽고 있다는 증거가 아니다.</strong>
+      이 데모에서 재현된다 — <code>위치: bottom-center</code> 로 바꾸고 데모 버튼이 화면
+      아래쪽에 오도록 스크롤한 뒤 <code>duration=1500</code> 을 누르면 토스트가 방금 누른
+      버튼 위에 뜬다. <strong>폼 맨 아래 제출 버튼처럼 실제 앱에도 흔한 배치다.</strong>
+      그 자리에서는 마우스를 조금 움직여야 멈춘다.
     </li>
     <li><code>danger</code> 만 <code>role="alert"</code> 로 즉시 읽힌다. 나머지는 리전의 <code>aria-live="polite"</code> 를 탄다.</li>
     <li>
