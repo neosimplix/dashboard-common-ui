@@ -34,10 +34,12 @@ npm run release -- 0.1.4
 **타입만 바뀐 수정도 태그를 다시 잘라야 한다.** `as EventName<...>` 같은 타입 어노테이션은 런타임 JS 에서 지워지지만 `.d.ts` 에는 남는다. 소스를 고쳐놓고 재발행하지 않으면 소비자는 깨진 타입을 계속 받는다.
 
 ```sh
-git show v0.1.4:dist/react/index.d.ts | grep onNs
+git show v0.1.4:dist/react/elements.d.ts | grep -E 'onNs[A-Za-z]+:'
 ```
 
-`EventName<CustomEvent<...>>` 가 보여야 한다. `string` 이면 옛 빌드다.
+이벤트를 가진 아홉 래퍼가 (`onNsNavigate` 는 세 컴포넌트가 공유하므로) 열 줄로 나와야 하고, 전부 `EventName<CustomEvent<...>>` 여야 한다. **`EventName` 브랜딩은 `dist/react/index.d.ts` 가 아니라 `elements.d.ts` 에 있다** — `index.d.ts` 를 대상으로 grep 하면 아무 줄도 안 나오고 그 상태로 항상 "통과"하므로 검사가 아니다.
+
+나쁜 결과는 둘이다. ① 어떤 줄이 `onNsToggle: string;` 처럼 `EventName<...>` 없이 맨 `string` 으로 끝난다 — 그 이벤트의 캐스트가 소스에서 빠졌거나 약해졌다는 뜻이다. ② 줄이 열 개보다 적게 나온다 — 래퍼 하나가 통째로 사라졌다는 뜻이다.
 
 ### 태그 안의 문서가 자기 버전을 가리키는가
 
