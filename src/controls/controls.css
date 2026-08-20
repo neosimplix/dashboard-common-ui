@@ -87,12 +87,19 @@
     line-height: var(--ns-line-height-sm);
   }
 
-  /* ── 변형 ── */
+  /*
+    ── 변형 ──
+
+    --solid 는 --ns-color-accent 가 아니라 --ns-color-accent-fill 을 쓴다.
+    액센트는 선·링의 색이고 이쪽은 채움면의 색이다 — 나뉜 이유는 tokens.css 의
+    두 주석에 있다. 밝은 모드에서는 두 토큰의 값이 같아 아무것도 달라지지 않고,
+    다크에서만 채움면이 87.1% 에서 37% 로 내려간다.
+  */
   .ns-button--solid {
-    background: var(--ns-color-accent);
-    color: var(--ns-color-accent-fg);
+    background: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
   }
-  .ns-button--solid:hover:not(:disabled, [aria-disabled="true"]) { background: var(--ns-color-accent-hover); }
+  .ns-button--solid:hover:not(:disabled, [aria-disabled="true"]) { background: var(--ns-color-accent-fill-hover); }
   .ns-button--solid:disabled,
   .ns-button--solid[aria-disabled="true"] { background: var(--ns-color-disabled); }
 
@@ -191,8 +198,11 @@
     :focus 가 아니라 :focus-visible 이라 마우스 클릭에는 링이 뜨지 않는다.
 
     offset 이 양수인 이유: 음수로 테두리 안쪽에 그리면 .ns-button--solid 의
-    배경이 --ns-color-accent 라 같은 색 링이 보이지 않는다. 밖에 그리면 어느
-    변형에서든 페이지 표면 위에 놓여 대비가 유지된다.
+    채움면 위에 링이 놓이는데, 밝은 모드에서는 --ns-color-accent-fill 과
+    --ns-color-accent 가 같은 값(21%)이라 링이 아예 보이지 않는다. 다크에서는
+    둘이 갈라졌지만(37% 채움면 · 87.1% 링) 그렇다고 안쪽으로 옮길 이유는 되지
+    않는다 — 밖에 그리면 어느 변형에서든, 어느 모드에서든 페이지 표면 위에
+    놓여 대비가 유지된다.
 
     .ns-table__sort 도 여기 있다 — th 안의 텍스트 버튼이라 배경이 없고,
     링이 없으면 정렬 헤더에 키보드로 도달했는지 알 수 없다. .ns-table__row-button ·
@@ -598,9 +608,19 @@
     font-weight: var(--ns-weight-semibold);
   }
 
+  /*
+    선택된 탭의 배지도 채움면이라 --ns-color-accent-fill 을 쓴다(밑줄은 선이라
+    --ns-color-accent 그대로다 — 바로 위 규칙이다).
+
+    **다크에서는 이 배지만으로 선택을 알아보기 어려워진다.** 선택 안 된 배지가
+    --ns-color-surface-hover(27.4%)이고 선택된 배지가 37% 라 둘의 대비가
+    1.42:1 이다. 탭의 선택 신호는 밑줄과 굵어진 글자가 함께 지므로 신호 자체가
+    사라지지는 않지만, 배지 하나만 놓고 보면 실제로 나빠진 것이 맞다.
+    docs/pending-human-checks.md 에 판정 항목으로 적어 두었다.
+  */
   ns-tabs [data-ns-tab][aria-selected="true"] .ns-tabs__count {
-    background: var(--ns-color-accent);
-    color: var(--ns-color-accent-fg);
+    background: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
   }
 
   /*
@@ -860,14 +880,19 @@
     background: var(--ns-color-surface-hover);
   }
 
+  /*
+    선택된 토글 칩. 배경·테두리·글자가 모두 채움면 토큰이다 — 액센트는 선과
+    링의 색이고 여기는 면이라(tokens.css 의 두 주석) --ns-color-accent-fill 을
+    읽는다. 밝은 모드는 값이 같아 달라지지 않는다.
+  */
   .ns-chip[aria-checked="true"] {
-    background: var(--ns-color-accent);
-    border-color: var(--ns-color-accent);
-    color: var(--ns-color-accent-fg);
+    background: var(--ns-color-accent-fill);
+    border-color: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
   }
 
   .ns-chip[aria-checked="true"]:hover:not(:disabled) {
-    background: var(--ns-color-accent-hover);
+    background: var(--ns-color-accent-fill-hover);
   }
 
   /* 토글 갈래는 자신이 disabled 되고, 제거 갈래는 안쪽 버튼이 disabled 된다. */
