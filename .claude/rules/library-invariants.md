@@ -15,7 +15,7 @@
 ## 컴포넌트
 
 - **제어 중이면 그 값을 바꾸지 않는다.** 소비자가 상태 프로퍼티를 설정했으면(제어) 컴포넌트는 그것을 바꾸지 않고, 설정하지 않았으면(비제어) 스스로 관리한다. 이벤트는 양쪽 모두 낸다.
-- **제어/비제어는 속성 짝으로 나눈다.** 제어는 프로퍼티 전용(`@property({ attribute: false })`), 비제어 초기값은 별도 속성(`default-open`). 하나로 겸용하면 `<ns-dialog open>` 이 제어 모드로 들어가 스스로 닫지 못한다. **그래서 실제로는 그 속성이 조용히 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도 않는다. 라이브러리는 호스트에 속성을 쓰지 않고 Lit 도 `attribute: false` 를 반영하지 않으므로 **그 이름의 속성이 발견되면 언제나 소비자의 실수다.** `connectedCallback` 에서 `warnPropertyOnlyAttributes` 로 경고한다.
+- **제어/비제어는 속성 짝으로 나눈다.** 제어는 프로퍼티 전용(`@property({ attribute: false })`), 비제어 초기값은 별도 속성(`default-open`). 하나로 겸용하면 `<ns-dialog open>` 이 제어 모드로 들어가 스스로 닫지 못한다. **그래서 실제로는 그 속성이 조용히 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도 않는다. 라이브러리는 **그 이름들을** 호스트에 쓰지 않고 Lit 도 `attribute: false` 를 반영하지 않으므로 **그 이름의 속성이 발견되면 언제나 소비자의 실수다.** `connectedCallback` 에서 `warnPropertyOnlyAttributes` 로 경고한다.
 - 모든 커스텀 이벤트는 `bubbles: true, composed: true` 다.
 - `@customElement` 데코레이터를 쓰지 않는다. `src/internal/register.ts` 를 쓴다.
 - 로직과 스타일을 파일 두 개로 나눈다. (`ns-x.ts` / `ns-x.styles.ts`)
