@@ -263,6 +263,13 @@ export class NsToast extends LitElement {
     /*
       리전은 aria-live="polite" 다. danger 항목만 role="alert" 로 즉시 읽게 한다 —
       중첩된 live region 은 안쪽이 자기 부분집합에 대해 이긴다.
+
+      **tone 점은 neutral 에서 아예 그려지지 않는다.** 투명한 자리 채우기를 두지
+      않으므로 neutral 토스트의 글자가 색 있는 것보다 (점 + gap) 만큼 왼쪽에서
+      시작하고, 섞어 쌓으면 시작점이 어긋난다 — 의도한 선택이다(styles 주석).
+
+      점은 aria-hidden 이다. tone 은 danger 의 role="alert" 와 메시지 글자로 이미
+      보조기술에 닿으므로 장식인 점까지 읽힐 이유가 없다.
     */
     return html`
       <div
@@ -278,6 +285,9 @@ export class NsToast extends LitElement {
           (item) => item.key,
           (item) => html`
             <div class="toast ${item.tone}" role=${item.tone === "danger" ? "alert" : nothing}>
+              ${item.tone === "neutral"
+                ? nothing
+                : html`<span class="dot" aria-hidden="true"></span>`}
               <span class="message">${item.message}</span>
               <button
                 class="close"

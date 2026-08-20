@@ -128,21 +128,32 @@ export const styles = css`
   }
 
   /*
-    tone 은 왼쪽 색 띠 하나로만 표현한다. 배경을 칠하면 글자 대비를 다시 정해야 한다.
+    tone 은 메시지 앞의 작은 원점 하나로만 표현한다. 배경을 칠하면 글자 대비를
+    다시 정해야 하고, 왼쪽 변을 두껍게 하면 상자 자체의 모양이 tone 마다 달라진다.
 
-    neutral 도 같은 두께의 띠를 갖는다. 없으면 색 있는 것만 3px 두꺼워져
-    쌓였을 때 neutral 만 안쪽 폭이 넓고 글자 시작점이 어긋난다.
+    **neutral 은 점을 아예 그리지 않는다.** 투명한 자리 채우기를 두지 않는다는
+    뜻이기도 하다 — 그래서 neutral 토스트의 글자는 색 있는 것보다 (점 + gap)
+    만큼 왼쪽에서 시작하고, 섞어 쌓으면 글자 시작점이 어긋난다. **의도한
+    선택이다.** 없는 것을 자리로 주장하지 않는다.
 
-    색은 var(--ns-color-line) 이다 — .toast 의 다른 세 변과 같은 색이라 눈이
-    "이 변만 두껍다" 로 읽지 "색 띠가 있다" 로 읽지 않는다. --ns-color-line 은
-    채도가 0.004–0.006 로 무채색에 가깝고 모든 tone 은 유채색이라 neutral 이
-    tone 처럼 보일 일도 없다. transparent 를 쓰면 밝은 모드에서 토스트 표면과
-    페이지의 sunken 배경 명도차가 1.5%p 뿐이라 왼쪽 변이 사실상 사라진다.
+    점은 장식이다. tone 은 danger 의 role="alert" 와 메시지 글자로 이미
+    보조기술에 닿으므로 ns-toast.ts 가 aria-hidden 을 붙인다.
+
+    첫 줄 글자의 세로 중앙에 맞춘다. .toast 가 align-items: flex-start 라 점이
+    그대로 상자 맨 위에 붙는데, 여러 줄 메시지에서 그것이 첫 글자보다 위에
+    뜬다. 줄 높이와 점 지름의 차이 절반만큼 내리면 첫 줄과 중심이 같아진다.
   */
-  .toast          { border-left: 3px solid var(--ns-color-line); }
-  .toast.success  { border-left-color: var(--ns-color-success); }
-  .toast.danger   { border-left-color: var(--ns-color-danger); }
-  .toast.warn     { border-left-color: var(--ns-color-warn); }
+  .dot {
+    flex-shrink: 0;
+    width: var(--ns-space-2);
+    height: var(--ns-space-2);
+    margin-top: calc((var(--ns-line-height-sm) - var(--ns-space-2)) / 2);
+    border-radius: var(--ns-radius-pill);
+  }
+
+  .toast.success .dot { background: var(--ns-color-success); }
+  .toast.danger  .dot { background: var(--ns-color-danger); }
+  .toast.warn    .dot { background: var(--ns-color-warn); }
 
   .message {
     flex: 1;

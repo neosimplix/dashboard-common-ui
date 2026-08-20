@@ -2863,7 +2863,7 @@
   <table>
     <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>message</code></td><td>—</td><td>문자열만. <code>textContent</code> 로 들어간다</td></tr>
-    <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 왼쪽 색 띠로만 표현한다</td></tr>
+    <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 메시지 앞의 작은 색 점으로만 표현한다 — <strong><code>"neutral"</code> 은 점을 그리지 않는다</strong></td></tr>
     <tr><td><code>options.duration</code></td><td><code>4000</code></td><td>밀리초. <strong><code>0</code> 이면 자동으로 사라지지 않는다</strong></td></tr>
   </table>
   <p>돌려주는 함수를 부르면 즉시 닫힌다. 두 번 불러도 안전하다.</p>
@@ -2920,6 +2920,13 @@
       <code>showModal()</code> 경로다.)
     </li>
     <li><code>danger</code> 만 <code>role="alert"</code> 로 즉시 읽힌다. 나머지는 리전의 <code>aria-live="polite"</code> 를 탄다.</li>
+    <li>
+      <strong><code>tone</code> 점은 <code>neutral</code> 에서 그려지지 않는다.</strong> 투명한 자리
+      채우기를 두지 않으므로 <strong><code>neutral</code> 토스트의 글자는 색 있는 것보다 왼쪽에서
+      시작하고, 섞어 쌓으면 시작점이 어긋난다.</strong> 의도한 선택이다 — 없는 것을 자리로
+      주장하지 않는다. 점은 장식이라 <code>aria-hidden</code> 이고, tone 은
+      <code>danger</code> 의 <code>role="alert"</code> 와 메시지 글자로 보조기술에 닿는다.
+    </li>
     <li>서버에서 부르면 아무 일도 하지 않는다 — 이벤트 핸들러에서만 부른다.</li>
   </ul>
 
