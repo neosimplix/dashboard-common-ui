@@ -60,9 +60,14 @@ export const styles = css`
     font-weight: var(--ns-weight-semibold);
   }
 
+  /*
+    활성 배지도 채움면이라 --ns-color-accent 가 아니라 --ns-color-accent-fill 을
+    읽는다. 나뉜 이유는 tokens.css 에 있다 — 액센트는 선·링, 이쪽은 면이다.
+    밝은 모드는 두 토큰의 값이 같아 달라지지 않는다.
+  */
   :host([active]) .badge {
-    background: var(--ns-color-accent);
-    color: var(--ns-color-accent-fg);
+    background: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
   }
 
   /*
