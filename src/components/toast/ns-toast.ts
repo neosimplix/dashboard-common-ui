@@ -186,8 +186,9 @@ export class NsToast extends LitElement {
   }
 
   /*
-    마우스가 올라가 있거나 안쪽에 포커스가 있는 동안 자동 소멸을 멈춘다.
-    안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는 중에 사라진다.
+    포인터가 위에서 움직였거나(#onMouseMove 주석 참고) 안쪽에 포커스가 있는 동안
+    자동 소멸을 멈춘다. 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는 중에
+    사라진다.
 
     items 배열을 갈아 끼우지 않고 항목을 직접 고친다 — 화면에 보이는 것이 하나도
     바뀌지 않으므로 리렌더할 이유가 없다.
@@ -217,7 +218,34 @@ export class NsToast extends LitElement {
     else this.#resumeTimers();
   }
 
-  #onMouseEnter = (): void => {
+  /*
+    **정지는 진입이 아니라 움직임으로 건다.** 바인딩이 `@mouseenter` 가 아니라
+    `@mousemove` 인 이유가 이것이다.
+
+    브라우저는 포인터가 **전혀 움직이지 않아도** hover 를 다시 계산한다. 레이아웃이
+    바뀌어 커서 밑에 있던 것이 달라지면 그것만으로 경계 이벤트를 낸다. 그래서
+    세워 둔 커서 자리에 토스트가 떠오르면 show() 가 방금 건 타이머가 몇 ms 뒤
+    mouseenter 로 꺼지고, **다시 켤 이벤트가 영영 오지 않는다** — 커서가 그대로면
+    그다음 포인터 이벤트가 아예 없기 때문이다. 실측한 순서가 그것이다: 토스트가
+    뜬 뒤 7ms 에 pointerover·mouseover·mouseenter 가 오고 mousemove 는 오지 않는다.
+    1500ms 짜리가 remaining 1496 에서 멈춘 채 남는다.
+
+    **mousemove 는 그 경로로 합성되지 않는다.** 포인터가 실제로 움직여야만 온다.
+    그래서 "움직여서 토스트 위로 왔다" 와 "가만히 있는데 토스트가 밑으로 왔다" 가
+    이 이벤트 하나로 갈린다.
+
+    **커서가 세워져 있던 자리에 뜬 토스트는 이제 제 시간에 사라진다. 의도한 동작
+    변경이다** — 멈춰 있는 커서는 누가 읽고 있다는 증거가 아니다. 흔한 쪽은 그대로다:
+    움직여서 올라온 포인터는 안에서 mousemove 를 내므로 예전처럼 멈추고, 그 뒤로
+    가만히 있어도 계속 멈춰 있다. #hovered 를 내리는 것은 mouseleave 하나뿐이다.
+
+    **그 대신 안쪽 mousemove 없이 mouseleave 만 오는 경우가 생긴다.** 위의 그 토스트
+    에서 포인터가 빠져나갈 때다. 무해하다 — #hovered 가 이미 false 라 false 를 다시
+    쓰는 것이고, #sync 는 적용된 상태가 그대로면 즉시 돌아간다.
+
+    움직임마다 부르는 비용도 그 이른 반환이 덮는다. 불리언 비교 하나다.
+  */
+  #onMouseMove = (): void => {
     this.#hovered = true;
     this.#sync();
   };
@@ -275,7 +303,7 @@ export class NsToast extends LitElement {
       <div
         class="region"
         aria-live="polite"
-        @mouseenter=${this.#onMouseEnter}
+        @mousemove=${this.#onMouseMove}
         @mouseleave=${this.#onMouseLeave}
         @focusin=${this.#onFocusIn}
         @focusout=${this.#onFocusOut}
