@@ -2819,9 +2819,9 @@
 
   <h3 id="overlays-toast">nsToast</h3>
   <p>
-    우하단에 쌓인다. <strong>마우스가 올라가 있거나 안쪽에 포커스가 있는 동안 자동
-    소멸이 멈춘다</strong> — 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는
-    중에 사라진다.
+    <strong>기본은 상단 중앙</strong>이고 네 자리 중에서 고를 수 있다.
+    <strong>마우스가 올라가 있거나 안쪽에 포커스가 있는 동안 자동 소멸이 멈춘다</strong>
+    — 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는 중에 사라진다.
   </p>
   <div class="demo block" id="toast-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-3);padding:var(--ns-space-4)">
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-neutral">기본</button>
@@ -2829,7 +2829,35 @@
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-danger">danger</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-warn">warn</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-sticky">duration=0 (안 사라짐)</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-top-center">위치: top-center</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-bottom-center">위치: bottom-center</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-top-right">위치: top-right</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-bottom-right">위치: bottom-right</button>
   </div>
+  <p>
+    위치 버튼은 <code>nsToastPosition()</code> 을 부른 뒤 그 자리에 토스트를 하나
+    띄운다. <strong>이미 떠 있는 토스트가 있으면 함께 새 자리로 옮겨간다</strong> —
+    리전이 문서당 하나라 그렇다. <code>duration=0</code> 을 먼저 띄워 두고
+    위치를 바꾸면 그것이 보인다.
+  </p>
+
+  <h4>위치</h4>
+  <p>
+    이름은 <strong><code>세로-가로</code></strong> 로 고정돼 있다.
+    <code>"center-top"</code> 같은 다른 표기는 받지 않는다.
+  </p>
+  <table>
+    <tr><th>값</th><th>자리</th></tr>
+    <tr><td><code>"top-center"</code></td><td><strong>기본.</strong> 위 가운데</td></tr>
+    <tr><td><code>"bottom-center"</code></td><td>아래 가운데</td></tr>
+    <tr><td><code>"top-right"</code></td><td>우상단</td></tr>
+    <tr><td><code>"bottom-right"</code></td><td>우하단</td></tr>
+  </table>
+  <p>
+    <strong>좌측 두 자리(<code>top-left</code>·<code>bottom-left</code>)는 없다.</strong>
+    이 라이브러리의 셸이 좌측에 사이드바를 두므로 좌하단 토스트는 접힌 레일 위에
+    겹치고 펼친 사이드바에서는 아예 가려진다. 필요해지면 그때 더한다.
+  </p>
 
   <h4>인자</h4>
   <table>
@@ -2842,9 +2870,12 @@
 
   <h4>JS</h4>
   <script type="text/plain">
-    import { nsToast } from "@neosimplix/common-ui/react";
+    import { nsToast, nsToastPosition } from "@neosimplix/common-ui/react";
     // 순수 HTML 은 "@neosimplix/common-ui" 에서 같은 함수를 받는다.
     // React 에서 그쪽을 쓰면 요소 번들이 두 벌 들어온다.
+
+    // 앱이 뜰 때 한 번. 안 부르면 top-center 다.
+    nsToastPosition("bottom-right");
 
     nsToast("저장했습니다", { tone: "success" });
 
@@ -2852,10 +2883,34 @@
     // …끝나면
     close();
   </script>
+  <p>
+    <code>NsToastPosition</code> 타입도 같은 경로에서 받는다.
+  </p>
+
+  <h4>이관 — 기본 자리가 바뀌었다</h4>
+  <p>
+    <strong>0.3.0 까지는 우하단이 유일한 자리였고, 그다음부터 기본이
+    <code>"top-center"</code> 다.</strong> 동작 변경이다. 예전 모양을 그대로 두려면
+    앱 시작 지점에 한 줄을 더한다.
+  </p>
+  <script type="text/plain">
+    nsToastPosition("bottom-right");
+  </script>
 
   <h4>주의</h4>
   <ul>
     <li><code>&lt;ns-toast&gt;</code> 를 직접 마크업에 쓰지 않는다. <code>nsToast()</code> 가 문서당 하나를 만들어 <code>body</code> 에 붙인다.</li>
+    <li>
+      <strong><code>nsToastPosition()</code> 은 전역이다.</strong> 리전이 문서당 하나라 위치는
+      그 리전의 성질이지 개별 토스트의 성질이 아니다 — 그래서 <code>nsToast()</code> 의 옵션이
+      아니다. 위치마다 리전을 따로 두면 정지 상태와 쌓기가 갈라져, 한쪽에 마우스를 올려도
+      다른 쪽은 계속 사라진다.
+    </li>
+    <li>
+      언제 불러도 된다. 토스트가 뜨기 전이면 값만 기억했다가 리전을 만들 때 적용하고,
+      <strong>이미 떠 있으면 그것들을 통째로 데리고 새 자리로 옮겨간다.</strong>
+      시작 시점에 한 번 부르는 것이 정상 사용이다.
+    </li>
     <li>
       <strong>모달 <code>ns-dialog</code> 가 열려 있는 동안 띄운 토스트는 대화상자 뒤에 가린다.</strong>
       <code>showModal()</code> 이 대화상자를 <strong>top layer</strong> 로 올리는데, top layer 는
@@ -3715,6 +3770,17 @@
     toastDemo.querySelector("#toast-demo-sticky").addEventListener("click", () => {
       NsCommonUi.nsToast("직접 닫아야 사라진다", { duration: 0 });
     });
+    /*
+      위치 전환. 자리를 바꾼 뒤 곧바로 하나 띄워 어디로 갔는지 보이게 한다 —
+      바꾸기만 하면 다음 토스트를 띄우기 전까지 아무 변화가 없어서, 눌러 놓고
+      안 눌린 줄 안다. 떠 있는 토스트가 있으면 그것도 함께 옮겨가는 것이 보인다.
+    */
+    for (const pos of ["top-center", "bottom-center", "top-right", "bottom-right"]) {
+      toastDemo.querySelector(`#toast-demo-pos-${pos}`).addEventListener("click", () => {
+        NsCommonUi.nsToastPosition(pos);
+        NsCommonUi.nsToast(`위치: ${pos}`);
+      });
+    }
   }
 
   /* alert/confirm 데모. 결과를 옆에 적어 어느 경로로 닫혔는지 보이게 한다. */
