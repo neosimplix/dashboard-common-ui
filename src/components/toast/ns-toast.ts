@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from "lit";
-import { state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
 import { register } from "../../internal/register.js";
@@ -10,6 +10,16 @@ import { styles } from "./ns-toast.styles.js";
 import "../icon/ns-icon.js";
 
 export type NsToastTone = "neutral" | "success" | "danger" | "warn";
+
+/**
+ * 리전이 뜨는 자리. 이름은 **`세로-가로`** 로 고정한다 — `"center-top"` 같은
+ * 관용 표기를 함께 받지 않는다. 받는 순간 문서와 코드가 두 표기를 평생 함께 든다.
+ *
+ * **좌측 정렬 두 값이 없는 것은 빠뜨린 것이 아니다.** 이 라이브러리의 셸이 좌측에
+ * 사이드바를 두므로 좌하단 토스트는 접힌 레일 위에 겹치고 펼친 사이드바에서는
+ * 아예 가려진다. 필요해지면 그때 더한다 — 값을 더하는 것은 breaking 이 아니다.
+ */
+export type NsToastPosition = "top-center" | "bottom-center" | "top-right" | "bottom-right";
 
 interface ToastItem {
   key: number;
@@ -31,10 +41,39 @@ interface ToastItem {
  * shadow 인 이유: 페이지 위에 겹쳐 뜨므로 소비자 CSS 와 격리돼야 한다. Light DOM
  * 이면 소비자의 `div { … }` 한 줄이 토스트를 무너뜨릴 수 있다.
  *
- * **직접 마크업에 쓰는 태그가 아니다.** 프로퍼티도 슬롯도 없다.
+ * **직접 마크업에 쓰는 태그가 아니다.** 슬롯이 없고, 프로퍼티는 `position` 하나인데
+ * 그것도 소비자가 아니라 `nsToastPosition()` 이 세운다.
  */
 export class NsToast extends LitElement {
   static override styles = styles;
+
+  /*
+    리전이 뜨는 자리. shadow CSS 의 :host([position="…"]) 네 규칙이 이 속성을 받는다.
+
+    **"호스트의 속성을 쓰지 않는다" 불변 규칙의 대상이 아니다.** 그 규칙이 막는 것은
+    *소비자가 쓴* 속성을 덮어 문서화된 override 를 조용히 죽이는 것인데, ns-toast 는
+    nsToast() 가 만들어 body 에 붙이는 리전이라 **마크업에 쓰지 않는 것이 문서화된
+    사용법이다** — 덮어 없앨 소비자 값이 존재하지 않는다. ns-tabs 의 role="tablist"
+    처럼 조건을 봐야 할 이유도 없다.
+
+    **첫 프레임에 엉뚱한 자리로 뜨지 않는다.** 근거가 셋이다.
+
+    ① Lit 은 속성 반영을 shadow DOM 커밋보다 **먼저** 한다. LitElement.update() 가
+       render() 결과를 손에 든 채 super.update() 를 부르고(ReactiveElement.update 이
+       거기서 __reflectingProperties 를 속성으로 내보낸다) 그다음에야 renderRoot 에
+       심는다. 그래서 토스트 DOM 이 존재하는 첫 순간에는 속성이 이미 붙어 있다.
+    ② 그 이전 구간(createElement ~ 첫 업데이트)에는 shadow 가 비어 있어 그릴 것이
+       없다. nsToast() 는 리전 생성과 show() 를 같은 태스크에서 하고 Lit 의 첫
+       업데이트는 그 태스크의 마이크로태스크에서 일어나므로, 그 사이에 페인트가
+       끼어들 자리도 없다.
+    ③ 그럼에도 :host 자체에 기본값(top-center)의 인셋을 함께 뒀다. ①②가 무너지는
+       경로(예: 소비자가 태그를 직접 써서 upgrade 전 구간이 생기는 것)에서도
+       기본 자리로 오게 하는 안전망이다.
+
+    기본값이 필드 초기화로 들어가도 반영은 일어난다 — Lit 은 undefined 에서
+    "top-center" 로 바뀐 것을 변경으로 보고 반영 목록에 넣는다.
+  */
+  @property({ reflect: true }) position: NsToastPosition = "top-center";
 
   @state() private items: ToastItem[] = [];
 

@@ -71,9 +71,9 @@ export type { ChipProps } from "./controls/Chip.js";
   정상이고 빌드도 통과한다. 서버 렌더 중에 nsToast() 를 부르면 터지지 않고
   document 가 없다는 것을 보고 조용히 no-op 를 돌려준다.
 */
-export { nsToast } from "../components/toast/toast.js";
+export { nsToast, nsToastPosition } from "../components/toast/toast.js";
 export type { NsToastOptions } from "../components/toast/toast.js";
-export type { NsToastTone } from "../components/toast/ns-toast.js";
+export type { NsToastPosition, NsToastTone } from "../components/toast/ns-toast.js";
 export { nsAlert, nsConfirm } from "../components/dialog/confirm.js";
 export type { NsAlertOptions, NsConfirmOptions } from "../components/dialog/confirm.js";
 
