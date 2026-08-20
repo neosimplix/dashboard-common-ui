@@ -658,3 +658,23 @@ Light DOM 인 진짜 이유는 셋이다.
 **둘 다 아니면 쓰지 않는다.** `ns-table` 도 `ns-pagination` 도 `ns-multi-select` 도 호스트에 아무것도 쓰지 않는다.
 
 두 번째 물음은 **"소비자가 잘 안 쓸 것 같다" 가 아니라 "쓰는 경로가 없다"** 여야 한다. `ns-toast` 의 근거는 취향이 아니라 사실이다 — 생성자가 `toast.ts` 의 `region()` 하나이고, 문서가 그것을 유일한 사용법으로 적고 있다. **그 사실이 흔들리면 예외도 함께 흔들린다.** 언젠가 `<ns-toast>` 를 소비자가 배치하게 하려면 그때 조건부 쓰기로 바꾸거나 속성을 버려야 한다.
+
+## `left: 50%` 로 가운데 정렬한 fixed 상자는 폭이 절반이 된다
+
+`ns-toast` 의 기본 자리를 우하단에서 상단 중앙으로 옮기면서 나왔다. `:host { position: fixed; left: 50%; transform: translateX(-50%) }` 는 가운데 정렬의 교과서적 모양인데, **좁은 화면에서 토스트 폭이 화면의 절반으로 눌린다.**
+
+원인은 `width: auto` 다. 절대·고정 위치 상자에서 `width` 와 `right` 가 auto 이고 `left` 가 auto 가 아니면 폭은 **shrink-to-fit** 이고(CSS 2.1 §10.3.7 규칙 3), 그 계산의 "available width" 는 **컨테이닝 블록 폭에서 `left` 를 뺀 값**이다. `left: 50%` 면 `50vw` 다.
+
+```
+폭 360px 화면에서
+  .region 의 max-width : min(24rem, 100vw - 2rem) = 328px
+  available width      : 100vw - 50%              = 180px   ← 이쪽이 먼저 걸린다
+```
+
+**어느 자동 검사도 못 본다.** CSS 는 문법으로 멀쩡하고 `max-width` 도 그대로 있으며, 지워지는 선언이 아니라 계산 결과다(그래서 `:host` 박스 검사인 규칙 ④ 와도 종류가 다르다). 게다가 **넓은 화면에서는 `50vw` 가 `max-width` 보다 커서 아무 일도 일어나지 않는다** — 개발자 화면에서는 정상으로 보이고 좁은 화면에서만 나타난다.
+
+→ **`:host` 에 `width: max-content` 를 둔다.** `max-content` 는 available width 를 쓰지 않으므로 잘림이 사라지고, 넘치는 것은 `.region` 의 `max-width` 가 그대로 막는다 — 자식의 max-content contribution 은 자기 `max-width` 로 클램프되기 때문이다. 오른쪽 정렬 자리(`left: auto`, `right: 1rem`)는 available width 가 `100vw - 1rem` 이라 원래도 `max-width` 가 먼저 걸렸고, 그래서 값이 달라지지 않는다.
+
+→ **`margin-inline: auto` 는 쓸 수 없다.** `left: 0; right: 0` 으로 펴고 마진으로 가운데를 잡는 것이 흔한 대안인데, `:host` 의 `margin` 은 Tailwind preflight 가 0 으로 덮는다(위 "`:host` 는 소비자 문서 규칙에 진다"). `check-tokens.mjs` 규칙 ④ 가 그 선언을 실패시키는 것도 같은 이유다 — **막힌 길이 이미 규칙으로 표시돼 있었다.**
+
+→ 일반화하면, **인셋을 한쪽만 준 auto 폭 상자는 남은 자리를 "쓸 수 있는 폭" 으로 삼는다.** 가운데를 노리고 `left: 50%` 를 쓰는 순간 그 값이 절반이 된다. 폭을 내용이 정해야 하는 자리에서는 `width` 를 명시한다.
