@@ -5,7 +5,12 @@ import "./ns-toast.js";
 
 export interface NsToastOptions {
   tone?: NsToastTone;
-  /** 밀리초. **`0` 이면 자동으로 사라지지 않는다** — 닫기 버튼이나 반환값으로만 닫힌다. */
+  /**
+   * **토스트가 머무는 시간(밀리초).** 그만큼 지나면 저절로 닫힌다 — `3000` 이면 3 초다.
+   * 기본은 `4000` 이다.
+   *
+   * **특수한 값은 `0` 하나다** — 자동으로 사라지지 않고 닫기 버튼이나 반환값으로만 닫힌다.
+   */
   duration?: number;
 }
 
@@ -68,6 +73,11 @@ export function nsToastPosition(next: NsToastPosition): void {
  *
  * ```ts
  * nsToast("저장했습니다", { tone: "success" });
+ *
+ * // 머무는 시간을 직접 정한다. 3 초 뒤에 저절로 닫힌다.
+ * nsToast("저장했습니다", { duration: 3000 });
+ *
+ * // 0 은 특수한 값이다 — 저절로 닫히지 않는다.
  * const close = nsToast("업로드 중…", { duration: 0 });
  * // …끝나면
  * close();

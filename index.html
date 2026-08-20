@@ -2828,6 +2828,7 @@
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-success">success</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-danger">danger</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-warn">warn</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-short">duration=1500 (1.5초 뒤 사라짐)</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-sticky">duration=0 (안 사라짐)</button>
     <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-top-center">위치: top-center</button>
     <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-bottom-center">위치: bottom-center</button>
@@ -2864,7 +2865,7 @@
     <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>message</code></td><td>—</td><td>문자열만. <code>textContent</code> 로 들어간다</td></tr>
     <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 메시지 앞의 작은 색 점으로만 표현한다 — <strong><code>"neutral"</code> 은 점을 그리지 않는다</strong></td></tr>
-    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td>밀리초. <strong><code>0</code> 이면 자동으로 사라지지 않는다</strong></td></tr>
+    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td><strong>토스트가 머무는 시간(밀리초).</strong> 그만큼 지나면 저절로 닫힌다 — <code>3000</code> 이면 3 초다. <strong>특수한 값은 <code>0</code> 하나</strong>로, 자동으로 사라지지 않고 닫기 버튼이나 반환값으로만 닫힌다</td></tr>
   </table>
   <p>돌려주는 함수를 부르면 즉시 닫힌다. 두 번 불러도 안전하다.</p>
 
@@ -2879,6 +2880,10 @@
 
     nsToast("저장했습니다", { tone: "success" });
 
+    // 머무는 시간을 직접 정한다. 3 초 뒤에 저절로 닫힌다.
+    nsToast("저장했습니다", { duration: 3000 });
+
+    // 0 은 특수한 값이다 — 저절로 닫히지 않는다.
     const close = nsToast("업로드 중…", { duration: 0 });
     // …끝나면
     close();
@@ -3774,6 +3779,14 @@
         NsCommonUi.nsToast(toastTones[tone], { tone });
       });
     }
+    /*
+      평범한 duration. 기본(4000)과 0 만 데모에 있으면 이 옵션이 "자동 소멸을
+      끄는 스위치" 로 읽힌다 — 실제로는 얼마나 머무는지를 정하는 값이다.
+      1.5 초면 누른 자리에서 눈으로 사라지는 것까지 볼 수 있다.
+    */
+    toastDemo.querySelector("#toast-demo-short").addEventListener("click", () => {
+      NsCommonUi.nsToast("1.5초 뒤에 사라진다", { duration: 1500 });
+    });
     toastDemo.querySelector("#toast-demo-sticky").addEventListener("click", () => {
       NsCommonUi.nsToast("직접 닫아야 사라진다", { duration: 0 });
     });
