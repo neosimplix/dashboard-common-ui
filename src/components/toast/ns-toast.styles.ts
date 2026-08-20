@@ -13,12 +13,18 @@ export const styles = css`
   :host {
     position: fixed;
     /*
-      **기본 자리(top-center)의 인셋을 :host 에도 둔다.** Lit 은 속성을 첫
-      업데이트에서 반영하므로 그 전에는 [position] 이 없고, 아래 네 규칙 중
-      아무것도 걸리지 않는다. 그 구간에 그려질 것이 실제로 있는지와 무관하게
-      값이 하나도 없는 fixed 상자는 정적 위치(문서 흐름상 body 끝)에 남으므로,
-      기본값에 해당하는 인셋을 여기 둬서 그 경우에도 제자리에 오게 한다.
-      구간 자체의 분석은 ns-toast.ts 의 position 주석에 있다.
+      **기본 자리(top-center)의 인셋을 :host 에도 둔다.** 아래 네 규칙 중 아무것도
+      걸리지 않는 상태가 둘 있고, 인셋이 하나도 없는 fixed 상자는 정적 위치
+      (문서 흐름에서 있었을 자리)에 남으므로 그 둘을 여기서 받는다.
+
+      ⓐ connectedCallback ~ 첫 update() — Lit 이 속성을 첫 업데이트에서 반영하므로
+         그 전에는 [position] 이 없다.
+      ⓑ **범위 밖의 값.** 타입이 없는 UMD·순수 JS 소비자가 nsToastPosition("center-top")
+         을 부르면 그 문자열이 그대로 반영돼 어느 규칙에도 걸리지 않는다.
+
+      **upgrade 전 구간은 여기서 덮이지 않는다** — shadow root 가 없으면 이 규칙도
+      없다. 그 구간은 애초에 그릴 내용이 없어 문제가 되지 않는다. 근거는 ns-toast.ts
+      의 position 주석에 있다.
     */
     top: var(--ns-space-4);
     right: auto;

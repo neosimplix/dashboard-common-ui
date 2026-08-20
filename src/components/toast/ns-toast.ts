@@ -63,12 +63,28 @@ export class NsToast extends LitElement {
        거기서 __reflectingProperties 를 속성으로 내보낸다) 그다음에야 renderRoot 에
        심는다. 그래서 토스트 DOM 이 존재하는 첫 순간에는 속성이 이미 붙어 있다.
     ② 그 이전 구간(createElement ~ 첫 업데이트)에는 shadow 가 비어 있어 그릴 것이
-       없다. nsToast() 는 리전 생성과 show() 를 같은 태스크에서 하고 Lit 의 첫
-       업데이트는 그 태스크의 마이크로태스크에서 일어나므로, 그 사이에 페인트가
-       끼어들 자리도 없다.
-    ③ 그럼에도 :host 자체에 기본값(top-center)의 인셋을 함께 뒀다. ①②가 무너지는
-       경로(예: 소비자가 태그를 직접 써서 upgrade 전 구간이 생기는 것)에서도
-       기본 자리로 오게 하는 안전망이다.
+       없다. Lit 의 첫 업데이트는 connectedCallback 이 resolve 하는 프로미스를
+       기다리므로 연결 전에는 아예 돌지 않고, nsToast() 는 리전 생성과 show() 를
+       같은 태스크에서 하므로 연결 이후 첫 업데이트까지도 한 태스크 안이다 —
+       그 사이에 페인트가 끼어들 자리가 없다.
+    ③ 그럼에도 :host 자체에 기본값(top-center)의 인셋을 함께 뒀다.
+
+    ③ 이 실제로 덮는 구간은 둘이고, 어느 쪽도 "upgrade 전" 이 아니다. **upgrade
+    전에는 shadow root 가 없어 :host 규칙도 존재하지 않는다** — shadow 쪽에만
+    있는 규칙이 그 구간을 못 덮는 것은 ::slotted 에서 이미 겪은 것과 같다
+    (docs/gotchas.md). 그 구간이 문제가 되지 않는 이유는 따로 있다: upgrade 전
+    <ns-toast> 는 자식 없는 인라인 요소라 자리를 틀릴 내용 자체가 없고, 그래서
+    tokens.css 에도 ns-toast 예약이 없다.
+
+    ③ 이 덮는 것은 이 둘이다.
+
+    ⓐ connectedCallback ~ 첫 update() — shadow root 는 있고 속성은 아직 없는
+       구간이다. ② 가 여기에 페인트가 없다고 말하지만, 그 논증이 틀려도 기본
+       자리로 온다.
+    ⓑ **범위 밖의 런타임 값.** UMD·순수 JS 소비자에게는 NsToastPosition 타입이
+       없으므로 NsCommonUi.nsToastPosition("center-top") 이 그대로 반영된다.
+       네 규칙 중 아무것도 걸리지 않는 속성이 붙고, :host 가 그것을 조용히
+       top-center 로 받는다. 던지지도 사라지지도 않는다.
 
     기본값이 필드 초기화로 들어가도 반영은 일어난다 — Lit 은 undefined 에서
     "top-center" 로 바뀐 것을 변경으로 보고 반영 목록에 넣는다.
