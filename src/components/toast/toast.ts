@@ -9,7 +9,10 @@ export interface NsToastOptions {
    * **토스트가 머무는 시간(밀리초).** 그만큼 지나면 저절로 닫힌다 — `3000` 이면 3 초다.
    * 기본은 `4000` 이다.
    *
-   * **특수한 값은 `0` 하나다** — 자동으로 사라지지 않고 닫기 버튼이나 반환값으로만 닫힌다.
+   * **자동으로 사라지지 않게 하려면 `0` 을 준다** — 닫기 버튼이나 반환값으로만 닫힌다.
+   * `0` 이 그 뜻으로 쓰는 값이지만, **양수 유한값이 아닌 것은 전부 같은 쪽으로 떨어진다**
+   * (음수 · `NaN` · `Infinity`). `Infinity` 를 「영원히」 로 쓰는 관용을 한 프레임 번쩍이는
+   * 토스트로 배신하지 않기 위해서다 — 근거는 `ns-toast.ts` 의 `#startItem` 주석에 있다.
    */
   duration?: number;
 }
@@ -77,7 +80,7 @@ export function nsToastPosition(next: NsToastPosition): void {
  * // 머무는 시간을 직접 정한다. 3 초 뒤에 저절로 닫힌다.
  * nsToast("저장했습니다", { duration: 3000 });
  *
- * // 0 은 특수한 값이다 — 저절로 닫히지 않는다.
+ * // 0 이면 저절로 닫히지 않는다. Infinity 를 줘도 같다.
  * const close = nsToast("업로드 중…", { duration: 0 });
  * // …끝나면
  * close();

@@ -2917,7 +2917,7 @@
     <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>message</code></td><td>—</td><td>문자열만. <code>textContent</code> 로 들어간다</td></tr>
     <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 메시지 앞의 작은 색 점으로만 표현한다 — <strong><code>"neutral"</code> 은 점을 그리지 않는다</strong></td></tr>
-    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td><strong>토스트가 머무는 시간(밀리초).</strong> 그만큼 지나면 저절로 닫힌다 — <code>3000</code> 이면 3 초다. <strong>특수한 값은 <code>0</code> 하나</strong>로, 자동으로 사라지지 않고 닫기 버튼이나 반환값으로만 닫힌다</td></tr>
+    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td><strong>토스트가 머무는 시간(밀리초).</strong> 그만큼 지나면 저절로 닫힌다 — <code>3000</code> 이면 3 초다. <strong>자동 소멸을 끄려면 <code>0</code> 을 준다</strong> — 닫기 버튼이나 반환값으로만 닫힌다. <code>0</code> 이 그 뜻으로 쓰는 값이지만 <strong>양수 유한값이 아닌 것은 전부 같은 쪽</strong>이다(음수 · <code>NaN</code> · <code>Infinity</code>)</td></tr>
   </table>
   <p>돌려주는 함수를 부르면 즉시 닫힌다. 두 번 불러도 안전하다.</p>
 
@@ -2935,7 +2935,7 @@
     // 머무는 시간을 직접 정한다. 3 초 뒤에 저절로 닫힌다.
     nsToast("저장했습니다", { duration: 3000 });
 
-    // 0 은 특수한 값이다 — 저절로 닫히지 않는다.
+    // 0 이면 저절로 닫히지 않는다. Infinity 를 줘도 같다.
     const close = nsToast("업로드 중…", { duration: 0 });
     // …끝나면
     close();

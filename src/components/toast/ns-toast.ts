@@ -25,7 +25,7 @@ interface ToastItem {
   key: number;
   message: string;
   tone: NsToastTone;
-  /** 0 이면 자동으로 사라지지 않는다. */
+  /** 양수 유한값이 아니면(0 이하·NaN·Infinity) 자동으로 사라지지 않는다. */
   duration: number;
   /** 남은 시간. hover·포커스로 멈출 때마다 줄어든다. */
   remaining: number;
@@ -178,9 +178,19 @@ export class NsToast extends LitElement {
     this.items = this.items.filter((i) => i.key !== key);
   }
 
-  /** duration 이 0 이거나 이미 돌고 있으면 아무 일도 하지 않는다(재개가 멱등한 근거). */
+  /*
+    자동 소멸 타이머를 건다. 이미 돌고 있으면 아무 일도 하지 않는다 — 재개가
+    멱등한 근거다.
+
+    **양수 유한값이 아니면 걸지 않는다.** 「저절로 사라지지 않는다」 는 한쪽으로
+    0 이하·NaN·Infinity 를 전부 모은다. duration <= 0 만 보면 Infinity 가 가드를
+    통과해 setTimeout(cb, Infinity) 로 가는데, WebIDL 의 long 변환이 비유한값을
+    0 으로 만들므로 **다음 태스크에 즉시 닫힌다** — 「영원히 띄운다」 는 뜻으로
+    Infinity 를 준 소비자가 한 프레임 번쩍이는 토스트를 받고, 오류도 경고도 없다.
+    NaN 도 같은 경로다. 음수는 원래 <= 0 이라 영구였고 그대로 유지된다.
+  */
   #startItem(item: ToastItem): void {
-    if (item.duration <= 0 || item.timer !== undefined) return;
+    if (!Number.isFinite(item.duration) || item.duration <= 0 || item.timer !== undefined) return;
     item.startedAt = Date.now();
     item.timer = window.setTimeout(() => this.dismiss(item.key), item.remaining);
   }
