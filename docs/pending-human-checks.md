@@ -409,11 +409,13 @@ ms.defaultValue = ["choi", "han"];     // 페이지 로드가 끝난 뒤의 대�
 
 **아래 아홉은 전부 함께 어두워졌고 그것이 의도다 — 개별 컴포넌트의 회귀가 아니다.** `grep -rn "ns-color-accent" src/` 에서 그대로 뽑았다(주석 안의 언급은 뺐다).
 
+**줄 번호는 뽑은 시점의 스냅숏이다.** 같은 파일 위쪽이 자라면 그만큼 밀린다 — 실제로 한 번 19 줄, 한 번 3 줄 밀렸다. 연 자리에 규칙이 아니라 주석이 나오면 번호를 믿지 말고 위 `grep` 을 다시 돌린다. **번호가 아니라 「무엇」 칸의 선택자가 이 표의 식별자다.**
+
 | # | 자리 | 무엇 | 어디서 보나 |
 |---|---|---|---|
 | 1 | `controls.css:241` 포커스 링 | `.ns-button`·`.ns-input`·`.ns-textarea`·`.ns-select`·`.ns-chip`·`.ns-chip__remove`·`.ns-table__sort`·`.ns-table__row-button` 여덟. offset **+2px(바깥)** | 여러 데모 |
 | 2 | `controls.css:600` 포커스 링 | `ns-tabs [data-ns-tab]`. offset **−2px(안쪽)** | `#tabs-demo` |
-| 3 | `controls.css:764` 포커스 링 | `.ns-accordion summary`. offset **−2px(안쪽)** | `#accordion-demo` |
+| 3 | `controls.css:767` 포커스 링 | `.ns-accordion summary`. offset **−2px(안쪽)** | `#accordion-demo` |
 | 4 | `ns-header` `.toggle` 포커스 링 | offset +2px(바깥) | 페이지 헤더 |
 | 5 | `ns-dialog` `.close` 포커스 링 | offset +2px(바깥) | `#dialog-demo` |
 | 6 | `ns-toast` `.close` 포커스 링 | offset +2px(바깥) | `#toast-demo` |
