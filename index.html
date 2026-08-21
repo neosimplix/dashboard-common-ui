@@ -665,11 +665,14 @@
     }
   </script>
   <p>
-    <strong><code>--ns-color-accent-hover</code> 와 <code>--ns-color-accent-fg</code> 를
-    읽는 규칙은 더 이상 없다.</strong> hover 와 글자색이 걸리던 자리가 전부 채움면이었기
-    때문이다. 공개 토큰이라 지우지 않았지만 <strong>덮어도 화면은 바뀌지 않는다</strong> —
-    위 <code>--ns-color-accent-fill-hover</code>·<code>--ns-color-accent-fill-fg</code> 를
-    쓴다.
+    <strong><code>--ns-color-accent-hover</code> 와 <code>--ns-color-accent-fg</code> 는
+    0.3.0 이후 없어졌다.</strong> hover 와 글자색이 걸리던 자리가 전부 채움면이라
+    <code>--ns-color-accent-fill-hover</code>·<code>--ns-color-accent-fill-fg</code> 로
+    옮겨갔고, 남은 자리는 선과 링뿐이라 두 이름이 가리킬 대상이 없어졌다.
+    <strong>덮어도 아무 일도 일어나지 않는 이름을 남겨 두는 것이 없는 것보다 나빠서
+    지웠다</strong> — 그 이름을 쓰고 있었다면 위의 <code>-fill-</code> 쪽으로 옮긴다.
+    <code>aliases.css</code> 의 <code>--color-accent-hover</code>·<code>--color-accent-fg</code>
+    도 함께 사라진다.
   </p>
 
   <div class="demo block" style="padding: var(--ns-space-4)">
@@ -3546,7 +3549,7 @@
     "--ns-color-surface", "--ns-color-surface-sunken", "--ns-color-surface-hover",
     "--ns-color-line", "--ns-color-line-strong",
     "--ns-color-fg", "--ns-color-fg-body", "--ns-color-fg-muted", "--ns-color-fg-subtle",
-    "--ns-color-accent", "--ns-color-accent-hover", "--ns-color-accent-fg",
+    "--ns-color-accent",
     "--ns-color-accent-fill", "--ns-color-accent-fill-hover", "--ns-color-accent-fill-fg",
     "--ns-color-disabled", "--ns-color-disabled-fg",
     "--ns-color-danger", "--ns-color-danger-surface", "--ns-color-warn", "--ns-color-warn-surface",
