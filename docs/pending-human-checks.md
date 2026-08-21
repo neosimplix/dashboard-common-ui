@@ -401,7 +401,9 @@ ms.defaultValue = ["choi", "han"];     // 페이지 로드가 끝난 뒤의 대�
 
 ### A-19. 다크 액센트가 낮아졌다 — 선·링 아홉 곳이 함께 어두워진다
 
-**이 항목은 델타 두 개가 겹쳐 있다.** 먼저 `--ns-color-accent` 의 다크 절반이 `oklch(98.5% 0 0)` → `oklch(87.1% 0.006 286.286)` 로(hover 는 `oklch(92% …)` → `oklch(70.5% 0.015 286.067)`) 내려갔고, 그다음 델타가 **채움면 넷을 이 토큰에서 통째로 떼어냈다.** 그래서 지금 이 토큰이 칠하는 것은 **선과 링뿐**이고, 아홉 자리다. **밝은 모드는 두 델타 어느 쪽에서도 한 글자도 바뀌지 않았다.**
+**이 항목은 델타 두 개가 겹쳐 있다.** 먼저 `--ns-color-accent` 의 다크 절반이 `oklch(98.5% 0 0)` → `oklch(87.1% 0.006 286.286)` 로 내려갔고, 그다음 델타가 **채움면 넷을 이 토큰에서 통째로 떼어냈다.** 그래서 지금 이 토큰이 칠하는 것은 **선과 링뿐**이고, 아홉 자리다. **밝은 모드는 두 델타 어느 쪽에서도 한 글자도 바뀌지 않았다.**
+
+**짝이던 `--ns-color-accent-hover` 를 찾지 않는다. 지금은 없는 이름이다.** 이 사이클 안에서 값이 한 번 내려갔다가(`oklch(92% …)` → `oklch(70.5% …)`) 뒤처리 델타가 토큰 자체를 지웠다 — 경위는 A-25 에 있다. 아래 아홉 자리에는 hover 가 애초에 없다(선과 링이라 hover 할 대상이 아니다).
 
 **떼어낸 채움면 넷은 여기서 보지 않는다** — `.ns-button--solid` 는 A-21, 선택된 `.ns-chip` 은 A-22, `.ns-tabs__count` 는 A-23, 활성 `ns-nav-item` 배지는 A-21 에 함께 적혀 있다. 이 항목에서 그 넷을 찾으면 없다. 빠뜨린 것이 아니다.
 
@@ -409,9 +411,9 @@ ms.defaultValue = ["choi", "han"];     // 페이지 로드가 끝난 뒤의 대�
 
 | # | 자리 | 무엇 | 어디서 보나 |
 |---|---|---|---|
-| 1 | `controls.css:222` 포커스 링 | `.ns-button`·`.ns-input`·`.ns-textarea`·`.ns-select`·`.ns-chip`·`.ns-chip__remove`·`.ns-table__sort`·`.ns-table__row-button` 여덟. offset **+2px(바깥)** | 여러 데모 |
-| 2 | `controls.css:581` 포커스 링 | `ns-tabs [data-ns-tab]`. offset **−2px(안쪽)** | `#tabs-demo` |
-| 3 | `controls.css:745` 포커스 링 | `.ns-accordion summary`. offset **−2px(안쪽)** | `#accordion-demo` |
+| 1 | `controls.css:241` 포커스 링 | `.ns-button`·`.ns-input`·`.ns-textarea`·`.ns-select`·`.ns-chip`·`.ns-chip__remove`·`.ns-table__sort`·`.ns-table__row-button` 여덟. offset **+2px(바깥)** | 여러 데모 |
+| 2 | `controls.css:600` 포커스 링 | `ns-tabs [data-ns-tab]`. offset **−2px(안쪽)** | `#tabs-demo` |
+| 3 | `controls.css:764` 포커스 링 | `.ns-accordion summary`. offset **−2px(안쪽)** | `#accordion-demo` |
 | 4 | `ns-header` `.toggle` 포커스 링 | offset +2px(바깥) | 페이지 헤더 |
 | 5 | `ns-dialog` `.close` 포커스 링 | offset +2px(바깥) | `#dialog-demo` |
 | 6 | `ns-toast` `.close` 포커스 링 | offset +2px(바깥) | `#toast-demo` |
@@ -542,7 +544,7 @@ ms.defaultValue = ["choi", "han"];     // 페이지 로드가 끝난 뒤의 대�
 
 - **다크에서 "disabled" 의 글자가 "solid" 의 글자보다 뚜렷하게 흐린지.** 이것이 통과 조건이다. **잘못된 것:** 두 글자가 같은 밝기다 — 그러면 `color` 선언이 실제로 걸리지 않은 것이고, 원인은 값이 아니라 `controls.css` 의 특정도다
 - **다크에서 "disabled" 가 "가라앉은 버튼" 으로 읽히는지, "다른 변형" 으로 읽히지는 않는지.** **잘못된 것:** 27.4% 판이 페이지 위에 또렷한 별개 카드처럼 떠 보인다
-- **다크에서 "danger disabled" 도 같이 흐려졌는지.** 같은 토큰 짝을 쓰므로 함께 바뀐다. 배경이 `--ns-color-danger`(70.4%) 에서 27.4% 로 내려간다. **잘못된 것:** 이 버튼만 예전처럼 빨간 배경에 어두운 글자로 남았다
+- **다크에서 "danger disabled" 도 같이 흐려졌는지.** 같은 토큰 짝을 쓰므로 함께 바뀐다. **빨간 배경이었던 적은 없다** — 비활성 규칙이 `--ns-color-danger` 를 이미 덮고 있었으므로 이 델타 전에도 배경은 `--ns-color-disabled`(당시 37% 회색)였다. 이번에 바뀐 것은 그 배경이 37% → **27.4%**, 글자가 `--ns-color-danger-fg`(21%, 어두운 글자) → **55.2%** 로 간 것 둘이다. **잘못된 것:** 바로 위 "disabled" 와 나란히 놓았을 때 이 버튼의 글자만 또렷하다(어두운 21% 글자가 남았다는 뜻이다). 판정 기준은 위 solid 항목과 같다 — 배경이 아니라 글자다
 - **밝은 모드에서 넷 다 이전과 똑같아 보이는지.** 값이 같으므로 달라 보이면 그것이 회귀다. **잘못된 것:** 밝은 모드의 비활성 글자가 회색으로 보인다(`#fff` 여야 한다)
 - **`.ns-chip:disabled` 는 이 항목과 무관하다** — 칩의 비활성은 배경을 바꾸지 않고 `opacity: .6` 이라 선택된 칩이든 아니든 원래 색이 비쳐 보인다
 - **3.08:1 이 4.5:1 을 밑도는 것은 결함이 아니다.** WCAG 1.4.3 이 비활성 컨트롤을 대비 요구에서 제외한다. 밝은 모드가 1.48:1 로 하고 있는 일과 같은 것을 다크에서 값으로 다시 세운 것이다
