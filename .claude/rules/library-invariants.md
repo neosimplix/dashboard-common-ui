@@ -15,11 +15,11 @@
 ## 컴포넌트
 
 - **제어 중이면 그 값을 바꾸지 않는다.** 소비자가 상태 프로퍼티를 설정했으면(제어) 컴포넌트는 그것을 바꾸지 않고, 설정하지 않았으면(비제어) 스스로 관리한다. 이벤트는 양쪽 모두 낸다.
-- **제어/비제어는 속성 짝으로 나눈다.** 제어는 프로퍼티 전용(`@property({ attribute: false })`), 비제어 초기값은 별도 속성(`default-open`). 하나로 겸용하면 `<ns-dialog open>` 이 제어 모드로 들어가 스스로 닫지 못한다. **그래서 실제로는 그 속성이 조용히 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도 않는다. 라이브러리는 호스트에 속성을 쓰지 않고 Lit 도 `attribute: false` 를 반영하지 않으므로 **그 이름의 속성이 발견되면 언제나 소비자의 실수다.** `connectedCallback` 에서 `warnPropertyOnlyAttributes` 로 경고한다.
+- **제어/비제어는 속성 짝으로 나눈다.** 제어는 프로퍼티 전용(`@property({ attribute: false })`), 비제어 초기값은 별도 속성(`default-open`). 하나로 겸용하면 `<ns-dialog open>` 이 제어 모드로 들어가 스스로 닫지 못한다. **그래서 실제로는 그 속성이 조용히 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도 않는다. 라이브러리는 **그 이름들을** 호스트에 쓰지 않고 Lit 도 `attribute: false` 를 반영하지 않으므로 **그 이름의 속성이 발견되면 언제나 소비자의 실수다.** `connectedCallback` 에서 `warnPropertyOnlyAttributes` 로 경고한다.
 - 모든 커스텀 이벤트는 `bubbles: true, composed: true` 다.
 - `@customElement` 데코레이터를 쓰지 않는다. `src/internal/register.ts` 를 쓴다.
 - 로직과 스타일을 파일 두 개로 나눈다. (`ns-x.ts` / `ns-x.styles.ts`)
-- **호스트의 속성을 쓰지 않는다.** `setAttribute` 로 소비자가 쓴 속성을 덮으면 문서화된 override 가 조용히 죽는다. 숨길 것은 shadow 안의 요소에 붙인다. **예외는 호스트 말고는 둘 곳이 없는 ARIA 소유 관계 하나다** — `ns-tabs` 가 `role="tablist"` 를 쓰고, 이미 `role` 이 있으면 건드리지 않아 규칙이 막으려던 성질을 지킨다. 근거는 `docs/gotchas.md` 에 있다.
+- **호스트의 속성을 쓰지 않는다.** `setAttribute` 로 소비자가 쓴 속성을 덮으면 문서화된 override 가 조용히 죽는다. 숨길 것은 shadow 안의 요소에 붙인다. **예외는 호스트 말고는 둘 곳이 없는 ARIA 소유 관계 하나다** — `ns-tabs` 가 `role="tablist"` 를 쓰고, 이미 `role` 이 있으면 건드리지 않아 규칙이 막으려던 성질을 지킨다. **호스트에 속성이 찍히는 컴포넌트는 둘이지만 예외는 이 하나다** — `ns-toast` 의 `position` 은 소비자가 마크업에 쓰는 경로가 없어 덮을 값이 없으므로 애초에 이 규칙이 금지하는 행위가 아니다. 두 경우를 가르는 기준은 `docs/gotchas.md` 에 있다.
 - **shadow 스타일이 UA 기본값을 덮으면 되돌릴 규칙을 함께 둔다.** author 선언은 특정도와 무관하게 origin 으로 UA 를 이긴다.
 - **React shim 은 이벤트 `detail` 을 실제로 읽는다.** 인자 0개 핸들러는 `EventName<>` 캐스트 누락을 감춘다.
 - **shim 은 필드가 하나인 `detail` 만 벗긴다.** 단일 필드는 그 필드를 인자로 주고(`onClose(reason)`), 필드가 여럿이면 레코드째 넘긴다(`onNavigate(detail)`). 여럿을 벗으면 한 필드를 근거 없이 특권화하게 되고, **필드를 하나 더하는 것이 breaking 이 된다.**

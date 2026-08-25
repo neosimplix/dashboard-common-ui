@@ -60,9 +60,22 @@ export const styles = css`
     font-weight: var(--ns-weight-semibold);
   }
 
+  /*
+    활성 배지도 채움면이라 --ns-color-accent 가 아니라 --ns-color-accent-fill 을
+    읽는다. 나뉜 이유는 tokens.css 에 있다 — 액센트는 선·링, 이쪽은 면이다.
+    밝은 모드는 두 토큰의 값이 같아 달라지지 않는다.
+
+    **다크에서는 이 배지가 자기 행 배경에서 거의 떨어지지 않는다.** 활성 행이
+    --ns-color-surface-hover(27.4%)이고 배지가 37% 라 둘의 대비가 1.42:1 이다
+    (채움면 분리 전에는 87.1% 라 10.08:1 이었다). .ns-tabs__count 가 받은 것과
+    같은 값 짝이고 그래서 같은 수치다 — controls.css 의 그 규칙 주석을 함께 본다.
+    활성 신호는 행 배경·글자색이 함께 지므로 활성 항목을 못 알아보게 되지는
+    않지만, **배지 하나만 놓고 보면 실제로 나빠진 것이 맞다. 알고 넣은 저하다.**
+    docs/pending-human-checks.md 에 판정 항목으로 적어 두었다.
+  */
   :host([active]) .badge {
-    background: var(--ns-color-accent);
-    color: var(--ns-color-accent-fg);
+    background: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
   }
 
   /*

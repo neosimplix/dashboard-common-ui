@@ -49,11 +49,19 @@ import {
   Textarea,
   nsConfirm,
   nsToast,
+  nsToastPosition,
   registerIcons,
   svg,
   tabIdFor,
 } from "../src/react/index.js";
-import type { NsDialogCloseReason, NsSortDetail } from "../src/react/index.js";
+import type { NsDialogCloseReason, NsSortDetail, NsToastPosition } from "../src/react/index.js";
+
+/*
+  토스트 위치는 리전 하나의 성질이라 전역 설정이다. 소비자는 앱이 뜰 때 한 번 부른다.
+  타입도 함께 내보내는지가 여기서 검사된다 — 값만 내보내고 타입을 빠뜨리면 소비자가
+  이 상수에 이름을 붙일 수 없다.
+*/
+const TOAST_POSITION: NsToastPosition = "bottom-right";
 
 /*
   스프라이트 등록. 소비자가 실제로 쓰는 형태 그대로 — 이 경로 하나만
@@ -229,7 +237,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
               명령형 API 다. 래퍼가 없으므로 이벤트 핸들러에서 그대로 부른다 —
               소비자 관점에서 import 경로와 인자 타입이 맞는지가 여기서 검사된다.
             */}
-            <Button size="sm" onClick={() => nsToast("저장했습니다", { tone: "success" })}>
+            <Button
+              size="sm"
+              onClick={() => {
+                nsToastPosition(TOAST_POSITION);
+                nsToast("저장했습니다", { tone: "success" });
+              }}
+            >
               저장
             </Button>
             <Dialog

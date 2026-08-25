@@ -642,12 +642,38 @@
     의도적으로 재현한다.
   </p>
   <p>브랜드 색을 바꾸려면 <code>:root</code> 에서 다시 정의한다. 문서 쪽 선언이 항상 이긴다.</p>
+  <p>
+    <strong>액센트는 토큰 하나가 아니라 두 벌이다.</strong>
+    <code>--ns-color-accent</code> 는 <strong>선과 링</strong>의 색이고
+    (포커스 링 여섯 · <code>.ns-input</code> 계열의 포커스 테두리 · 탭 활성 밑줄 ·
+    체크박스 <code>accent-color</code>),
+    <code>--ns-color-accent-fill</code> 세 토큰은 <strong>채움면</strong>의 색이다
+    (<code>.ns-button--solid</code> · 선택된 <code>.ns-chip</code> ·
+    <code>.ns-tabs__count</code> · 활성 <code>ns-nav-item</code> 의 배지).
+    <strong>둘을 함께 덮어야 브랜드 색이 화면 전체에 걸린다</strong> — 한쪽만 덮으면
+    나머지 절반이 기본 색으로 남는다.
+  </p>
   <script type="text/plain">
     :root {
+      /* 선 · 링 */
       --ns-color-accent: #2563eb;
-      --ns-color-accent-hover: #1d4ed8;
+
+      /* 채움면 */
+      --ns-color-accent-fill: #2563eb;
+      --ns-color-accent-fill-hover: #1d4ed8;
+      --ns-color-accent-fill-fg: #fff;
     }
   </script>
+  <p>
+    <strong><code>--ns-color-accent-hover</code> 와 <code>--ns-color-accent-fg</code> 는
+    0.3.0 이후 없어졌다.</strong> hover 와 글자색이 걸리던 자리가 전부 채움면이라
+    <code>--ns-color-accent-fill-hover</code>·<code>--ns-color-accent-fill-fg</code> 로
+    옮겨갔고, 남은 자리는 선과 링뿐이라 두 이름이 가리킬 대상이 없어졌다.
+    <strong>덮어도 아무 일도 일어나지 않는 이름을 남겨 두는 것이 없는 것보다 나빠서
+    지웠다</strong> — 그 이름을 쓰고 있었다면 위의 <code>-fill-</code> 쪽으로 옮긴다.
+    <code>aliases.css</code> 의 <code>--color-accent-hover</code>·<code>--color-accent-fg</code>
+    도 함께 사라진다.
+  </p>
 
   <div class="demo block" style="padding: var(--ns-space-4)">
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--ns-space-2)"></div>
@@ -736,7 +762,7 @@
   <table>
     <tr><th>클래스</th><th>역할</th></tr>
     <tr><td><code>.ns-button</code></td><td>기본. 항상 붙인다</td></tr>
-    <tr><td><code>.ns-button--solid</code></td><td>액센트 배경. 주 동작</td></tr>
+    <tr><td><code>.ns-button--solid</code></td><td>채움면 배경. 주 동작. 색은 <code>--ns-color-accent-fill</code> 세 토큰이고 <strong>선·링의 <code>--ns-color-accent</code> 와 다른 값이다</strong> (다크에서만 갈라진다)</td></tr>
     <tr><td><code>.ns-button--outline</code></td><td>테두리만. 보조 동작</td></tr>
     <tr><td><code>.ns-button--ghost</code></td><td>배경 없음. 행·카드 안에 인라인으로 놓이는 낮은 우선순위 진입점 — 「삭제」도 확인이 뒤에 남아 있으면 여기다</td></tr>
     <tr><td><code>.ns-button--danger</code></td><td>되돌릴 수 없는 동작을 <strong>지금 확정하는</strong> 버튼. 배경이 <code>--ns-color-danger</code>. <strong>hover 에서 변하지 않는다</strong></td></tr>
@@ -1562,6 +1588,31 @@
     무효가 된다. 선택 상태는 클래스가 아니라 <code>aria-checked="true"</code> 로 표시한다 —
     <code>.ns-input</code> 의 <code>aria-invalid</code> 와 같은 규칙이다.
   </p>
+  <p>
+    <strong>선택된 토글 칩에는 체크 표시가 붙는다.</strong> 다크에서 채움면이
+    <code>--ns-color-accent-fill</code>(37%)로 내려가 배경만으로는 선택이 약하게
+    읽히므로, 그 신호를 표시가 함께 진다. 두 가지가 의도적이다 —
+  </p>
+  <ul>
+    <li>
+      <strong><code>content</code> 문자가 아니라 테두리로 그린다.</strong>
+      <code>.ns-table__sort</code> 의 삼각형과 같은 이유다. 생성된 텍스트는 일부
+      화면낭독기에 읽혀 <code>aria-checked</code> 가 이미 하고 있는 안내와 중복된다
+    </li>
+    <li>
+      <strong>자리는 선택 여부와 무관하게 늘 잡아 둔다.</strong> 선택할 때마다 칩 폭이
+      변하면 줄바꿈으로 놓인 칩 행 전체가 다시 흐른다. 선택 전에는 보이지 않고 자리만 남는다
+    </li>
+  </ul>
+  <p>
+    <strong>자리를 잡는 선택자는 <code>role="checkbox"</code> 에 걸려 있다</strong> —
+    <code>aria-checked</code> 속성의 존재가 아니다. 속성에 걸면 비선택 칩에
+    <code>aria-checked="false"</code> 를 적지 않은 소비자에게서 선택하는 순간 자리가
+    새로 생겨, <strong>이 예약이 막으려는 폭 변화가 그대로 일어난다.</strong> 토글 갈래는
+    <code>role</code> 을 빠뜨릴 수 없으므로(빠뜨리면 <code>aria-checked</code> 자체가 무시된다)
+    그쪽에 건다. 제거 갈래·읽기 전용 갈래의 <code>&lt;span&gt;</code> 에는 <code>role</code> 이
+    없어 자리도 잡히지 않는다 — <code>ns-multi-select</code> 가 그리는 칩이 그쪽이다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">
@@ -1592,7 +1643,7 @@
   <h3>상태</h3>
   <table>
     <tr><th>표시</th><th>결과</th></tr>
-    <tr><td><code>aria-checked="true"</code></td><td>액센트 배경. 토글 갈래에서만 쓴다</td></tr>
+    <tr><td><code>aria-checked="true"</code></td><td>채움면 배경 + 테두리 + <strong>체크 표시</strong>. 토글 갈래에서만 쓴다</td></tr>
     <tr><td><code>disabled</code></td><td><code>opacity: .6</code>. 제거 갈래는 안쪽 버튼에 붙인다(<code>:has()</code> 로 잡는다)</td></tr>
   </table>
 
@@ -1618,7 +1669,7 @@
   <h3>주의</h3>
   <ul>
     <li><code>removeLabel</code> 기본값(<code>"제거"</code>)을 그대로 두지 않는다. 칩이 여러 개일 때 이름이 전부 같아져 어느 칩인지 구별되지 않는다.</li>
-    <li>토글 갈래에 <code>role="checkbox"</code> 를 빠뜨리면 <code>aria-checked</code> 가 무시된다 — 배경은 칠해지지만 화면낭독기는 선택 상태를 모른다.</li>
+    <li>토글 갈래에 <code>role="checkbox"</code> 를 빠뜨리면 <code>aria-checked</code> 가 무시된다 — 배경은 칠해지지만 화면낭독기는 선택 상태를 모르고, <strong>체크 표시도 그 자리도 없다</strong>(선택자가 <code>role</code> 에 걸려 있다).</li>
   </ul>
 
   <h2 id="ns-icon">ns-icon</h2>
@@ -1986,8 +2037,8 @@
     <code>undefined</code> 로 남아 비제어다. 이 구분이 중요한 이유는 증상이 다르기
     때문이다 — 제어 모드로 들어갔다면 "열린 채 안 닫히는" 것이고, 실제로는 "아무 일도
     안 일어나는" 것이다. <strong>0.2.5 부터 그 속성이 붙어 있으면 콘솔에 한 번
-    경고한다.</strong> 라이브러리는 호스트에 속성을 쓰지 않으므로 이 이름의 속성이
-    발견되면 언제나 소비자가 쓴 것이고, 언제나 실수다.
+    경고한다.</strong> 라이브러리는 <strong>이 이름들을</strong> 호스트에 쓰지 않으므로
+    이 이름의 속성이 발견되면 언제나 소비자가 쓴 것이고, 언제나 실수다.
   </p>
   <p>
     같은 규칙이 <code>ns-pagination</code> 의 <code>page</code>,
@@ -2601,7 +2652,7 @@
     <tr><td><code>data-ns-panel</code></td><td>소비자</td><td>이 탭이 여는 패널의 <code>id</code></td></tr>
     <tr><td><code>role="tab"</code> · <code>aria-controls</code> · <code>aria-selected</code> · <code>tabindex</code></td><td>컴포넌트</td><td>자동으로 채운다</td></tr>
     <tr><td><code>id</code></td><td>컴포넌트</td><td><code>{data-ns-panel}-tab</code>. <strong>직접 쓰면 덮지 않는다</strong></td></tr>
-    <tr><td><code>.ns-tabs__count</code></td><td>소비자</td><td>건수 배지. <strong><code>0</code> 도 그린다</strong> — 배지가 없는 것과 처리할 게 없는 것은 다르다</td></tr>
+    <tr><td><code>.ns-tabs__count</code></td><td>소비자</td><td>건수 배지. <strong><code>0</code> 도 그린다</strong> — 배지가 없는 것과 처리할 게 없는 것은 다르다. 선택된 탭에서 배경이 <code>--ns-color-accent-fill</code> 이 되는데, <strong>다크에서는 선택 안 된 배지(<code>--ns-color-surface-hover</code>)와 대비가 1.42:1 이라 배지만으로는 선택이 거의 안 보인다</strong> — 선택 신호는 밑줄과 굵어진 글자가 함께 진다</td></tr>
   </table>
 
   <h3>이벤트</h3>
@@ -2819,43 +2870,104 @@
 
   <h3 id="overlays-toast">nsToast</h3>
   <p>
-    우하단에 쌓인다. <strong>마우스가 올라가 있거나 안쪽에 포커스가 있는 동안 자동
-    소멸이 멈춘다</strong> — 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는
-    중에 사라진다.
+    <strong>기본은 상단 중앙</strong>이고 네 자리 중에서 고를 수 있다.
+    <strong>마우스를 움직여 올라가 있거나 안쪽에 포커스가 있는 동안 자동 소멸이 멈춘다</strong>
+    — 안 멈추면 읽는 중에, 혹은 닫기 버튼에 Tab 으로 닿는 중에 사라진다.
+    <strong>"움직여서" 가 조건인 이유는 아래 주의에 있다.</strong>
   </p>
   <div class="demo block" id="toast-demo" style="display:flex;flex-wrap:wrap;gap:var(--ns-space-3);padding:var(--ns-space-4)">
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-neutral">기본</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-success">success</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-danger">danger</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-warn">warn</button>
+    <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-short">duration=1500 (1.5초 뒤 사라짐)</button>
     <button class="ns-button ns-button--outline ns-button--sm" id="toast-demo-sticky">duration=0 (안 사라짐)</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-top-center">위치: top-center</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-bottom-center">위치: bottom-center</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-top-right">위치: top-right</button>
+    <button class="ns-button ns-button--ghost ns-button--sm" id="toast-demo-pos-bottom-right">위치: bottom-right</button>
   </div>
+  <p>
+    위치 버튼은 <code>nsToastPosition()</code> 을 부른 뒤 그 자리에 토스트를 하나
+    띄운다. <strong>이미 떠 있는 토스트가 있으면 함께 새 자리로 옮겨간다</strong> —
+    리전이 문서당 하나라 그렇다. <code>duration=0</code> 을 먼저 띄워 두고
+    위치를 바꾸면 그것이 보인다.
+  </p>
+
+  <h4>위치</h4>
+  <p>
+    이름은 <strong><code>세로-가로</code></strong> 로 고정돼 있다.
+    <code>"center-top"</code> 같은 다른 표기는 받지 않는다.
+  </p>
+  <table>
+    <tr><th>값</th><th>자리</th></tr>
+    <tr><td><code>"top-center"</code></td><td><strong>기본.</strong> 위 가운데</td></tr>
+    <tr><td><code>"bottom-center"</code></td><td>아래 가운데</td></tr>
+    <tr><td><code>"top-right"</code></td><td>우상단</td></tr>
+    <tr><td><code>"bottom-right"</code></td><td>우하단</td></tr>
+  </table>
+  <p>
+    <strong>좌측 두 자리(<code>top-left</code>·<code>bottom-left</code>)는 없다.</strong>
+    이 라이브러리의 셸이 좌측에 사이드바를 두므로 좌하단 토스트는 접힌 레일 위에
+    겹치고 펼친 사이드바에서는 아예 가려진다. 필요해지면 그때 더한다.
+  </p>
 
   <h4>인자</h4>
   <table>
     <tr><th>이름</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>message</code></td><td>—</td><td>문자열만. <code>textContent</code> 로 들어간다</td></tr>
-    <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 왼쪽 색 띠로만 표현한다</td></tr>
-    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td>밀리초. <strong><code>0</code> 이면 자동으로 사라지지 않는다</strong></td></tr>
+    <tr><td><code>options.tone</code></td><td><code>"neutral"</code></td><td><code>"neutral"</code> · <code>"success"</code> · <code>"danger"</code> · <code>"warn"</code>. 메시지 앞의 작은 색 점으로만 표현한다 — <strong><code>"neutral"</code> 은 점을 그리지 않는다</strong></td></tr>
+    <tr><td><code>options.duration</code></td><td><code>4000</code></td><td><strong>토스트가 머무는 시간(밀리초).</strong> 그만큼 지나면 저절로 닫힌다 — <code>3000</code> 이면 3 초다. <strong>자동 소멸을 끄려면 <code>0</code> 을 준다</strong> — 닫기 버튼이나 반환값으로만 닫힌다. <code>0</code> 이 그 뜻으로 쓰는 값이지만 <strong>양수 유한값이 아닌 것은 전부 같은 쪽</strong>이다(음수 · <code>NaN</code> · <code>Infinity</code>)</td></tr>
   </table>
   <p>돌려주는 함수를 부르면 즉시 닫힌다. 두 번 불러도 안전하다.</p>
 
   <h4>JS</h4>
   <script type="text/plain">
-    import { nsToast } from "@neosimplix/common-ui/react";
+    import { nsToast, nsToastPosition } from "@neosimplix/common-ui/react";
     // 순수 HTML 은 "@neosimplix/common-ui" 에서 같은 함수를 받는다.
     // React 에서 그쪽을 쓰면 요소 번들이 두 벌 들어온다.
 
+    // 앱이 뜰 때 한 번. 안 부르면 top-center 다.
+    nsToastPosition("bottom-right");
+
     nsToast("저장했습니다", { tone: "success" });
 
+    // 머무는 시간을 직접 정한다. 3 초 뒤에 저절로 닫힌다.
+    nsToast("저장했습니다", { duration: 3000 });
+
+    // 0 이면 저절로 닫히지 않는다. Infinity 를 줘도 같다.
     const close = nsToast("업로드 중…", { duration: 0 });
     // …끝나면
     close();
+  </script>
+  <p>
+    <code>NsToastPosition</code> 타입도 같은 경로에서 받는다.
+  </p>
+
+  <h4>이관 — 기본 자리가 바뀌었다</h4>
+  <p>
+    <strong>0.3.0 까지는 우하단이 유일한 자리였고, 그다음부터 기본이
+    <code>"top-center"</code> 다.</strong> 동작 변경이다. 예전 모양을 그대로 두려면
+    앱 시작 지점에 한 줄을 더한다.
+  </p>
+  <script type="text/plain">
+    nsToastPosition("bottom-right");
   </script>
 
   <h4>주의</h4>
   <ul>
     <li><code>&lt;ns-toast&gt;</code> 를 직접 마크업에 쓰지 않는다. <code>nsToast()</code> 가 문서당 하나를 만들어 <code>body</code> 에 붙인다.</li>
+    <li>
+      <strong><code>nsToastPosition()</code> 은 전역이다.</strong> 리전이 문서당 하나라 위치는
+      그 리전의 성질이지 개별 토스트의 성질이 아니다 — 그래서 <code>nsToast()</code> 의 옵션이
+      아니다. 위치마다 리전을 따로 두면 정지 상태와 쌓기가 갈라져, 한쪽에 마우스를 올려도
+      다른 쪽은 계속 사라진다.
+    </li>
+    <li>
+      언제 불러도 된다. 토스트가 뜨기 전이면 값만 기억했다가 리전을 만들 때 적용하고,
+      <strong>이미 떠 있으면 그것들을 통째로 데리고 새 자리로 옮겨간다.</strong>
+      시작 시점에 한 번 부르는 것이 정상 사용이다.
+    </li>
     <li>
       <strong>모달 <code>ns-dialog</code> 가 열려 있는 동안 띄운 토스트는 대화상자 뒤에 가린다.</strong>
       <code>showModal()</code> 이 대화상자를 <strong>top layer</strong> 로 올리는데, top layer 는
@@ -2864,7 +2976,26 @@
       대화상자 안에 표시한다. (<code>nsAlert</code>·<code>nsConfirm</code> 도 같은
       <code>showModal()</code> 경로다.)
     </li>
+    <li>
+      <strong>세워 둔 커서 자리에 뜬 토스트는 멈추지 않는다.</strong> 정지는 리전 위의
+      <strong>마우스 움직임</strong>으로 걸린다. 브라우저는 포인터가 전혀 움직이지 않아도
+      레이아웃이 바뀌면 <code>mouseenter</code> 를 내는데, 그것으로 멈추면 <strong>다시 켤
+      이벤트가 영영 오지 않아</strong> 토스트가 화면에 굳는다 — 커서가 그대로인 한 그다음
+      포인터 이벤트가 없기 때문이다. 그래서 움직여서 올라온 포인터만 멈춤으로 친다.
+      <strong>가만히 있는 커서는 누가 읽고 있다는 증거가 아니다.</strong>
+      이 데모에서 재현된다 — <code>위치: bottom-center</code> 로 바꾸고 데모 버튼이 화면
+      아래쪽에 오도록 스크롤한 뒤 <code>duration=1500</code> 을 누르면 토스트가 방금 누른
+      버튼 위에 뜬다. <strong>폼 맨 아래 제출 버튼처럼 실제 앱에도 흔한 배치다.</strong>
+      그 자리에서는 마우스를 조금 움직여야 멈춘다.
+    </li>
     <li><code>danger</code> 만 <code>role="alert"</code> 로 즉시 읽힌다. 나머지는 리전의 <code>aria-live="polite"</code> 를 탄다.</li>
+    <li>
+      <strong><code>tone</code> 점은 <code>neutral</code> 에서 그려지지 않는다.</strong> 투명한 자리
+      채우기를 두지 않으므로 <strong><code>neutral</code> 토스트의 글자는 색 있는 것보다 왼쪽에서
+      시작하고, 섞어 쌓으면 시작점이 어긋난다.</strong> 의도한 선택이다 — 없는 것을 자리로
+      주장하지 않는다. 점은 장식이라 <code>aria-hidden</code> 이고, tone 은
+      <code>danger</code> 의 <code>role="alert"</code> 와 메시지 글자로 보조기술에 닿는다.
+    </li>
     <li>서버에서 부르면 아무 일도 하지 않는다 — 이벤트 핸들러에서만 부른다.</li>
   </ul>
 
@@ -3422,7 +3553,9 @@
     "--ns-color-surface", "--ns-color-surface-sunken", "--ns-color-surface-hover",
     "--ns-color-line", "--ns-color-line-strong",
     "--ns-color-fg", "--ns-color-fg-body", "--ns-color-fg-muted", "--ns-color-fg-subtle",
-    "--ns-color-accent", "--ns-color-accent-hover", "--ns-color-accent-fg", "--ns-color-disabled",
+    "--ns-color-accent",
+    "--ns-color-accent-fill", "--ns-color-accent-fill-hover", "--ns-color-accent-fill-fg",
+    "--ns-color-disabled", "--ns-color-disabled-fg",
     "--ns-color-danger", "--ns-color-danger-surface", "--ns-color-warn", "--ns-color-warn-surface",
     "--ns-color-success", "--ns-color-success-surface",
   ];
@@ -3680,6 +3813,36 @@
   }
 
   /*
+    칩 토글 데모.
+
+    **정적 마크업만 두면 이 절의 확인 항목이 공허하게 통과한다.** 칩의 자리
+    예약이 막는 것은 "토글할 때 폭이 변하는 것" 인데, 누를 수 없으면 확인자가
+    눌러 보고 아무 변화가 없는 것을 통과로 판정한다. 클래스 데모지만 배선이
+    있어야 볼 것이 생기는 자리다.
+
+    **토글 갈래에만 건다.** closest 가 role="checkbox" 를 요구하므로 제거
+    갈래·읽기 전용 갈래의 <span class="ns-chip"> 는 걸리지 않고, 그 안의
+    × 버튼에서 난 클릭도 조상에 role 이 없어 여기서 무시된다.
+
+    **disabled 칩은 UA 가 막는다.** 비활성 폼 컨트롤에 큐된 click 은 디스패치
+    되지 않으므로 여기까지 오지 않는다 — 따로 가드를 두지 않는 근거다.
+
+    새 id 를 만들지 않는다. 이미 있는 컨테이너에 위임해 붙이므로 id 중복으로
+    이 스크립트가 통째로 죽는 경로 자체가 없다(위 table-select-… 주석 참고).
+  */
+  const chipDemo = document.getElementById("chip-demo");
+  if (chipDemo) {
+    chipDemo.addEventListener("click", (e) => {
+      const chip = e.target.closest('.ns-chip[role="checkbox"]');
+      if (!chip) return;
+      chip.setAttribute(
+        "aria-checked",
+        chip.getAttribute("aria-checked") === "true" ? "false" : "true",
+      );
+    });
+  }
+
+  /*
     다중 선택 데모. 비제어로 둔다 — options 와 defaultValue 만 넣으면
     선택 상태는 컴포넌트가 갖는다.
 
@@ -3712,9 +3875,28 @@
         NsCommonUi.nsToast(toastTones[tone], { tone });
       });
     }
+    /*
+      평범한 duration. 기본(4000)과 0 만 데모에 있으면 이 옵션이 "자동 소멸을
+      끄는 스위치" 로 읽힌다 — 실제로는 얼마나 머무는지를 정하는 값이다.
+      1.5 초면 누른 자리에서 눈으로 사라지는 것까지 볼 수 있다.
+    */
+    toastDemo.querySelector("#toast-demo-short").addEventListener("click", () => {
+      NsCommonUi.nsToast("1.5초 뒤에 사라진다", { duration: 1500 });
+    });
     toastDemo.querySelector("#toast-demo-sticky").addEventListener("click", () => {
       NsCommonUi.nsToast("직접 닫아야 사라진다", { duration: 0 });
     });
+    /*
+      위치 전환. 자리를 바꾼 뒤 곧바로 하나 띄워 어디로 갔는지 보이게 한다 —
+      바꾸기만 하면 다음 토스트를 띄우기 전까지 아무 변화가 없어서, 눌러 놓고
+      안 눌린 줄 안다. 떠 있는 토스트가 있으면 그것도 함께 옮겨가는 것이 보인다.
+    */
+    for (const pos of ["top-center", "bottom-center", "top-right", "bottom-right"]) {
+      toastDemo.querySelector(`#toast-demo-pos-${pos}`).addEventListener("click", () => {
+        NsCommonUi.nsToastPosition(pos);
+        NsCommonUi.nsToast(`위치: ${pos}`);
+      });
+    }
   }
 
   /* alert/confirm 데모. 결과를 옆에 적어 어느 경로로 닫혔는지 보이게 한다. */

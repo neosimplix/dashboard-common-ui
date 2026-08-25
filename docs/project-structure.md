@@ -72,7 +72,7 @@ common-ui/
 │   ├── components/tabs/ns-tabs.ts                     ReactiveElement. 소비자 자식에 ARIA·키보드
 │   ├── components/multi-select/ns-multi-select.ts     LitElement + light DOM 렌더
 │   ├── components/toast/ns-toast.ts                   shadow 리전. .styles.ts 를 갖는다
-│   ├── components/toast/toast.ts                      nsToast 명령형 파사드. 엘리먼트가 아니라 함수를 내보낸다
+│   ├── components/toast/toast.ts                      nsToast · nsToastPosition 명령형 파사드. 엘리먼트가 아니라 함수를 내보낸다
 │   ├── components/dialog/confirm.ts                   nsAlert · nsConfirm. 같은 파사드 종류다
 │   ├── types.ts                       이벤트 detail 타입 + HTMLElementEventMap 확장
 │   ├── index.ts                       컴포넌트 등록 진입점
