@@ -1,0 +1,383 @@
+/*
+  common-ui 디자인 토큰.
+
+  모든 이름에 --ns- 접두사를 붙인다. 붙이지 않던 0.1.5 에서 두 번째 소비자의
+  --color-surface 와 이름만 겹치고 값 체계가 달라, 임포트 순서가 셸 색을
+  결정하는 상태가 됐다. 컴포넌트 스타일은 var() 폴백 없이 이 이름들을 읽으므로
+  이름을 공유하면 라이브러리 렌더링이 소비자 캐스케이드에 종속된다.
+
+  이미 무접두사 이름을 쓰던 프로젝트는 dist/aliases.css 를 임포트한다.
+  그 파일은 이 파일에서 생성된다(scripts/copy-css.mjs).
+
+  색 값은 Tailwind v4 기본 팔레트(oklch)에서 그대로 가져왔다. 이 파일은
+  Tailwind 에 의존하지 않으므로 순수 HTML 에서도 동작한다.
+*/
+/*
+  다크모드 신호.
+
+  값은 아래 :root 에서 light-dark() 한 줄에 둔다. 미디어쿼리 안팎으로 선언을
+  복제하면 값이 두 곳에 존재하게 되고, 어긋나도 아무도 모른다 — 이 파일이
+  var() 폴백을 금지하는 것과 같은 이유다.
+
+  color-scheme 은 상속되므로 컴포넌트 shadow 안까지 도달한다. 네이티브 폼
+  컨트롤·스크롤바·기본 배경도 함께 뒤집힌다.
+
+  요구 브라우저: Chrome 123 · Safari 17.5 · Firefox 121 이상.
+  light-dark() 자체는 Firefox 120 부터지만, controls.css 가 이미 쓰는 :has() 가
+  Firefox 121 이라 이 패키지의 하한은 121 이다. 다크모드가 하한을 올린 것이 아니다.
+*/
+:root                     { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+:root {
+  /* 표면 · 전경 · 경계 */
+  --ns-color-surface:        light-dark(#fff, oklch(21% 0.006 285.885));
+  --ns-color-surface-sunken: light-dark(oklch(98.5% 0 0), oklch(14.1% 0.005 285.823));
+  --ns-color-surface-hover:  light-dark(oklch(96.7% 0.001 286.375), oklch(27.4% 0.006 286.033));
+  --ns-color-line:           light-dark(oklch(92% 0.004 286.32), oklch(27.4% 0.006 286.033));
+  --ns-color-line-strong:    light-dark(oklch(87.1% 0.006 286.286), oklch(37% 0.013 285.805));
+  --ns-color-overlay:        light-dark(rgb(0 0 0 / .4), rgb(0 0 0 / .6));
+
+  --ns-color-fg:        light-dark(oklch(21% 0.006 285.885), oklch(98.5% 0 0));
+  --ns-color-fg-body:   light-dark(oklch(37% 0.013 285.805), oklch(87.1% 0.006 286.286));
+  --ns-color-fg-muted:  light-dark(oklch(55.2% 0.016 285.938), oklch(70.5% 0.015 286.067));
+  --ns-color-fg-subtle: light-dark(oklch(70.5% 0.015 286.067), oklch(55.2% 0.016 285.938));
+
+  /*
+    액센트 — **선과 링의 색이다. 채움면은 여기 없다.**
+
+    채움면 넷(solid 버튼 · 선택된 칩 · 탭 건수 배지 · 활성 nav-item 배지)은
+    이 파일 끝쪽 별칭 제외 구간의 --ns-color-accent-fill 세 토큰이 칠한다.
+    나뉜 경위는 거기 적혀 있다 — 요약하면 채움면을 어둡게 하려고 이 값을
+    내리면 포커스 링이 함께 사라지기 때문이다.
+
+    (**여기에 별칭 제외 표시 문자열을 그대로 적으면 안 된다.** copy-css.mjs 가
+    파일에서 그 문자열이 처음 나오는 자리로 별칭 구간을 자르므로, 산문에 한 번
+    적는 것만으로 그 아래 토큰들의 별칭이 조용히 사라진다.)
+
+    그래서 이 토큰이 지금 칠하는 것은 **포커스 링 여섯 · .ns-input 계열의
+    포커스 테두리 · 탭 활성 밑줄 · 체크박스 accent-color** 뿐이고, 전부 선이다.
+    선은 면과 달리 밝아도 눈부시지 않으므로 다크에서 밝게 남는 것이 맞다.
+
+    **다크가 흰색(98.5%)이 아닌 이유는 그대로 유효하다.** 값을 처음 내린 것은
+    채움면 때문이었고 그 자리는 이제 여기 없지만, 87.1% 로 그린 선은 98.5% 로
+    그린 선보다 어두운 화면에서 덜 튄다. 되돌릴 이유가 없다.
+
+    팔레트에 새 색이 들어오지 않는다 — **두 절반 다 이 파일에 이미 있는 값과
+    한 글자도 다르지 않다.** 다크값 87.1% 는 --ns-color-fg-body 의 다크값이다
+    (밝은 모드에서는 --ns-color-line-strong 이 같은 값을 쓴다). 밝은 값 21% 는
+    --ns-color-fg 의 밝은 값이다.
+
+    **액센트가 본문 글자색과 같은 값이 되는 것은 문제가 아니다.** 둘이 같은 자리에
+    나란히 놓이는 경우가 없기 때문이다. 가장 가까운 것이 탭 활성 밑줄인데, 선택되지
+    않은 탭은 밑줄이 transparent 라 아예 없고, 활성 탭은 글자가 --ns-color-fg(98.5%)
+    + semibold 로 함께 올라간다 — 밑줄은 본문 글자와 겨루는 것이 아니라 탭 줄의
+    --ns-color-line(27.4%) 위에 놓인 유일한 밑줄이다.
+
+    **이 이름에 -hover 와 -fg 짝이 없는 것은 빠뜨린 것이 아니다.**
+    0.3.0 까지는 --ns-color-accent-hover 와 --ns-color-accent-fg 가 있었는데,
+    채움면 분리로 그 둘을 읽던 자리가 **전부** --ns-color-accent-fill 쪽으로
+    옮겨가면서 읽는 규칙이 하나도 남지 않았다. 선에는 hover 상태가 없고 그
+    위에 놓이는 글자도 없으므로 두 이름이 가리킬 대상이 애초에 없다.
+
+    **그래서 남기지 않고 지웠다.** 공개 토큰을 지우는 것은 breaking 이지만,
+    소비자가 브랜드 색을 맞추려고 덮었을 때 아무 일도 일어나지 않고 오류도
+    경고도 없는 이름을 남겨 두는 쪽이 더 나쁘다 — 그 이름은 문서가 아니라
+    함정이다. 브랜드 색의 hover 와 글자색은 --ns-color-accent-fill-hover 와
+    --ns-color-accent-fill-fg 가 갖는다.
+
+    **다시 만들지 않는다.** 선에 hover 나 글자색이 필요해지면 그때 그 자리가
+    무엇인지 보고 이름을 정한다. 대칭을 맞추려고 되살리면 같은 함정이 그대로
+    돌아온다.
+
+    포커스 링(액센트 2px)은 자리가 여섯이고 두 갈래다. **바깥에 그리는 넷**은
+    페이지 배경 위에 놓여 surface(21%)에 11.99:1, surface-sunken(14.1%)에
+    13.46:1 이다. **안쪽에 그리는 둘**(ns-tabs 와 .ns-accordion summary 는
+    outline-offset 이 음수다)은 요소 자신의 배경 위에 놓이므로 그 두 숫자가
+    그대로 적용되지 않는다 — 실제로는 둘 다 surface 로 떨어지고, 유일하게 다른
+    값이 hover 중인 accordion summary 의 surface-hover(27.4%)로 10.08:1 이다.
+    셋 다 비텍스트 기준 3:1 을 크게 넘는다.
+
+    **밝기를 낮출 때 링이 먼저 사라진다** — 이 값들이 하한을 정하는 근거이고,
+    채움면을 따로 떼어낸 이유이기도 하다.
+  */
+  --ns-color-accent:       light-dark(oklch(21% 0.006 285.885), oklch(87.1% 0.006 286.286));
+
+  /*
+    비활성 채움면의 **배경**. .ns-button--solid 와 .ns-button--danger 의
+    :disabled / [aria-disabled="true"] 가 읽는다. 그 위의 글자색은 짝 토큰인
+    --ns-color-disabled-fg 가 갖는다(별칭 제외 구간에 있다).
+
+    **다크값이 27.4% 인 이유가 있다.** 채움면 분리 전까지는 37% 였는데,
+    --ns-color-accent-fill 의 다크값이 같은 37% 로 정해지면서 다크에서 비활성
+    solid 버튼과 보통 solid 버튼의 배경이 한 글자도 다르지 않게 됐다. 글자색도
+    둘 다 --ns-color-accent-fill-fg 라 같았으므로 **남는 차이가
+    cursor: not-allowed 하나뿐**이었고, 그것은 마우스를 올려야 보인다.
+
+    27.4% 는 --ns-color-surface-hover · --ns-color-line 의 다크값이다. 팔레트에
+    새 색이 들어오지 않는다. 21% 페이지 표면과 1.19:1 이라 면이 페이지에 거의
+    잠긴다 — 비활성이 "다른 변형" 이 아니라 "가라앉은 것" 으로 읽히는 방향이다.
+
+    **배경만으로는 신호가 부족하다는 것을 감추지 않는다.** 37% 채움면과는
+    1.42:1 밖에 떨어져 있지 않다. 구분을 실제로 지는 것은 글자색이고, 근거는
+    --ns-color-disabled-fg 주석에 있다.
+
+    **밝은 절반은 바꾸지 않았다.** 87.1% 는 흰 표면과 1.48:1 이고 밝은 채움면
+    21% 와는 멀리 떨어져 있어 애초에 겹치지 않는다.
+  */
+  --ns-color-disabled:     light-dark(oklch(87.1% 0.006 286.286), oklch(27.4% 0.006 286.033));
+
+  /* 상태 */
+  --ns-color-danger:          light-dark(oklch(57.7% 0.245 27.325), oklch(70.4% 0.191 22.216));
+  --ns-color-danger-surface:  light-dark(oklch(97.1% 0.013 17.38), oklch(25.8% 0.092 26.042));
+  --ns-color-warn:            light-dark(oklch(55.5% 0.163 48.998), oklch(82.8% 0.189 84.429));
+  --ns-color-warn-surface:    light-dark(oklch(98.7% 0.022 95.277), oklch(27.9% 0.077 45.635));
+  --ns-color-success:         light-dark(oklch(59.6% 0.145 163.225), oklch(76.5% 0.177 163.223));
+  --ns-color-success-surface: light-dark(oklch(97.9% 0.021 166.113), oklch(26.2% 0.051 172.552));
+
+  /* 간격 — 4px 스케일 */
+  --ns-space-1: .25rem;
+  --ns-space-1-5: .375rem;
+  --ns-space-2: .5rem;
+  --ns-space-2-5: .625rem;
+  --ns-space-3: .75rem;
+  --ns-space-4: 1rem;
+  --ns-space-5: 1.25rem;
+  --ns-space-6: 1.5rem;
+  --ns-space-8: 2rem;
+
+  /* 반경 — 용도 이름 */
+  --ns-radius-badge: .25rem;
+  --ns-radius-control: .375rem;
+  --ns-radius-panel: .5rem;
+  --ns-radius-card: .75rem;
+  --ns-radius-pill: 9999px;
+
+  /* 타이포 — 크기와 줄간격은 반드시 짝으로 쓴다 */
+  --ns-font-size-2xs: .6875rem; --ns-line-height-2xs: 1rem;
+  --ns-font-size-xs: .75rem;    --ns-line-height-xs: 1rem;
+  --ns-font-size-sm: .875rem;   --ns-line-height-sm: 1.25rem;
+  --ns-font-size-base: 1rem;    --ns-line-height-base: 1.5rem;
+  --ns-font-size-lg: 1.125rem;  --ns-line-height-lg: 1.75rem;
+  --ns-font-size-xl: 1.25rem;   --ns-line-height-xl: 1.75rem;
+  --ns-weight-medium: 500;
+  --ns-weight-semibold: 600;
+
+  /* 레이아웃 상수 */
+  --ns-header-height: 3.5rem;
+  --ns-sidebar-width: 15rem;
+  --ns-sidebar-width-collapsed: 4rem;
+  --ns-page-padding-x: var(--ns-space-6);
+  --ns-page-padding-y: var(--ns-space-6);
+  --ns-card-padding: var(--ns-space-8);
+  --ns-control-height-sm: 1.75rem;
+  --ns-control-height-md: 2.5rem;
+
+  /* 기타 */
+  --ns-elevation-card:
+    0 1px 3px 0 light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4)),
+    0 1px 2px -1px light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4));
+  --ns-transition-fast: 150ms;
+  --ns-transition-ease: cubic-bezier(.4, 0, .2, 1);
+
+  /*
+    @no-alias
+
+    아래는 0.1.5 에서도 --ns- 였던 것들이다. 무접두사 원본이 없으므로
+    aliases.css 생성에서 제외한다. scripts/copy-css.mjs 가 이 표시를 읽는다.
+    표시는 이 주석 하나뿐이고, 여기부터 :root 블록 끝까지가 대상이다.
+  */
+
+  /*
+    ns-icon 의 크기. 요소 선택자 대신 커스텀 프로퍼티인 이유는 shadow 경계다 —
+    요소 선택자는 문서 트리에만 적용되므로 ns-dialog 의 shadow 안에 있는
+    <ns-icon> 에 닿지 못한다. 커스텀 프로퍼티는 상속되므로 중첩 shadow 까지
+    도달한다.
+  */
+  --ns-icon-size: 1.25rem;
+
+  /*
+    ns-dialog 의 치수. 폭과 여백을 나눠 두는 이유가 있다 — 컴포넌트가
+    min(폭, 100vw - 여백) 으로 감싸므로, 소비자가 --ns-dialog-width 만 키워도
+    작은 화면에서 넘치지 않는다. 하나로 합치면 소비자가 min() 째로 덮어써서
+    그 보호가 사라진다.
+
+    32rem 은 화면 비율이 아니라 절대 상한이다. 큰 모니터에서도 512px 이다.
+    넓은 폼 대화상자는 인스턴스에서 --ns-dialog-width 를 올린다.
+  */
+  --ns-dialog-width: 32rem;
+  --ns-dialog-margin: var(--ns-space-8);
+
+  /*
+    .ns-button--danger 의 글자색.
+
+    색은 tokens.css 한 곳에만 존재해야 하므로 controls.css 에 #fff 를 적지
+    않는다 — 리터럴은 정의상 두 모드를 함께 뒤집을 수 없다. 사용처가 하나인
+    토큰을 만들지 않는다는 규칙보다 이쪽이 먼저다.
+
+    다크에서 흰색이 아닌 이유가 있다. --ns-color-danger 는 다크에서
+    oklch(70.4% …) 로 **밝아지므로** 흰 글자와의 대비가 무너진다.
+
+    @no-alias 아래에 있는 것이 중요하다. 0.1.5 에 --color-danger-fg 라는
+    무접두사 원본이 없으므로, 위에 두면 copy-css.mjs 가 아무도 쓴 적 없는
+    별칭을 aliases.css 에 만든다.
+  */
+  --ns-color-danger-fg: light-dark(#fff, oklch(21% 0.006 285.885));
+
+  /*
+    비활성 채움면 위의 **글자색**. --ns-color-disabled 와 짝이다.
+    .ns-button--solid 와 .ns-button--danger 의 비활성 규칙이 배경과 함께 쓴다.
+
+    **밝은 모드에는 이 토큰이 필요 없었다. 그래서 지금까지 없었다.**
+    비활성 규칙이 배경만 덮고 글자색은 --ns-color-accent-fill-fg(#fff) 를 그대로
+    물려받았는데, 87.1% 배경 위의 흰 글자는 1.48:1 이라 **글자가 면에 녹아
+    사라진다.** 그 녹아 없어지는 것 자체가 비활성 신호였다 — 배경 한 줄만 바꿔도
+    글자가 따라 죽었으므로 글자색을 적을 이유가 없었다.
+
+    **그 메커니즘은 모드를 뒤집으면 살아남지 못한다.** 밝은 모드에서 성립한
+    이유는 비활성 배경이 흰 페이지 **쪽으로 올라가면서** 그 위의 흰 글자와
+    함께 뭉개졌기 때문이다. 다크에서는 페이지가 어두우므로 비활성 배경이
+    페이지 쪽으로 가려면 **내려가야** 하는데, 내려갈수록 그 위의 밝은
+    글자(98.5%)는 오히려 또렷해진다 — 37% 위에서 10.02:1 이던 것이 27.4%
+    위에서 14.26:1 이 된다. **배경을 어디에 두든 다크에서는 글자가 따라 죽지
+    않는다.** 그래서 다크는 글자를 값으로 직접 죽인다.
+
+    다크값 55.2% 는 --ns-color-fg-subtle 의 다크값이다. 팔레트에 새 색이
+    들어오지 않는다. 27.4% 배경 위에서 3.08:1 이고, 바로 옆의 보통 solid
+    버튼은 같은 자리가 10.02:1 이다. **비활성 신호를 실제로 지는 것은 배경이
+    아니라 이 차이다** — 두 배경끼리는 1.42:1 밖에 떨어져 있지 않다.
+
+    **3.08:1 이 본문 기준 4.5:1 을 밑도는 것은 의도다.** WCAG 1.4.3 은 비활성
+    컨트롤을 대비 요구에서 제외한다. 4.5:1 을 넘기면 "읽기 어려워야 한다" 는
+    비활성의 성질 자체가 없어지고, 밝은 모드가 1.48:1 로 하고 있는 일과도
+    어긋난다.
+
+    **밝은 절반은 #fff 다.** 그 자리가 오늘 렌더하는 값과 같으므로 밝은 모드는
+    한 바이트도 바뀌지 않는다. 그런데도 리터럴 대신 토큰으로 적는 이유는,
+    적지 않으면 다크에서 물려받는 값이 --ns-color-accent-fill-fg 로 남기
+    때문이다 — 두 모드가 서로 다른 이름에서 값을 받게 된다.
+
+    별칭 제외 구간 아래에 있는 것이 중요하다. 0.1.5 에 무접두사 원본이 없는
+    새 토큰이므로, 위에 두면 copy-css.mjs 가 아무도 쓴 적 없는 별칭을
+    aliases.css 에 만든다. --ns-color-danger-fg 와 같은 이유다.
+  */
+  --ns-color-disabled-fg: light-dark(#fff, oklch(55.2% 0.016 285.938));
+
+  /*
+    액센트로 칠하는 **채움면**. 선·링과 값을 나눈 것이다.
+
+    --ns-color-accent 를 더 내릴 수 없어서 생긴 토큰이다. 그 토큰은 채움면
+    넷만 칠하는 것이 아니라 **포커스 링 여섯 · .ns-input 계열의 포커스 테두리 ·
+    탭 활성 밑줄 · 체크박스 accent-color** 를 함께 칠한다. 채움면을 어둡게
+    하려고 그 값을 내리면 링이 어두운 배경 위의 어두운 선이 되어 사라진다 —
+    **버튼이 밝은 것보다 나쁜 결함이다.** 그래서 면은 이 세 토큰이 갖고,
+    accent 는 선과 링을 위해 밝게 남는다.
+
+    이름을 --solid 로 짓지 않는다. 이 값을 읽는 자리가 넷이고 그중 셋은
+    버튼이 아니다 — 칩의 선택 상태, 탭 건수 배지, ns-nav-item 의 활성 배지다.
+    변형 이름을 붙이면 나머지 셋이 남의 토큰을 빌려 쓰는 모양이 된다.
+
+    **밝은 모드는 나눌 때 한 글자도 바뀌지 않았다.** 세 값이 나누기 전 액센트
+    세 토큰의 밝은 절반(21% · 27.4% · #fff)과 동일했기 때문이다. 흰 표면 위의
+    21% 채움면은 광원이 될 수 없으므로 나눌 이유가 애초에 밝은 쪽에는 없었다.
+    (나머지 두 액센트 토큰은 읽는 규칙이 없어져 그다음 델타에서 지워졌다.
+    경위는 --ns-color-accent 주석에 있다.)
+
+    다크 채움면은 37% 다. --ns-color-line-strong 의 다크값과 같은 값이라
+    **outline 버튼의 테두리와 같은 색이다** — 87.1% 짜리 흰 판 대신 그 자리에
+    놓겠다는 것이 이 델타의 지시였다. 팔레트에 새 색이 들어오지 않는다.
+
+    **다크 hover 는 55.2% 로 올라간다(--ns-color-fg-subtle 의 다크값).**
+    밝은 모드에서 hover 가 21% → 27.4% 로 페이지 배경 쪽으로 가는 것과 방향이
+    반대인데, 그것은 규칙이 뒤집힌 것이 아니라 같은 규칙의 결과다 — 두 모드
+    모두 hover 는 **면을 표면에서 더 떼어 놓는다.** 밝은 모드의 21% 는 흰
+    배경보다 어두우므로 더 어두워지는 것이 떼어 놓는 방향이고, 다크의 37% 는
+    21% 표면보다 밝으므로 더 밝아지는 것이 그 방향이다. 반대로 27.4% 로
+    내리면 --ns-color-surface-hover · --ns-color-line 과 같은 값이 되어 면이
+    행 배경에 잠기고, 아래로 가는 움직임 자체가 비활성으로 읽힌다.
+
+    대비는 계산해서 골랐다. 다크 채움면 위 글자(98.5%)가 10.02:1 이고,
+    hover 55.2% 위에서도 4.62:1 로 본문 기준 4.5:1 을 넘는다. 팔레트의 다음
+    칸인 70.5% 로 올리면 이 숫자가 무너진다(약 2.4:1) — 55.2% 는 넉넉해서
+    고른 것이 아니라 **넘는 칸 중 가장 낮은 것**이라서 골랐다.
+
+    **다크 채움면 37% 는 한때 --ns-color-disabled 의 다크값과 같았다.** 그래서
+    다크에서 비활성 solid 버튼과 보통 solid 버튼이 배경도 글자색도 같아졌고,
+    남는 차이가 cursor: not-allowed 하나뿐이었다. **고친 자리는 이쪽이 아니라
+    --ns-color-disabled 쪽이다** — 37% 는 지시받은 값이고 채움면 넷이 공유하므로
+    여기서 비틀지 않는다. 비활성은 배경을 27.4% 로 내리고 --ns-color-disabled-fg
+    를 새로 두어 갈라졌다. 경위는 그 두 토큰의 주석에 있다.
+
+    @no-alias 아래에 있는 것이 중요하다. 0.1.5 에 무접두사 원본이 없는 새
+    토큰이므로, 위에 두면 copy-css.mjs 가 아무도 쓴 적 없는 별칭을
+    aliases.css 에 만든다. --ns-color-danger-fg 와 같은 이유다.
+  */
+  --ns-color-accent-fill:       light-dark(oklch(21% 0.006 285.885), oklch(37% 0.013 285.805));
+  --ns-color-accent-fill-hover: light-dark(oklch(27.4% 0.006 286.033), oklch(55.2% 0.016 285.938));
+  --ns-color-accent-fill-fg:    light-dark(#fff, oklch(98.5% 0 0));
+}
+
+/*
+  정의 전 레이아웃 예약.
+
+  커스텀 엘리먼트는 customElements.define 이전까지 display: inline 이고
+  크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
+  light DOM 선택자라 upgrade 전에도 적용된다.
+
+  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
+  정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
+  프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
+  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. upgrade 이후의 너비는
+  ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
+
+  data-ns-open 은 React 소비자를 위한 통로다. createComponent 가 반응형
+  프로퍼티만 가로채므로, 반응형이 아닌 이 이름은 서버 마크업에 그대로 실린다.
+  src/react/tags/Sidebar.tsx 가 채운다. 순수 HTML 소비자는 마크업에 open 을
+  직접 쓰므로 첫 짝이 걸린다.
+
+  이 예약만으로는 튐이 좁아질 뿐 사라지지 않는다. customElements.define 이
+  hydrateRoot 보다 먼저 실행되므로, upgrade 와 hydration 사이에는 :not(:defined)
+  가 이미 떨어져 나갔는데 open 은 아직 설정되지 않은 구간이 남는다. 그 구간을
+  덮는 것은 ns-sidebar.styles.ts 의 :host(:not([open]):not([data-ns-open])) 다.
+  두 파일을 함께 고쳐야 타임라인에 구멍이 안 생긴다.
+*/
+ns-header { display: block; height: var(--ns-header-height); }
+
+ns-sidebar                             { display: block; }
+ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); }
+ns-sidebar:not(:defined)[open],
+ns-sidebar:not(:defined)[data-ns-open] { width: var(--ns-sidebar-width); }
+
+/*
+  ns-icon 은 값을 --ns-icon-size 에서 받는다. 이 요소 선택자만으로는 문서 트리의
+  아이콘만 잡히고 다른 컴포넌트 shadow 안의 아이콘은 크기를 잃는다.
+  소비자는 ns-icon { width: … } 로 여전히 덮을 수 있다(문서 선택자가 :host 를 이긴다).
+*/
+ns-icon { display: inline-flex; width: var(--ns-icon-size); height: var(--ns-icon-size); }
+
+/*
+  슬롯에 들어온 자식의 크기. shadow 의 ::slotted(*) 와 같은 선언을 문서 트리에도
+  둔다 — 둘 다 필요하고 대상이 다르다.
+
+  ::slotted 는 shadow root 가 생긴 뒤에만 존재한다. 그런데 소비자가 넣는 아이콘은
+  대개 자기 크기를 갖고 온다(lucide 계열은 width="24" height="24" 를 찍는다).
+  upgrade 전에는 호스트만 --ns-icon-size 로 예약돼 있고 자식은 24 로 그려지다가,
+  upgrade 직후 ::slotted 가 걸리면서 20 으로 줄어든다 — ns-sidebar 에서 없앤 것과
+  같은 종류의 튐이 아이콘 크기로 되돌아온다.
+
+  이 규칙이 그 구간을 덮는다. 정의 이후에도 계속 걸리는 것이 맞다 — 조건 없는
+  예약이라 그칠 이유가 없고, 소비자가 자식에 인라인 style 로 다른 크기를 주는
+  override 경로도 그대로 남는다(인라인이 둘 다 이긴다).
+
+  ::slotted 쪽을 지울 수 없는 이유는 이 선택자가 문서 트리에만 닿기 때문이다.
+  다른 컴포넌트의 shadow 안에 있는 ns-icon 의 자식에는 위 ns-icon 규칙과 마찬가지로
+  도달하지 못한다.
+*/
+ns-icon > * { display: block; width: 100%; height: 100%; }
+
+ns-page-heading { display: block; }
+ns-skeleton { display: block; }
+
+/* 정의 전에는 light DOM 자식이 그대로 보인다. 모달 내용이 페이지에 새는 것을 막는다. */
+ns-dialog:not(:defined) { display: none; }
