@@ -400,10 +400,10 @@ export class NsSidebar extends LitElement {
         않아 tabindex 가 옮겨가지 않는다. 화살표 이동은 그 자리에서 포커스를
         옮겨야 하므로 직접 부른다 — 비제어에서는 #select 의 requestUpdate 가
         렌더를 예약하지만 포커스는 그것과 무관하다.
+
+        #focusTile 이 선택자를 조립하지 않는 이유는 그 메서드의 주석에 있다.
       */
-      this.renderRoot
-        .querySelector<HTMLElement>(`.tile[data-name="${entry.key}"]`)
-        ?.focus();
+      this.#focusTile(entry.key);
     };
 
     if (e.key === "ArrowDown") at(index + 1);
@@ -426,6 +426,13 @@ export class NsSidebar extends LitElement {
   }
 
   #select(key: string): void {
+    /*
+      이미 그 그룹이면 이벤트를 내지 않는다. ns-tabs 의 #select 가 같은 자리에서
+      같은 일을 한다 — 레일에 타일이 하나뿐일 때 화살표를 누르면 같은 키가 다시
+      들어오고, 단축이 없으면 아무것도 바뀌지 않았는데 ns-group-select 가 나간다.
+    */
+    if (key === this.#activeEntry?.key) return;
+
     this.#selected = true;
 
     // 제어 중이면 그 값을 바꾸지 않는다. 이벤트는 양쪽 모두 낸다.
@@ -438,6 +445,24 @@ export class NsSidebar extends LitElement {
     this.dispatchEvent(
       new CustomEvent("ns-group-select", { detail, bubbles: true, composed: true }),
     );
+  }
+
+  /**
+   * 키로 타일을 찾아 포커스를 옮긴다.
+   *
+   * **선택자를 문자열로 조립하지 않는다.** key 는 소비자가 준 `name` 이므로
+   * `.tile[data-name="${key}"]` 로 만들면 그 안에 `"` 가 하나 있는 순간
+   * querySelector 가 DOMException 을 던진다. 그 시점에는 preventDefault 와
+   * #select 가 이미 끝나 있어 선택 상태와 DOM 포커스가 어긋난 채로 keydown
+   * 리스너에서 예외가 난다. ns-tabs 의 #focus 가 배열 비교를 쓰는 이유가 같다.
+   */
+  #focusTile(key: string): void {
+    for (const el of this.renderRoot.querySelectorAll<HTMLElement>(".tile")) {
+      if (el.dataset.name === key) {
+        el.focus();
+        return;
+      }
+    }
   }
 
   /*
