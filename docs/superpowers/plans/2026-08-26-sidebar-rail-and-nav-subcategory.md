@@ -1493,18 +1493,61 @@ Run: `grep -n 'id="docs-nav"' index.html`
 | 컴포넌트 | `components` | `컴` |
 | 예시 | `examples` | `예` |
 
-- [ ] **Step 2: 셸 배선을 확인한다**
+- [ ] **Step 2: 문서 셸 배선을 고친다**
 
-문서 셸이 헤더 토글을 사이드바에 내려주는 코드가 있으면 지운다 — 사이드바가 이제 비제어로 스스로 여닫는다. 다만 **헤더의 토글 버튼은 여전히 배선이 필요하다**(별개 엘리먼트라 이벤트를 받아 내려줄 주체가 소비자밖에 없다).
+문서 셸은 **제어 모드를 쓴다.** 헤더 토글 버튼이 동작해야 하는데 헤더와 사이드바는 서로 남남이라 이벤트를 받아 내려주는 주체가 스크립트밖에 없다.
 
-Run: `grep -n 'docs-nav' index.html`
+그래서 Step 1 에서 준 `default-open` 을 **다시 뺀다.** 반쪽 제어(처음엔 비제어, 첫 토글에 제어로 바뀜)를 만들지 않기 위해 시작부터 프로퍼티로 세운다.
 
-`docs-nav` 에 `open` 프로퍼티를 대입하는 줄이 있으면 그대로 둔다 — 그것을 대입하는 순간 제어 모드가 되므로, **비제어를 쓰려면 그 줄을 지워야 한다.** 문서 셸은 헤더 토글도 동작해야 하므로 여기서는 제어를 유지하고 `<ns-sidebar>` 에서 `default-open` 을 빼는 쪽이 맞다. 두 방식 중 하나를 고른다.
+```html
+<ns-sidebar id="docs-nav">
+```
 
-- 헤더 토글이 있는 문서 셸 → **제어를 유지한다.** `default-open` 을 빼고 스크립트가 `docsNav.open = next` 를 계속 대입한다. 대신 사이드바가 올리는 `ns-toggle` 도 같은 핸들러가 받게 한다.
-- 헤더 토글이 없는 데모 절 → **비제어를 쓴다.** `default-open` 만 주고 스크립트를 두지 않는다.
+배선은 3369행 부근에 있다.
 
-문서 셸은 첫 번째다. 셸의 `ns-toggle` 리스너를 헤더가 아니라 **셸을 감싸는 요소**에 붙여 두 곳의 이벤트를 함께 받게 한다. `document` 에는 붙이지 않는다 — 이벤트가 `composed` 라 데모에서 난 것까지 올라온다.
+Run: `grep -n 'docsHeader.addEventListener' index.html`
+
+지금 이렇다.
+
+```js
+  const docsHeader = document.getElementById("docs-header");
+  const docsNav = document.getElementById("docs-nav");
+
+  docsHeader.addEventListener("ns-toggle", (e) => {
+    docsHeader.sidebarOpen = e.detail.open;
+    docsNav.open = e.detail.open;
+  });
+```
+
+아래로 교체한다.
+
+```js
+  const docsHeader = document.getElementById("docs-header");
+  const docsNav = document.getElementById("docs-nav");
+
+  /*
+    셸은 제어 모드다. 시작부터 프로퍼티로 세워 반쪽 제어를 만들지 않는다 —
+    open 을 첫 토글에서만 대입하면 그때까지는 비제어이므로 default-open 이
+    진실이고, 그 뒤에는 프로퍼티가 진실이 된다.
+  */
+  docsNav.open = true;
+
+  /*
+    ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일 타일.
+    **두 엘리먼트에 각각 붙인다.** 둘의 공통 조상은 body 이고 이벤트가
+    composed 라 거기 붙이면 데모 안에서 난 ns-toggle 까지 받는다. 리스너는
+    자기가 소유한 엘리먼트에만 붙인다.
+  */
+  const setShellOpen = (open) => {
+    docsHeader.sidebarOpen = open;
+    docsNav.open = open;
+  };
+
+  docsHeader.addEventListener("ns-toggle", (e) => setShellOpen(e.detail.open));
+  docsNav.addEventListener("ns-toggle", (e) => setShellOpen(e.detail.open));
+```
+
+**`docsNav` 에 이미 붙어 있는 `ns-navigate` 리스너는 그대로 둔다.**
 
 - [ ] **Step 3: `ns-sidebar` 절을 재작성한다**
 
