@@ -162,8 +162,26 @@ export const styles = css`
     overflow-wrap: anywhere;
   }
 
+  /*
+    닫기 버튼도 첫 줄 글자의 세로 중앙에 맞춘다. 점과 같은 이유이고 같은 계산이다 —
+    .toast 가 align-items: flex-start 라 버튼이 상자 맨 위에 붙는데, 버튼의 높이는
+    아이콘(--ns-icon-size)에 위아래 padding 이 더해진 값이라 줄 높이보다 크다.
+    그 차이의 절반만큼 아이콘 중심이 첫 글자 중심보다 내려가 있었다.
+
+    **위아래에 똑같이 준다.** 위만 당기면 버튼이 아래로 그만큼 더 삐져나와 상자
+    높이를 늘리지만, 양쪽을 당기면 배치상의 높이가 정확히 한 줄이 되어 한 줄
+    메시지에서 토스트가 글자보다 커지지 않는다. 넘치는 만큼은 .toast 의
+    padding(--ns-space-3) 안에 들어가므로 상자 밖으로 나가지 않는다.
+
+    지금 값은 우연히 0 이 아니다 — --ns-icon-size 와 --ns-line-height-sm 이 둘 다
+    1.25rem 이라 남는 것은 padding 뿐이지만, 그 셋 중 무엇이 바뀌어도 이 식이
+    따라간다.
+  */
   .close {
     flex-shrink: 0;
+    margin-block: calc(
+      (var(--ns-line-height-sm) - (var(--ns-icon-size) + var(--ns-space-1) * 2)) / 2
+    );
     display: inline-flex;
     align-items: center;
     justify-content: center;
