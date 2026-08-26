@@ -23,7 +23,22 @@ export class NsNavGroup extends LitElement {
    * "호스트의 속성을 쓰지 않는다" 가 겨냥하는 덮어쓰기가 아니다 —
    * `ns-nav-item` 의 `active` 가 이미 같은 방식이다.
    */
-  @property({ type: String, reflect: true }) heading = "";
+  /*
+    **`useDefault: true` 가 없으면 필드 초기값 `""` 도 속성으로 반영된다.**
+    `@lit/reactive-element` 의 기본값이 `useDefault: false` 이므로 첫 업데이트가
+    초기값을 변경으로 기록해 `<ns-nav-group heading="관리">` 가
+    `<ns-nav-group heading="관리" name="" icon="" badge="">` 가 된다.
+
+    반영이 "호스트의 속성을 쓰지 않는다" 의 예외인 근거는 **소비자가 준 값을
+    되울리는 것**인데, 그 값은 소비자가 준 적이 없다. 부작용도 둘이다 —
+    `ns-nav-group[name]` 류 선택자가 전부 매치하고, 그룹마다 속성 변이 셋이
+    `ns-sidebar` 의 MutationObserver 를 깨워 `#syncGroups()` 가 불필요하게
+    여러 번 돈다(루프는 아니다 — 사이드바는 이 이름들을 쓰지 않는다).
+
+    `lit@3.3` 이상에서만 있는 옵션이다. 이 저장소는 `lit@3.3.3`
+    (`@lit/reactive-element@2.1.2`)을 쓴다.
+  */
+  @property({ type: String, reflect: true, useDefault: true }) heading = "";
 
   /**
    * 레일 키. `ns-sidebar` 의 `activeGroup` 이 이 값을 가리킨다.
@@ -37,7 +52,7 @@ export class NsNavGroup extends LitElement {
    *
    * 비어 있으면 사이드바가 DOM 순서 인덱스를 키로 쓰고 경고한다.
    */
-  @property({ type: String, reflect: true }) name = "";
+  @property({ type: String, reflect: true, useDefault: true }) name = "";
 
   /**
    * 레일 타일에 그릴 아이콘의 이름. `<ns-icon name="…">` 에 그대로 넘어간다.
@@ -49,7 +64,7 @@ export class NsNavGroup extends LitElement {
    * `data-ns-rail="<name>"` 로 요소를 직접 넣는다 — React 아이콘 컴포넌트를
    * 쓸 때, 그리고 `registerIcons` 가 Next 번들에 들어가지 않는 배치일 때다.
    */
-  @property({ type: String, reflect: true }) icon = "";
+  @property({ type: String, reflect: true, useDefault: true }) icon = "";
 
   /**
    * 레일 타일에 보이는 짧은 글자. 1~2자를 넣는다.
@@ -62,7 +77,7 @@ export class NsNavGroup extends LitElement {
    * `ns-nav-item` 의 `badge` 와 같은 종류의 폴백이지만 **그쪽은 행 안에 늘
    * 보이고 이것은 레일에만 보인다.**
    */
-  @property({ type: String, reflect: true }) badge = "";
+  @property({ type: String, reflect: true, useDefault: true }) badge = "";
 
   /**
    * 헤딩 줄을 토글 버튼으로 만든다.
