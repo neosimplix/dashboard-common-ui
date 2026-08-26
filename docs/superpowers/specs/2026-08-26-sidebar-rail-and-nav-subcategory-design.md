@@ -110,7 +110,9 @@ static override shadowRootOptions: ShadowRootInit = {
 </ns-sidebar>
 ```
 
-`slot=` 을 그대로 쓰면 **동작하지 않는 표준 속성**이 되어 더 나쁘다. 소비자가 쓰는 훅에 `data-ns-` 를 붙이는 것은 이미 이 저장소의 규칙이고, `check-tokens.mjs` 가 `data-ns-*` 훅의 세 곳(`src`·`index.html`·`docs`) 일치를 검사하므로 이름이 조용히 어긋나지 않는다.
+`slot=` 을 그대로 쓰면 **동작하지 않는 표준 속성**이 되어 더 나쁘다. 소비자가 쓰는 훅에 `data-ns-` 를 붙이는 것은 이미 이 저장소의 규칙이다.
+
+**이 이름에는 정적 검사가 없다.** `check-tokens.mjs` 의 규칙 ③ 은 `data-ns-*` 훅을 세 층(`react/tags/*.tsx` · `tokens.css` · `*.styles.ts`)에서 대조하는데, 그 셋은 **CSS 가 짝인 훅**을 위한 것이다. `data-ns-rail` 은 코드가 질의하는 훅이라 어느 층에도 나타나지 않아 수집되지 않는다 — `data-ns-row-id`·`data-ns-page` 와 같은 부류이고, 그 파일의 한계 목록이 이 경우를 이미 적어 두고 있다. 규칙을 넓히지 않는다. **이름이 어긋나면 조용히 폴백 글자가 보이므로 육안 확인 항목으로 간다.**
 
 아이콘이 그룹과 떨어져 마크업 두 자리에 나뉜다. **아이콘을 그룹 바로 앞에 두도록 문서에 적는다** — 짝이 국소적으로 읽히게 하는 것이 우리가 할 수 있는 최선이다.
 
@@ -175,7 +177,7 @@ warnPropertyOnlyAttributes(this, {
 
 `default-active-group` 이 없거나 그 이름의 그룹이 없으면 DOM 순서상 첫 그룹을 고른다. 그룹이 하나도 없으면 아무것도 선택하지 않고 패널을 비운다(레일도 빈다).
 
-선택된 그룹이 DOM 에서 사라지면 첫 그룹으로 되돌린다. **제어 모드에서는 되돌리지 않는다** — 소비자가 준 값을 라이브러리가 바꾸는 것이 되므로, 그 경우 패널은 비어 있고 그것이 소비자에게 보이는 증상이다.
+**제어 모드에서도 첫 그룹으로 폴백하고 경고한다.** `ns-tabs` 가 `active` 와 일치하는 `data-ns-tab` 이 없을 때 하는 것과 같다 — 표시만 폴백하고 소비자 상태를 교정하지 않으며, 경고가 "첫 그룹을 보여주지만 그 타일을 눌러도 `ns-group-select` 가 나가지 않는다" 를 알린다. 폴백을 조용히 두면 고장이 "첫 타일이 선택돼 있는데 그 타일을 눌러도 아무 일도 없다" 로 보이고, 그것은 `ns-tabs` 가 이미 겪은 증상이다. 경고는 인스턴스마다 한 번만 낸다(`#warnedNoMatch`).
 
 ### 호스트에 `data-ns-open` 을 쓴다
 
@@ -424,7 +426,7 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 | `src/types.ts` | `NsGroupSelectDetail` + `HTMLElementEventMap` |
 | `src/react/elements.ts` | `NsSidebarBase` 의 `onNsGroupSelect` |
 | `src/react/tags/Sidebar.tsx` | 새 프롭 이름, `detail.name` 읽기, `data-ns-open` 조건부 |
-| `scripts/check-tokens.mjs` | `WIRING` 에서 `--ns-group-list-display` 제거, `data-ns-rail` 훅 추가 |
+| `scripts/check-tokens.mjs` | `WIRING` 을 빈 집합으로 (신호 둘 제거), 주석 갱신 |
 | `.claude/rules/library-invariants.md` | 호스트 속성 예외, `attributeFilter` 로 좁힌 관찰자, 신호 목록, 수동 슬롯 |
 | `.claude/rules/verification.md` | "아홉 래퍼" → 열 |
 | `docs/gotchas.md` | `key` 함정, 수동 슬롯, 레일 재설계 근거, `--ns-group-list-display` 의 생몰 |
@@ -438,13 +440,13 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 
 ## 12. 검증
 
-`npm run check` 가 잡는 것: 라이브러리 타입, 소비자 관점 타입, `ns-group-select` 의 래퍼 매핑, `data-ns-rail` 훅의 세 곳 일치, 토큰 참조(`--ns-group-list-display` 를 CSS 에 남긴 채 `WIRING` 에서 지우면 실패), `:host` 박스 없음.
+`npm run check` 가 잡는 것: 라이브러리 타입, 소비자 관점 타입, `ns-group-select` 의 래퍼 매핑, `data-ns-open` 훅의 세 곳 일치(계속 세 층에 있어야 한다), 토큰 참조, `:host` 박스 없음.
 
 **검사를 고쳤으면 일부러 깨뜨려서 실제로 실패하는지 확인한다. 셋이다.**
 
-- `elements.ts` 에서 `onNsGroupSelect` 를 지우고 `check-events.mjs` 가 실패하는지
-- `data-ns-rail` 을 세 곳 중 한 곳에서 빼고 `check-tokens.mjs` 가 실패하는지
-- `--ns-group-list-display` 를 `WIRING` 에서 지운 뒤 CSS 참조를 남겨 `check-tokens.mjs` 가 실패하는지
+- `elements.ts` 에서 `onNsGroupSelect` 를 지우고 `check-events.mjs` 가 실패하는지 (미등록 방향)
+- `elements.ts` 에 `onNsGroupSelect` 를 남긴 채 컴포넌트의 `dispatchEvent` 를 지우고 `check-events.mjs` 가 실패하는지 (미사용 방향)
+- `--ns-label-display` 를 `WIRING` 에서 지운 뒤 CSS 참조를 하나 남겨 `check-tokens.mjs` 가 실패하는지 — 그 뒤 참조와 `WIRING` 항목을 **둘 다** 지운 것이 최종 상태다
 
 **의도한 이유로 실패했는지까지 본다.**
 
