@@ -333,10 +333,10 @@
   크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
   light DOM 선택자라 upgrade 전에도 적용된다.
 
-  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
-  정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
-  프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
-  전까지 4rem 레일로 그려지다 19rem 으로 벌어졌다. upgrade 이후의 너비는
+  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 정의 이후까지
+  계속 걸리면, @lit/react 는 반응형 프로퍼티(open·defaultOpen)를
+  useLayoutEffect 에서만 설정하므로 서버 마크업에 그 속성이 없어 하이드레이션
+  전까지 4rem 레일로 그려지다 19rem 으로 벌어진다. upgrade 이후의 너비는
   ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
 
   data-ns-open 은 제어 모드 React 소비자를 위한 통로다. createComponent 가
@@ -361,14 +361,14 @@
 ns-header { display: block; height: var(--ns-header-height); }
 
 ns-sidebar                             { display: block; }
-ns-sidebar:not(:defined)                  { width: var(--ns-sidebar-width-collapsed); }
+ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); }
 /*
   [open] 이 아니라 [default-open] 이다. 0.5.0 부터 open 은 프로퍼티 전용이고
   순수 HTML 이 쓰는 이름은 default-open 이다. data-ns-open 은 React shim 이
   SSR 마크업에 싣는 통로이고 그 뒤로는 컴포넌트가 쓴다.
 */
 ns-sidebar:not(:defined)[default-open],
-ns-sidebar:not(:defined)[data-ns-open]    { width: var(--ns-sidebar-width); }
+ns-sidebar:not(:defined)[data-ns-open] { width: var(--ns-sidebar-width); }
 
 /*
   ns-icon 은 값을 --ns-icon-size 에서 받는다. 이 요소 선택자만으로는 문서 트리의

@@ -34,8 +34,9 @@ interface RailEntry {
  * 네비게이션 컨테이너. **레일과 패널 두 칼럼이다.**
  *
  * 레일은 항상 보이고 직계 자식 `ns-nav-group` 하나마다 타일 하나를 갖는다.
- * 패널은 **선택된 그룹 하나만** 보여주고 `open` 이 거짓이면 사라진다. VS Code
- * 의 활동 바 + 사이드 바 모델이다.
+ * 패널은 **선택된 그룹 하나만** 보여주고 열려 있지 않으면 사라진다(제어는
+ * `open`, 비제어는 `default-open` 이 정한다). VS Code 의 활동 바 + 사이드 바
+ * 모델이다.
  *
  * ```html
  * <ns-sidebar default-open>
@@ -222,11 +223,30 @@ export class NsSidebar extends LitElement {
     읽으면 React 소비자에게 default-active-group 이 조용히 무시된다.
   */
   protected override willUpdate(changed: PropertyValues): void {
+    /*
+      씨앗을 대입하기 전에 좁힌다.
+
+      반응형 프로퍼티는 필드 기본값을 갖지만 소비자가 undefined 를 대입하면 그
+      기본값이 지워진다. 그 경로는 흔하다 — shim 의 선택 프롭이 주어지지 않으면
+      값이 undefined 이고 createComponent 는 그것을 그대로 대입한다.
+      <Sidebar onNavigate={…} /> 하나로 충분하다.
+
+      좁히지 않으면 #isOpen 이 undefined 가 되고, **toggleAttribute 의 두 번째
+      인자가 undefined 면 지우는 것이 아니라 뒤집는다** — 갱신마다 패널이 열리고
+      닫힌다. 같은 렌더에서 aria-selected 도 열린 타일에 "false" 로 나간다.
+      #innerActive 쪽은 "활성 그룹 undefined 와 일치하는 그룹이 없다" 는 경고를
+      근거 없이 띄운다.
+
+      타입 검사는 이것을 보지 못한다. 프로퍼티 타입이 boolean·string 이라
+      라이브러리 안에서는 undefined 가 들어올 수 없는 것처럼 보이고, 약속이
+      깨지는 지점은 createComponent 안이다.
+    */
     if (changed.has("defaultOpen") && !this.#toggled) {
-      this.#innerOpen = this.defaultOpen;
+      this.#innerOpen = this.defaultOpen === true;
     }
     if (changed.has("defaultActiveGroup") && !this.#selected) {
-      this.#innerActive = this.defaultActiveGroup;
+      this.#innerActive =
+        typeof this.defaultActiveGroup === "string" ? this.defaultActiveGroup : "";
     }
   }
 
@@ -309,9 +329,16 @@ export class NsSidebar extends LitElement {
       default-open 이다. 덮을 값이 애초에 없으므로 ns-toast 의 position 과 같은
       형태의 예외다.
 
-      새 이름이 아니다. Sidebar.tsx shim 이 SSR 마크업에 이미 렌더하고 tokens.css
-      의 upgrade 전 예약이 이미 그것을 본다. 바뀌는 것은 하이드레이션 이후에도
-      계속 쓴다는 것뿐이다.
+      새 이름이 아니다. tokens.css 의 upgrade 전 예약이 이미 이 이름을 본다.
+
+      제어 모드에서 shim 이 SSR 마크업에 data-ns-open 을 먼저 심어 두지만, 그것
+      만으로는 부족하다 — upgrade 직후 가장 먼저 도는 이 첫 updated() 에서 open
+      은 아직 undefined 이고 #innerOpen 은 기본값 false 라, 좁히지 않으면 이 줄이
+      shim 이 방금 심어 둔 속성을 지워 버린다(패널이 접혔다가 하이드레이션 뒤에
+      다시 벌어지는 튐). shim 이 default-open 도 함께 렌더해 Lit 의 속성
+      컨버터가 upgrade 시점에 #innerOpen 을 먼저 세우므로, 이 줄에 도착할 때
+      #isOpen 이 이미 참이라 지우지 않고 유지한다. 하이드레이션 이후에는 이 줄이
+      컴포넌트 자신의 진실대로 계속 쓴다.
     */
     this.toggleAttribute("data-ns-open", this.#isOpen);
 
