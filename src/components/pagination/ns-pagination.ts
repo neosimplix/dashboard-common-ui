@@ -413,34 +413,36 @@ export class NsPagination extends LitElement {
         >
           이전
         </button>
-        ${repeat(
-          pageWindow(current, pages, this.#window),
-          /*
-            번호는 그 번호 자신이 정체성이다. 슬롯 수는 이제 고정이지만 윈도우가
-            밀리면 같은 자리에 다른 번호가 온다(`1 … 5 6 7 … 12` → `1 … 6 7 8 … 12`).
-            위치로 diff 하면 lit 이 노드를 재사용하며 라벨만 5에서 6으로 바꾸고,
-            화면낭독기가 엉뚱한 번호를 읽는다. 포커스가 있던 노드가 옮겨 갈 때
-            제거 후 삽입이 되는 것도 같다 — 그쪽은 updated() 가 되돌린다.
+        <span class="ns-pagination-pages">
+          ${repeat(
+            pageWindow(current, pages, this.#window),
+            /*
+              번호는 그 번호 자신이 정체성이다. 슬롯 수는 이제 고정이지만 윈도우가
+              밀리면 같은 자리에 다른 번호가 온다(`1 … 5 6 7 … 12` → `1 … 6 7 8 … 12`).
+              위치로 diff 하면 lit 이 노드를 재사용하며 라벨만 5에서 6으로 바꾸고,
+              화면낭독기가 엉뚱한 번호를 읽는다. 포커스가 있던 노드가 옮겨 갈 때
+              제거 후 삽입이 되는 것도 같다 — 그쪽은 updated() 가 되돌린다.
 
-            gap 은 포커스를 받지 않고 위치가 곧 정체성이라 인덱스로 구분한다.
-            문자열 키라 번호 키와 섞이지 않는다.
-          */
-          (entry, index) => (entry === "gap" ? `gap-${index}` : entry),
-          (entry) =>
-            entry === "gap"
-              ? html`<span class="ns-pagination-gap" aria-hidden="true">…</span>`
-              : html`<button
-                  class=${entry === current
-                    ? "ns-button ns-button--outline ns-button--sm"
-                    : "ns-button ns-button--ghost ns-button--sm"}
-                  type="button"
-                  data-ns-page=${entry}
-                  aria-current=${entry === current ? "page" : nothing}
-                  @click=${() => this.#activate(entry, entry)}
-                >
-                  ${entry}
-                </button>`,
-        )}
+              gap 은 포커스를 받지 않고 위치가 곧 정체성이라 인덱스로 구분한다.
+              문자열 키라 번호 키와 섞이지 않는다.
+            */
+            (entry, index) => (entry === "gap" ? `gap-${index}` : entry),
+            (entry) =>
+              entry === "gap"
+                ? html`<span class="ns-pagination-gap" aria-hidden="true">…</span>`
+                : html`<button
+                    class=${entry === current
+                      ? "ns-button ns-button--outline ns-button--sm"
+                      : "ns-button ns-button--ghost ns-button--sm"}
+                    type="button"
+                    data-ns-page=${entry}
+                    aria-current=${entry === current ? "page" : nothing}
+                    @click=${() => this.#activate(entry, entry)}
+                  >
+                    ${entry}
+                  </button>`,
+          )}
+        </span>
         <button
           class="ns-button ns-button--ghost ns-button--sm"
           type="button"

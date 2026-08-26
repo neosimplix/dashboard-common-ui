@@ -532,8 +532,56 @@
     gap: var(--ns-space-1);
   }
 
+  /*
+    번호 칸을 전부 같은 폭으로 만든다. 이전·다음이 제자리에 있으려면 이것과
+    pageWindow 의 고정 슬롯 수가 **둘 다** 필요하다 — 한쪽만으로는 진폭만
+    줄고 여전히 움직인다. 근거는
+    docs/superpowers/specs/2026-08-26-pagination-stable-width-design.md 에 있다.
+
+    내재 폭 컨테이너 안에서 1fr 트랙들은 전부 가장 넓은 항목의 max-content 폭을
+    갖는다. 이 컴포넌트는 어느 배치에서도 마지막 페이지 버튼을 렌더하므로 그것이
+    언제나 최댓값이면 폭이 고정되는데, 그 전제가 저절로 성립하지는 않는다 —
+    아래 두 규칙이 상자와 글자폭을 맞춰 성립시킨다.
+  */
+  .ns-pagination-pages {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    gap: var(--ns-space-1);
+  }
+
+  /*
+    자릿수만이 폭을 정하게 한다. 비례폭 글꼴에서 0 이 1 보다 넓으면 "10" 이
+    "11" 보다 넓어져, 마지막 페이지가 최댓값이라는 전제가 깨진다.
+
+    부모가 아니라 항목에 직접 준다. 상속 프로퍼티지만 UA 스타일시트가 button 에
+    font 단축 프로퍼티를 걸어 이 값을 normal 로 되돌리고, 이 파일의 버튼 규칙은
+    font-family·font-size·line-height 를 따로 적을 뿐 단축을 쓰지 않는다.
+  */
+  .ns-pagination-pages > * {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+    .ns-button--outline 은 1px 테두리를 갖고 --ghost 는 갖지 않는다. box-sizing 이
+    border-box 라도 **max-content 는 테두리를 포함**하므로, 현재 페이지가 가장 넓은
+    번호일 때와 아닐 때 트랙 폭이 2px 갈린다. 일곱 칸이면 14px 어긋난다.
+
+    선택자를 > .ns-button 으로 넓히지 않는다 — (0,2,0) 이라 .ns-button--outline
+    (0,1,0) 을 이겨 현재 페이지의 테두리까지 투명해진다.
+  */
+  .ns-pagination-pages > .ns-button--ghost {
+    border: 1px solid transparent;
+  }
+
+  /*
+    padding-inline 을 갖지 않는다. 트랙 폭은 번호가 정하므로 필요 없고, 남겨 두면
+    gap 이 최댓값을 다툴 여지만 생긴다. 그리드 항목이라 트랙 폭만큼 늘어나므로
+    가로 가운데는 text-align 이, 세로 가운데는 부모의 align-items 가 맡는다.
+  */
   .ns-pagination-gap {
-    padding-inline: var(--ns-space-2);
+    text-align: center;
     color: var(--ns-color-fg-subtle);
     font-size: var(--ns-font-size-sm);
     line-height: var(--ns-line-height-sm);

@@ -2366,12 +2366,14 @@
   <table>
     <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
     <tr><td><code>ns-pagination</code></td><td>(요소 선택자)</td><td>배치. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
+    <tr><td><code>.ns-pagination-pages</code></td><td>컴포넌트가 렌더하는 <code>span</code></td><td>번호 버튼과 <code>…</code> 를 감싸는 균등 그리드. <strong>칸을 전부 같은 폭으로 만들어 이전·다음을 제자리에 붙든다</strong></td></tr>
     <tr><td><code>.ns-pagination-gap</code></td><td>컴포넌트가 렌더하는 <code>span</code></td><td><code>…</code> 자리. 나머지 버튼은 전부 <code>.ns-button</code> 재사용이다</td></tr>
   </table>
   <p>
     <code>nav</code> 는 이 컴포넌트가 렌더하는 유일한 자식이라 요소 타입으로 특정되어
-    클래스가 없다. 이 표에 <code>.ns-pagination-gap</code> 이 적혀 있어야
-    <code>check-controls.mjs</code> 가 통과한다 — 데모 템플릿에는 그 클래스가 소스로
+    클래스가 없다. 이 표에 <code>.ns-pagination-pages</code> 와
+    <code>.ns-pagination-gap</code> 이 적혀 있어야
+    <code>check-controls.mjs</code> 가 통과한다 — 데모 템플릿에는 그 클래스들이 소스로
     등장하지 않는다(컴포넌트가 런타임에 만든다).
   </p>
 
