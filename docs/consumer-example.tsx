@@ -160,13 +160,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <Sidebar
           open={open}
-          defaultActiveGroup="admin"
+          defaultActiveGroup="projects"
           onToggle={(next) => setOpen(next)}
           onGroupSelect={(name) => log(name)}
           onNavigate={(d) => router.push(d.href)}
         >
           <NsNavGroup
-            name="admin"
+            name="projects"
             heading="프로젝트"
             collapsible
             onNsNavigate={(e) => log(e.detail.label)}

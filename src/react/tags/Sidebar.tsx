@@ -37,7 +37,7 @@ export type SidebarProps = {
    * 않으므로 새 탭 열기만 동작해 "가끔 되는 것처럼" 보인다.
    *
    * 선택으로 두는 이유는 사이드바가 라우팅 없이 쓰이는 경우(정적 예시, 스토리)가
-   * 있기 때문이다.
+   * 있기 때문이다. 필수로 바꾸는 것은 0.1.5 부터의 동작 변경이라 여기서 하지 않는다.
    */
   onNavigate?: (detail: NsNavigateDetail) => void;
   children?: ReactNode;

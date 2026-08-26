@@ -54,6 +54,12 @@ export const styles = css`
     레일은 항상 보이고 줄지 않는다. 폭이 곧 --ns-sidebar-width-collapsed 라
     패널이 사라지면 호스트 너비와 같아진다.
 
+    border-right 와 overflow 를 같은 요소에 함께 둔다. 경계선만 여기 두고
+    스크롤은 조상(.shell)에 두면 스크롤바가 호스트 쪽 것이 되어 경계선 바깥
+    (오른쪽)에 생긴다 — 0.2.0 에서 겪은 고장이다. 같은 요소가 둘을 가져야
+    스크롤바가 경계선 안쪽에 남는다. 아래 .panel 은 자기 경계선이 없지만
+    .shell 의 border-right 바로 안쪽에 붙어 있어 같은 성질을 얻는다.
+
     overflow-x: hidden 이라 타일 포커스 링을 바깥에 그리면 잘린다. 아래
     outline-offset 이 음수인 이유다.
   */
@@ -70,8 +76,9 @@ export const styles = css`
   }
 
   /*
-    타일은 정사각형이다. 레일 폭에서 좌우 패딩을 뺀 것이 한 변이다.
-    <button> 의 UA 기본값(배경·테두리·글꼴)을 되돌린다.
+    타일은 정사각형이다. 레일 폭이 한 변이고(레일의 패딩은 위아래에만 있다)
+    aspect-ratio 가 높이를 따라오게 한다. <button> 의 UA 기본값(배경·테두리·글꼴)을
+    되돌린다.
   */
   .tile {
     box-sizing: border-box;
@@ -136,19 +143,28 @@ export const styles = css`
     height: var(--ns-control-height-sm);
   }
 
-  ::slotted(*) {
+  /*
+    **타일 슬롯에만 건다.** 접두사 없는 ::slotted(*) 는 패널 슬롯에 배정된 그룹까지
+    잡아 그 높이를 패널 높이로 묶는다 — 그러면 긴 목록에서 호스트 박스가 잘리고
+    패널의 scrollHeight 가 자라지 않아 스크롤이 죽는다.
+  */
+  slot.tile-slot::slotted(*) {
     max-width: 100%;
     max-height: 100%;
   }
 
   /*
-    패널 폭은 파생값이다. 열린 총폭에서 레일 폭을 뺀 것이라 두 토큰을 덮어쓰던
-    소비자가 계속 같은 것을 제어한다. 사용처가 하나이므로 토큰을 만들지 않는다.
+    패널은 **남는 폭**을 받는다. calc(열린 총폭 - 레일 폭) 으로 계산하지 않는 이유는
+    레일과 패널 사이의 1px 경계선이 그 산수에 들어가지 않아 자식이 호스트 content
+    box 를 1px 넘기기 때문이다. flex: 1 은 경계선이 몇 개든 남은 폭을 그대로 받는다.
+
+    min-width: 0 이 필요한 이유는 flex 자식의 기본값이 min-width: auto 라서다 —
+    내용이 넓으면 패널이 부풀어 레일을 밀어낸다.
   */
   .panel {
     box-sizing: border-box;
-    flex: none;
-    width: calc(var(--ns-sidebar-width) - var(--ns-sidebar-width-collapsed));
+    flex: 1;
+    min-width: 0;
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;

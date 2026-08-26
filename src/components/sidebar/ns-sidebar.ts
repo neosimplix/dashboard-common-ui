@@ -1,8 +1,9 @@
-import { LitElement, html, type PropertyValues } from "lit";
+import { LitElement, html, nothing, type PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
+import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js";
 import type { NsNavGroup } from "../nav-group/ns-nav-group.js";
 
 // 타일 폴백이 <ns-icon> 을 쓴다. 등록 부수효과가 필요하다.
@@ -76,8 +77,12 @@ export class NsSidebar extends LitElement {
    * 제어 모드의 활성 그룹. `undefined` 면 비제어다.
    *
    * 속성이 아니라 프로퍼티 전용인 이유는 `ns-tabs` 의 `active` 와 같다 —
-   * `<ns-sidebar active-group="admin">` 이라고 쓰면 제어 모드로 들어가 컴포넌트가
-   * 스스로 그룹을 바꾸지 못한다. 순수 HTML 은 `default-active-group` 을 쓴다.
+   * `<ns-sidebar active-group="admin">` 이 속성으로 읽히면 제어 모드로 들어가
+   * 컴포넌트가 스스로 그룹을 바꾸지 못한다. 순수 HTML 은 `default-active-group`
+   * 을 쓴다.
+   *
+   * **그래서 그 속성은 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도
+   * 않는다. 붙어 있으면 connectedCallback 이 경고한다.
    */
   @property({ attribute: false }) activeGroup?: string;
 
@@ -102,6 +107,7 @@ export class NsSidebar extends LitElement {
   */
   #warnedNoMatch = false;
   #warnedNoName = false;
+  #warnedDupName = false;
 
   get #controlledGroup(): boolean {
     return this.activeGroup !== undefined;
@@ -140,6 +146,7 @@ export class NsSidebar extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
+    warnPropertyOnlyAttributes(this, { "active-group": "default-active-group" });
 
     this.#syncGroups();
 
@@ -147,6 +154,10 @@ export class NsSidebar extends LitElement {
       childList 는 그룹이 늘고 줄는 것을, attributeFilter 는 레일이 읽는 네 값이
       바뀌는 것을 본다. 수동 배정에서는 자식이 바뀌어도 배정이 자동으로 변하지
       않으므로 slotchange 가 발생하지 않는다 — 이 관찰자가 유일한 신호다.
+
+      **subtree 가 없으면 attributes 절반이 죽는다.** MutationObserver 의
+      attributes 는 관찰 대상 노드 **자신의** 속성만 보므로, subtree 없이는
+      호스트의 속성을 볼 뿐 자식 그룹의 heading 이 바뀌는 것을 보지 못한다.
 
       **불변 규칙의 "attributes 는 켜지 않는다" 와 어긋나지 않는다.** 그 규칙이
       막으려는 것은 동기화가 setAttribute 를 쓰므로 자기 쓰기에 재발동해 루프가
@@ -157,6 +168,7 @@ export class NsSidebar extends LitElement {
     this.#observer = new MutationObserver(() => this.#syncGroups());
     this.#observer.observe(this, {
       childList: true,
+      subtree: true,
       attributes: true,
       attributeFilter: ["name", "heading", "icon", "badge", "data-ns-rail"],
     });
@@ -191,8 +203,20 @@ export class NsSidebar extends LitElement {
         <div class="rail" role="tablist" aria-orientation="vertical">
           ${entries.map((entry) => this.#tile(entry, entry === active))}
         </div>
-        <nav class="panel" id="panel" role="tabpanel">
-          <slot class="panel-slot"></slot>
+        <nav class="panel">
+          <!--
+            role="tabpanel" 을 <nav> 에 두지 않는다. role 은 암시적 역할을 덮으므로
+            얹으면 navigation 랜드마크가 사라진다 — 네비게이션 사이드바에서 그것은
+            잃어도 되는 것이 아니다. 안쪽 <div> 가 tabpanel 을 지고 aria-labelledby
+            로 활성 타일을 가리켜 패널에 이름이 붙는다(그 이름이 그룹의 heading 이다).
+          -->
+          <div
+            id="panel"
+            role="tabpanel"
+            aria-labelledby=${active === undefined ? nothing : `tile-${active.key}`}
+          >
+            <slot class="panel-slot"></slot>
+          </div>
         </nav>
       </div>
     `;
@@ -207,6 +231,7 @@ export class NsSidebar extends LitElement {
     const selected = isActive && this.open;
     return html`
       <button
+        id=${`tile-${entry.key}`}
         class=${selected ? "tile selected" : "tile"}
         type="button"
         role="tab"
@@ -256,11 +281,23 @@ export class NsSidebar extends LitElement {
     const icons = new Map<string, Element>();
     for (const el of children) {
       const key = el.getAttribute("data-ns-rail");
+      if (key === null || key === "") continue;
+      /*
+        그룹 자신에 data-ns-rail 을 붙이면 그 그룹이 타일 슬롯으로 가버려 패널이
+        빈다. 노드 하나는 슬롯 하나에만 배정되기 때문이다. 걸러내고 경고한다.
+      */
+      if (el.tagName === "NS-NAV-GROUP") {
+        console.warn(
+          `[ns-sidebar] data-ns-rail 은 그룹이 아니라 아이콘 요소에 붙입니다. ns-nav-group 에 붙이면 그 그룹이 레일 타일로 가버려 패널이 빕니다.`,
+        );
+        continue;
+      }
       // 같은 키가 둘이면 문서 순서상 첫 번째를 쓴다. getElementById 와 같은 규약이다.
-      if (key !== null && key !== "" && !icons.has(key)) icons.set(key, el);
+      if (!icons.has(key)) icons.set(key, el);
     }
 
     const groups = children.filter((el) => el.tagName === "NS-NAV-GROUP");
+    const seen = new Set<string>();
 
     /*
       프로퍼티를 먼저 읽고 속성으로 폴백한다. 둘이 필요한 이유는 타이밍이다 —
@@ -290,6 +327,18 @@ export class NsSidebar extends LitElement {
       }
 
       const key = name === "" ? String(i) : name;
+
+      /*
+        키가 겹치면 두 번째 타일이 첫 번째의 아이콘을 가져가고, 키로 타일을 찾는
+        키보드 이동도 첫 번째만 찾는다. 고치지는 않고 들리게만 한다.
+      */
+      if (seen.has(key) && !this.#warnedDupName) {
+        this.#warnedDupName = true;
+        console.warn(
+          `[ns-sidebar] ns-nav-group 의 name 이 겹칩니다("${key}"). 레일 타일과 선택 상태가 첫 번째 그룹만 가리킵니다.`,
+        );
+      }
+      seen.add(key);
 
       /*
         타일 내용의 폴백 세 단. 슬롯에 배정된 것이 있으면 이것은 보이지 않는다.

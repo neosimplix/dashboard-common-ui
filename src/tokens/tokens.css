@@ -336,7 +336,7 @@
   :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
   정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
   프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
-  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. upgrade 이후의 너비는
+  전까지 4rem 레일로 그려지다 19rem 으로 벌어졌다. upgrade 이후의 너비는
   ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
 
   data-ns-open 은 React 소비자를 위한 통로다. createComponent 가 반응형
