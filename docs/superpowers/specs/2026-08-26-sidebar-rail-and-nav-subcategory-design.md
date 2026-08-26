@@ -58,13 +58,13 @@
 ```html
 <div class="shell">
   <div class="rail" role="tablist" aria-orientation="vertical">
-    <button id="tile-admin" role="tab" aria-selected="true" aria-controls="panel" class="tile selected">
+    <button id="tile-1" role="tab" aria-selected="true" aria-controls="panel" class="tile selected" data-name="admin">
       <span class="tile-body"><slot data-name="admin">관</slot></span>
     </button>
     …
   </div>
   <nav class="panel">
-    <div id="panel" role="tabpanel" aria-labelledby="tile-admin">
+    <div id="panel" role="tabpanel" aria-labelledby="tile-1">
       <slot class="panel-slot"></slot>
     </div>
   </nav>
@@ -334,7 +334,9 @@ export interface NsGroupSelectDetail {
 
 ### 접근성
 
-`role="tablist"` + `aria-orientation="vertical"`, 타일은 `id="tile-<name>"` + `role="tab"` + `aria-selected` + `aria-controls="panel"`, 패널 안쪽 `<div>` 가 `role="tabpanel"` + `aria-labelledby` 로 활성 타일을 가리킨다. roving tabindex 와 ↑↓ 키는 `ns-tabs` 의 구현을 그대로 따른다.
+`role="tablist"` + `aria-orientation="vertical"`, 타일은 `id="tile-<DOM 순서 인덱스>"` + `role="tab"` + `aria-selected` + `aria-controls="panel"`, 패널 안쪽 `<div>` 가 `role="tabpanel"` + `aria-labelledby` 로 활성 타일을 가리킨다. roving tabindex 와 ↑↓ 키는 `ns-tabs` 의 구현을 그대로 따른다.
+
+**`id` 를 소비자의 `name` 에서 만들지 않는다.** IDREF 목록은 공백으로 나뉘므로 `name="my group"` 하나로 `aria-labelledby` 가 두 IDREF 로 파싱되어 패널이 접근성 이름을 조용히 잃고, 공백이 든 `id` 자체도 무효다. 살균으로는 부족하다 — 공백을 하이픈으로 바꾸면 `"a b"` 와 `"a-b"` 가 같은 `id` 로 접혀 같은 종류의 침묵 실패가 남는다. `id` 는 shadow root 안의 내부 구현이므로 소비자 데이터에서 파생할 이유가 없고, 인덱스는 그 안에서 언제나 유일해서 `name` 이 겹칠 때 `id` 까지 겹치던 문제도 함께 없앤다. **키는 `data-name` 이 들고 있다** — `#focusTile` 과 키보드 이동이 그것을 배열 비교로 찾고, devtools 에서도 `name` 이 보인다.
 
 타일에는 `aria-label` 로 `heading` 을 준다. 타일 내용이 아이콘이거나 한 글자라 그것만으로는 읽히지 않는다. 툴팁은 `title` 속성으로 준다 — **`title` 을 프로퍼티 이름으로 쓰지 않는다는 규칙은 우리가 정의하는 API 이름에 대한 것이고, shadow 안 요소에 브라우저 툴팁을 띄우려고 쓰는 것은 그 규칙이 막으려는 것이 아니다.** `ns-nav-item` 이 이미 `<a title=…>` 를 그렇게 쓰고 있다.
 
