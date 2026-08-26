@@ -38,7 +38,7 @@ interface RailEntry {
  * 의 활동 바 + 사이드 바 모델이다.
  *
  * ```html
- * <ns-sidebar open>
+ * <ns-sidebar default-open>
  *   <ns-icon data-ns-rail="admin">…</ns-icon>
  *   <ns-nav-group name="admin" heading="관리" badge="관"> … </ns-nav-group>
  * </ns-sidebar>

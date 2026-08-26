@@ -24,8 +24,10 @@ export type SidebarProps = {
   /**
    * 레일 타일이 요청하는 다음 그룹.
    *
-   * **`open` 을 소비자가 들고 있으므로 `onToggle` 과 짝으로 다뤄야 한다.**
-   * 타일 클릭은 그룹을 바꾸면서 패널을 열어 달라고 요청한다.
+   * 제어 모드(`open` 을 준 경우)에서는 `onToggle` 과 짝으로 다뤄야 한다 —
+   * 타일 클릭은 그룹을 바꾸면서 패널을 열어 달라고 요청하는데, 소비자가 `open`
+   * 을 들고 있으니 다시 내려주지 않으면 패널이 열리지 않는다. 비제어에서는
+   * 엘리먼트가 스스로 여니 이 프롭 없이도 열린다.
    */
   onGroupSelect?: (name: string) => void;
   /**
@@ -81,9 +83,22 @@ export function Sidebar({
       defaultOpen={defaultOpen}
       activeGroup={activeGroup}
       defaultActiveGroup={defaultActiveGroup}
+      /*
+        하이픈 든 이름은 반응형 프로퍼티가 아니므로 createComponent 가 가로채지
+        않고 React.createElement 로 흘러가 서버 마크업에 그대로 실린다.
+
+        **비제어 경로의 튐을 막는 것이 이 줄이다.** defaultOpen 은 반응형이라
+        useLayoutEffect 에서만 설정되므로 서버 마크업에 아무 표시도 남지 않고,
+        그러면 upgrade 시점에 아직 false 라 4rem 으로 그려지다 하이드레이션 직후
+        19rem 으로 벌어진다. 이 속성이 있으면 upgrade 때 Lit 의 속성 컨버터가
+        그것을 읽어 defaultOpen 을 세우므로 하이드레이션을 기다리지 않는다.
+      */
+      default-open={defaultOpen === true ? "" : undefined}
       // 하이드레이션 전에는 이것만 보인다. tokens.css 의 :not(:defined) 규칙이 읽는다.
       // 제어 모드에서만 렌더한다 — 비제어에서는 엘리먼트가 스스로 쓰므로
-      // 여기서 함께 쓰면 두 쪽이 같은 속성을 두고 다툰다.
+      // 여기서 함께 쓰면 React 가 이 속성의 소유자가 되어 엘리먼트의
+      // toggleAttribute 와 다툰다. default-open 은 엘리먼트가 쓰지 않는 이름이라
+      // 그 다툼이 없다.
       data-ns-open={open === true ? "" : undefined}
       className={className}
       style={style}
