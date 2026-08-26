@@ -292,7 +292,11 @@ export interface NsGroupSelectDetail {
 
 `ns-group-select`, `bubbles: true, composed: true`. 제어·비제어 양쪽에서 낸다. 필드가 하나이므로 React shim 규칙에 따라 `onGroupSelect(name)` 처럼 벗길 수 있는 모양이지만, `NsSidebar` 는 shim 을 통해 공개되므로 그 결정은 `tags/Sidebar.tsx` 에서 한다(§8).
 
-**이벤트가 아홉에서 열이 된다.** `docs/project-structure.md` 의 목록과 `.claude/rules/verification.md` 의 "아홉 래퍼" 문단을 함께 고친다.
+**이벤트 이름이 아홉에서 열이 된다.** `docs/project-structure.md` 의 "이벤트는 아홉이다" 를 고친다.
+
+**`.claude/rules/verification.md` 의 "아홉 래퍼" 는 다른 것을 센다.** 그 문단이 세는 것은 `events` 가 비어 있지 않은 `createComponent` 호출, 즉 **래퍼 수**이고 그 수는 바뀌지 않는다 — `ns-sidebar` 는 0.4.0 에도 이미 `ns-navigate` 를 매핑하고 있었으므로 새 이벤트가 그 래퍼에 얹히는 것뿐이다. 두 문단이 같은 "아홉" 을 쓰고 있어 헷갈리기 쉬운데, **한쪽은 래퍼를 세고 한쪽은 이름을 센다.**
+
+그래서 `verification.md` 는 숫자를 하나 올리는 것이 아니라 **두 숫자를 함께 적고 각자의 출처를 남기는** 쪽으로 고친다 — 래퍼 수는 `events` 가 비어 있지 않은 `createComponent` 호출, 이벤트 수는 `as EventName<` 의 개수다. 이 작업 자체가 "래퍼는 늘지 않고 이벤트만 늘 수 있다" 는 함정의 실례이므로 그것도 함께 적는다.
 
 ## 6. 레일 타일
 
@@ -493,7 +497,7 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 | `src/react/tags/Sidebar.tsx` | 새 프롭 이름, `detail.name` 읽기, `data-ns-open` 조건부 |
 | `scripts/check-tokens.mjs` | `WIRING` 을 빈 집합으로 (신호 둘 제거), 주석 갱신 |
 | `.claude/rules/library-invariants.md` | 호스트 속성 예외, `attributeFilter` 로 좁힌 관찰자, 신호 목록, 수동 슬롯 |
-| `.claude/rules/verification.md` | "아홉 래퍼" → 열 |
+| `.claude/rules/verification.md` | "아홉 래퍼" 문단에 래퍼 수와 이벤트 수를 각자의 출처와 함께 (래퍼 수는 안 바뀐다) |
 | `docs/gotchas.md` | `key` 함정, 수동 슬롯, 레일 재설계 근거, `--ns-group-list-display` 의 생몰 |
 | `docs/project-structure.md` | 이벤트 열, `ns-sidebar`·`ns-nav-group` 설명, "남은 일" 에서 비제어 항목 제거 |
 | `docs/consumer-example.tsx` | `ns-group-select` 의 `detail.name` 을 실제로 읽는 핸들러 |
