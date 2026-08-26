@@ -1781,6 +1781,35 @@ Run: `grep -n 'id="ns-sidebar"' index.html`
 5. **레일 키보드.** ↑↓ 는 타일 사이를 돌며 **선택을 함께 옮기지만 패널을 열지는 않는다.** 패널이 닫혀 있을 때 화살표를 눌러도 열리지 않고, 그 타일에서 Enter·Space 를 누르면(= 클릭) 열린다. 사용자가 일부러 닫은 패널을 포커스 이동이 강제로 열지 않게 한 것이다. Home·End 는 처음·끝으로 간다.
 6. **활성 타일을 다시 누르면 패널이 닫힌다.** VS Code 와 같다. 그래서 패널이 닫혀 있으면 어느 타일도 `aria-selected="true"` 가 아니다 — 선택된 탭이 없는 tablist 는 유효한 상태이고, 열림 여부는 패널의 존재로 드러난다.
 
+- [ ] **Step 3b: `ns-header` 절의 배선 예시를 고친다**
+
+`ns-header` 절에는 헤더 토글을 사이드바에 내려주는 예시가 `<script type="text/plain">` 안에 있다. 실행되지 않으므로 검사가 잡지 못하지만, **이 파일이 소비자가 갖는 유일한 API 참조**라 소비자가 그것을 복사한다.
+
+Run: `grep -n 'sidebar.open = e.detail.open' index.html`
+
+그 예시가 지금 **반쪽 제어 함정**을 그대로 보여준다 — `open` 을 핸들러 안에서만 대입하므로 첫 클릭까지는 비제어이고 그 뒤로는 제어다. 그 사이 `default-open` 이 진실이었다가 프로퍼티가 진실이 된다.
+
+문서 셸에 적용한 것과 같은 모양으로 고친다. 시작 시점의 대입, 그리고 **자기가 소유한 두 엘리먼트에 각각** 붙는 리스너다(공통 조상은 `body` 이고 `ns-toggle` 은 `composed` 라 거기 붙이면 데모의 토글까지 받는다).
+
+```js
+const header = document.querySelector("ns-header");
+const sidebar = document.querySelector("ns-sidebar");
+
+// 제어 모드. 시작부터 세워 반쪽 제어를 만들지 않는다.
+sidebar.open = true;
+
+const setOpen = (open) => {
+  header.sidebarOpen = open;
+  sidebar.open = open;
+};
+
+// ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일 타일.
+header.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
+sidebar.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
+```
+
+**제어가 필요 없는 예시라면 `default-open` 만 주고 스크립트를 두지 않는 쪽이 맞다.** 그 갈림길을 예시 위 산문에 한 줄로 적는다 — 헤더 토글이 있으면 제어, 없으면 비제어다.
+
 - [ ] **Step 4: 포커스 링 숫자를 고친다**
 
 Run: `grep -n '포커스 링 일곱\|포커스 링(액센트 2px)은 자리가 일곱' src/tokens/tokens.css index.html`
