@@ -894,8 +894,11 @@ const WIRING = new Set([]);
 
 - [ ] **Step 8: 검사를 돌려 실패를 확인한다**
 
-Run: `npm run check`
-Expected: **실패한다.** `--ns-label-display` 를 `WIRING` 에서 지웠는데 아직 참조가 남아 있는지 확인하는 단계다. 남은 참조가 있으면 아래처럼 나온다.
+Run: `node scripts/check-tokens.mjs`
+
+**`npm run check` 전체가 아니라 이 스크립트만 직접 돌린다.** 이 시점에는 Step 10 이 아직 안 됐으므로 `check-events.mjs` 가 먼저 실패해 `check-tokens.mjs` 까지 도달하지 않는다 — 다른 이유로 먼저 실패하면 목표한 속성은 검증되지 않은 것이다.
+
+Expected: **실패한다.** `--ns-label-display`·`--ns-group-list-display` 를 `WIRING` 에서 지웠는데 아직 참조가 남아 있는지 확인하는 단계다. 남은 참조가 있으면 아래처럼 나온다.
 
 ```
 tokens.css 에 없는 토큰 참조:
@@ -910,7 +913,9 @@ tokens.css 에 없는 토큰 참조:
 grep -rn 'ns-label-display\|ns-group-list-display' src/ scripts/
 ```
 
-Expected: 출력이 없다. 주석에 남은 것도 지운다 — `check-tokens.mjs` 의 규칙 ①② 는 참조 수집에서 주석을 지우지 않으므로 주석 속 `var()` 도 실패로 잡힌다.
+Expected: 출력이 없다.
+
+**주석에 남은 것도 지운다.** `check-tokens.mjs` 의 규칙 ①② 는 참조 수집에서 주석을 지우지 않으므로 주석 속 `var(--ns-group-list-display, none)` 도 실패로 잡힌다. Step 4·7 이 지시하는 새 주석 본문에 그 이름이 리터럴로 들어 있으므로 **그 주석에서 이름만 걷어내고 "왜 있었고 왜 없어졌나" 는 남긴다** — 이름이 든 서술은 `docs/gotchas.md` 가 맡는다(Task 6).
 
 `docs/` 와 `index.html` 의 산문은 대상이 아니다. 그쪽은 Task 6 에서 경위로 고친다.
 
@@ -1065,7 +1070,13 @@ Expected: 실패. `React 래퍼(src/react/elements.ts)에 등록되지 않은 �
 `src/components/sidebar/ns-sidebar.ts` 의 `new CustomEvent("ns-group-select", …)` 를 잠시 `new CustomEvent("ns-group-selct", …)` 로 오타 낸다.
 
 Run: `node scripts/check-events.mjs`
-Expected: 실패. **두 방향이 함께 나온다** — 등록되지 않은 이벤트로 `ns-group-selct`, 아무도 발생시키지 않는 이벤트로 `ns-group-select`. 오타를 되돌린다.
+Expected: 실패. `React 래퍼(src/react/elements.ts)에 등록되지 않은 이벤트: ns-group-selct`
+
+**두 방향이 함께 나오지 않는다.** 그 스크립트는 `missing` 검사에서 `process.exit(1)` 하므로 `unused` 검사까지 가지 않는다. 오타 하나가 두 방향의 결함(미등록 + 미사용)을 동시에 만들지만 보이는 것은 앞쪽 하나다. 그래도 이 확인의 목적은 달성된다 — 오타가 통과하지 못한다는 것이 확인된다.
+
+`unused` 방향만 따로 보려면 오타 대신 `dispatchEvent` 호출을 **지운다**. 그러면 `missing` 이 비고 `어떤 컴포넌트도 발생시키지 않는 이벤트가 래퍼에 있습니다: ns-group-select` 가 나온다.
+
+둘 다 확인한 뒤 원래대로 되돌린다.
 
 - [ ] **Step 16: 커밋**
 
