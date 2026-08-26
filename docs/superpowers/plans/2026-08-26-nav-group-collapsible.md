@@ -41,10 +41,7 @@
 | `.claude/rules/library-invariants.md` | `var()` 폴백 예외를 신호 프로퍼티로 | 2 |
 | `docs/gotchas.md` | `default-collapsed` 극성·`willUpdate` 씨앗·신호 읽기 전용의 근거 | 2 |
 | `src/react/elements.ts` | `NsNavGroup` 래퍼의 이벤트 매핑 | 2 |
-| `src/react/tags/NavGroup.tsx` | 공개 shim. `data-ns-collapsed` 를 SSR 마크업에 싣고 `e.detail` 을 읽음 | 3 |
-| `src/react/index.ts` | `NsNavGroup` 공개 export 를 `NavGroup` 으로 교체 | 3 |
-| `docs/consumer-example.tsx` | 새 shim API 로 이관. 옛 이름이 남으면 타입 검사가 막는다 | 3 |
-| `.claude/rules/verification.md` | 공개/비공개 래퍼 개수(일곱/둘 → 여섯/셋) | 3 |
+| `docs/consumer-example.tsx` | `e.detail.open` 을 실제로 읽어 `EventName<>` 누락을 잡음 | 3 |
 | `index.html` | 데모·프로퍼티/이벤트 표·React 예시 | 4 |
 | `docs/project-structure.md` | 이벤트 개수와 목록 | 4 |
 | `README.md` | 다음 릴리스 변경 행 | 4 |
@@ -633,217 +630,20 @@ git status --short                              # 비어 있어야 한다
 
 ---
 
-### Task 3: React shim — SSR 첫 페인트와 이벤트 타입 방어
-
-> **이 태스크는 Task 2 리뷰 뒤에 다시 쓰였다.** 원래는 `docs/consumer-example.tsx` 에 핸들러 하나를 더하는 작업이었는데, Task 2 리뷰가 **React SSR 첫 페인트 깜빡임**을 찾아냈고 그것을 고치는 수단이 shim 이라 범위가 바뀌었다. 판단 기록은 `.superpowers/sdd/2026-08-26-nav-group-collapsible/progress.md` 에 있다.
+### Task 3: React 이벤트 타입 방어
 
 **Files:**
-- Create: `src/react/tags/NavGroup.tsx`
-- Modify: `src/react/elements.ts` (`NsNavGroup` → `NsNavGroupBase`)
-- Modify: `src/react/index.ts:8, 28-29` (공개 export 교체)
-- Modify: `src/components/nav-group/ns-nav-group.ts` (`connectedCallback` 에 씨앗 한 줄)
-- Modify: `src/tokens/tokens.css` (업그레이드 전 예약)
-- Modify: `docs/consumer-example.tsx` (`NsNavGroup` → `NavGroup`)
-- Modify: `.claude/rules/verification.md` (공개/비공개 래퍼 개수)
+- Modify: `docs/consumer-example.tsx:161` (`NsNavGroup` 사용 지점)
 
 **Interfaces:**
-- Consumes: `NsGroupToggleDetail { open: boolean }`, `NsNavigateDetail { href, label }`, 이벤트 `ns-group-toggle`·`ns-navigate` (Task 2)
-- Produces:
-  - `NavGroup` 컴포넌트와 `NavGroupProps` 타입 — `@neosimplix/common-ui/react` 의 공개 export. Task 4 의 문서가 이 이름을 쓴다.
-  - `NsNavGroupBase` — 비공개 `createComponent` 래퍼. `src/react/index.ts` 에서 내보내지 않는다.
-  - 속성 `data-ns-collapsed` — shim 이 렌더하고, `tokens.css` 와 `ns-nav-group` 의 `connectedCallback` 이 읽는다.
+- Consumes: `NsGroupToggleDetail`, prop `onNsGroupToggle` (Task 2)
+- Produces: 없음
 
-**왜 필요한가 (메커니즘).** `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 `useLayoutEffect` 안에서만 설정한다. 그래서 Next 가 내려주는 서버 HTML 에 `default-collapsed` 가 없고, `customElements.define`(모듈 평가 시점, `hydrateRoot` 보다 먼저)이 업그레이드한 그룹은 첫 업데이트에서 **펼친 상태로** 렌더된다. Next 는 하이드레이션을 같은 태스크에 붙이지 않으므로 그 사이에 페인트가 들어갈 수 있고, 항목이 그려졌다가 접힌다.
+**왜 이것이 형식적인 일이 아닌가.** `events` 값은 라이브러리 안에서는 그냥 문자열이라 `EventName<>` 브랜딩이 빠져도 라이브러리 타입 검사가 통과한다. **인자 0개짜리 핸들러도 그 누락을 감춘다** — `e.detail.open` 을 실제로 읽어야 검사가 성립한다.
 
-Task 2 의 `willUpdate` 씨앗은 "`default-collapsed` 가 영영 무시되는 것"만 막았다. **깜빡임은 못 막는다.** 불변 규칙이 그 처방을 이미 갖고 있다 — "SSR 에 보여야 하는 상태는 반응형 프로퍼티가 아닌 이름으로 내보낸다." `ns-sidebar` 의 `data-ns-open` 이 그것이다.
+- [ ] **Step 1: 핸들러를 더한다**
 
-**개명은 의도된 breaking 이다.** 불변 규칙이 "shim 이 있는 태그는 이름이 셋"이라고 못박고, 공개 shim 은 `Ns` 없는 `<X>` 다(`Dialog`·`PageHeading`·`Sidebar`). 그래서 `NsNavGroup` → `NavGroup` 이고, shim 이 그 태그의 이벤트 **둘 다** 감싸므로 `onNsNavigate` → `onNavigate`, `onNsGroupToggle` → `onToggle` 이다. `NsSidebar` → `Sidebar` 가 0.2.0 에서 같은 이유로 breaking 이었다.
-
-- [ ] **Step 1: 지금 상태를 확인한다**
-
-```sh
-grep -n "NsNavGroup" src/react/elements.ts src/react/index.ts docs/consumer-example.tsx
-npx tsc -p tsconfig.consumer.json; echo "exit=$?"    # exit=0 이어야 한다
-```
-
-`src/react/index.ts:8` 이 `NsNavGroup` 을 내보내고 있고 `consumer-example.tsx` 가 그것을 쓴다. 이 태스크가 둘 다 바꾼다.
-
-- [ ] **Step 2: 래퍼를 비공개로 내린다**
-
-`src/react/elements.ts` 의 `export const NsNavGroup = createComponent({` 를 `export const NsNavGroupBase = createComponent({` 로 바꾼다. `events` 매핑 두 줄은 그대로 둔다 — shim 이 그것을 쓴다.
-
-같은 파일에서 `NsNavGroupElement` import 는 그대로다. `Element` 는 Lit 클래스 별칭이 쓰므로 래퍼가 `Base` 를 갖는다(`elements.ts:101` 주석과 같은 규칙).
-
-- [ ] **Step 3: 엘리먼트가 `data-ns-collapsed` 를 씨앗으로 읽는다**
-
-`src/components/nav-group/ns-nav-group.ts` 의 `connectedCallback` 에 한 줄 더한다.
-
-```ts
-  override connectedCallback(): void {
-    super.connectedCallback();
-    warnIfTokensMissing();
-    warnPropertyOnlyAttributes(this, { open: "default-collapsed" });
-
-    /*
-      SSR 통로. shim 이 서버 마크업에 실어 보낸 값을 업그레이드 시점에 읽는다.
-
-      default-collapsed 는 @lit/react 가 useLayoutEffect 에서 프로퍼티로만
-      설정하므로 서버 HTML 에 없다. 그것만 믿으면 업그레이드 직후 첫 업데이트가
-      펼친 상태로 렌더되고, Next 가 하이드레이션을 같은 태스크에 붙이지 않으므로
-      그 사이에 페인트가 들어가 항목이 그려졌다가 접힌다.
-
-      이 속성은 반응형 프로퍼티가 아니라 React.createElement 로 흘러가 서버
-      마크업에 그대로 실린다. 그래서 여기서 이미 읽을 수 있다.
-
-      **읽기만 한다.** 호스트의 속성을 쓰지 않는다는 규칙이 그대로 적용되므로
-      지우지도 않는다. 이후 defaultCollapsed 나 open 이 도착하면 willUpdate 와
-      #isOpen 이 이 값을 덮으므로 낡은 속성이 상태를 붙잡지 않는다.
-    */
-    if (this.hasAttribute("data-ns-collapsed")) this.#innerCollapsed = true;
-  }
-```
-
-**`willUpdate` 는 건드리지 않는다.** 첫 업데이트에서 `defaultCollapsed`(기본 `false`)가 `changed` 에 들어 있어 이 씨앗을 덮을 것 같지만, shim 이 `data-ns-collapsed` 를 실을 때는 `defaultCollapsed` 도 함께 `true` 로 넘기므로 두 값이 같은 방향이다. 순수 HTML 소비자는 이 속성을 쓰지 않는다.
-
-- [ ] **Step 4: 업그레이드 전 예약을 둔다**
-
-`src/tokens/tokens.css` 의 `ns-sidebar` 예약 블록 **아래**, `ns-icon` 규칙 위에 넣는다.
-
-```css
-/*
-  ns-nav-group 의 접힘. 업그레이드 전에는 shadow root 가 없어 light DOM 자식이
-  그대로 보이므로, 접힌 채로 시작해야 하는 그룹의 항목이 한 번 그려진다.
-
-  data-ns-collapsed 는 React shim(src/react/tags/NavGroup.tsx)이 서버 마크업에
-  싣는 통로다. createComponent 가 반응형 프로퍼티만 가로채므로 반응형이 아닌
-  이 이름은 그대로 실린다. 순수 HTML 소비자는 마크업에 default-collapsed 를
-  직접 쓰고, 그쪽은 업그레이드 전에도 항목이 그려지지 않으므로(ns-nav-item 이
-  자기 shadow 에 내용을 갖는다) 예약이 필요 없다.
-
-  :not(:defined) 경계가 필요하다. 상태에 따라 달라지는 예약이라 정의 이후까지
-  계속 걸리면 그룹이 스스로 펼친 뒤에도 자식이 숨은 채로 남는다 — ns-sidebar
-  너비와 같은 이유다. 정의 이후 구간은 connectedCallback 이 같은 속성을 씨앗으로
-  읽어 덮는다. 두 파일을 함께 고쳐야 타임라인에 구멍이 안 생긴다.
-*/
-ns-nav-group:not(:defined)[data-ns-collapsed] > * { display: none; }
-```
-
-**`tokens.css` 를 편집할 때 `@no-alias` 표시 문자열을 산문에 새로 적지 않는다.** `copy-css.mjs` 가 파일에서 그 문자열이 처음 나오는 자리로 별칭 구간을 자른다. 위 주석에는 그 문자열이 없다 — 그대로 쓴다.
-
-- [ ] **Step 5: shim 을 만든다**
-
-`src/react/tags/NavGroup.tsx` 를 새로 만든다. `src/react/tags/Sidebar.tsx` 와 같은 구조다.
-
-```tsx
-import type { CSSProperties, ReactNode } from "react";
-
-import { NsNavGroupBase } from "../elements.js";
-import type { NsNavigateDetail } from "../../types.js";
-
-export type NavGroupProps = {
-  /** 그룹 제목. 사이드바가 접히면 시각적으로 숨지만 aria-label 로는 남는다. */
-  heading: string;
-  /** 헤딩 줄을 토글 버튼으로 만든다. 쓰지 않으면 렌더 결과가 이전과 같다. */
-  collapsible?: boolean;
-  /**
-   * 제어 모드. 주면 컴포넌트가 스스로 접지 않는다 — onToggle 을 받아 이 값을
-   * 바꿔 주어야 한다.
-   */
-  open?: boolean;
-  /**
-   * 비제어 초기값. 나중에 바꾸면 **아직 토글되지 않은 그룹에만** 반영된다.
-   *
-   * 이 프롭이 data-ns-collapsed 를 함께 렌더하게 만든다 — 그것이 SSR 첫
-   * 페인트에서 접힌 채로 그려지는 통로다.
-   */
-  defaultCollapsed?: boolean;
-  /**
-   * 헤딩 버튼 클릭. 인자는 **요청되는 다음 상태**다.
-   *
-   * detail 이 필드 하나(`{ open }`)라 그 필드를 그대로 인자로 준다. 필드가
-   * 여럿인 onNavigate 는 레코드째 넘긴다 — 규칙이 그렇게 갈라 둔 것이다.
-   */
-  onToggle?: (open: boolean) => void;
-  /** 하위 ns-nav-item 의 클릭. composed 라 그룹에서 한 번만 들으면 된다. */
-  onNavigate?: (detail: NsNavigateDetail) => void;
-  children?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
-};
-
-/**
- * 접힘을 서버 마크업에도 싣기 위한 shim.
- *
- * `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 `useLayoutEffect`
- * 안에서만 설정한다. 서버 렌더 시점에는 실행되지 않으므로 Next 가 내려주는
- * HTML 에 `default-collapsed` 가 없고, `customElements.define` 이
- * `hydrateRoot` 보다 먼저 돌아 업그레이드된 그룹은 첫 업데이트에서 펼친
- * 상태로 렌더된다. 그 뒤 하이드레이션이 값을 넣어 접히므로 항목이 한 번
- * 그려졌다 사라진다.
- *
- * 반응형 프로퍼티가 **아닌** 이름은 가로채이지 않고 `React.createElement` 로
- * 흘러가 서버 마크업에 그대로 실린다. `data-ns-collapsed` 가 그 통로이고,
- * `tokens.css` 의 `:not(:defined)` 예약과 `ns-nav-group` 의
- * `connectedCallback` 이 그것을 읽는다.
- */
-export function NavGroup({
-  heading,
-  collapsible,
-  open,
-  defaultCollapsed,
-  onToggle,
-  onNavigate,
-  children,
-  className,
-  style,
-}: NavGroupProps) {
-  /*
-    제어 모드면 open 이 진실이고, 비제어면 defaultCollapsed 가 첫 상태다.
-    둘 다 없으면 펼침이라 속성을 싣지 않는다.
-  */
-  const collapsedNow = open !== undefined ? !open : defaultCollapsed === true;
-
-  return (
-    <NsNavGroupBase
-      heading={heading}
-      collapsible={collapsible}
-      open={open}
-      defaultCollapsed={defaultCollapsed}
-      // 하이드레이션 전에는 이것만 보인다. tokens.css 의 :not(:defined) 규칙이 읽는다.
-      data-ns-collapsed={collapsible && collapsedNow ? "" : undefined}
-      className={className}
-      style={style}
-      // e.detail 을 여기서 실제로 읽는다. elements.ts 의 EventName<> 캐스트가
-      // 빠지면 e 가 Event 로 타입돼 이 두 줄이 깨진다.
-      onNsGroupToggle={(e) => onToggle?.(e.detail.open)}
-      onNsNavigate={(e) => onNavigate?.(e.detail)}
-    >
-      {children}
-    </NsNavGroupBase>
-  );
-}
-```
-
-- [ ] **Step 6: 공개 export 를 교체한다**
-
-`src/react/index.ts:8` 의 목록에서 `NsNavGroup` 을 뺀다.
-
-```ts
-export { NsHeader, NsIcon, NsMultiSelect, NsNavItem, NsPagination, NsSkeleton, NsTable, NsTabs } from "./elements.js";
-```
-
-`Sidebar` export 바로 아래(28-29행 근처)에 더한다. 기존 셋과 같은 두 줄 형식이다.
-
-```ts
-export { NavGroup } from "./tags/NavGroup.js";
-export type { NavGroupProps } from "./tags/NavGroup.js";
-```
-
-- [ ] **Step 7: `docs/consumer-example.tsx` 를 새 API 로 옮긴다**
-
-import 목록에서 `NsNavGroup` 을 빼고 `NavGroup` 을 넣는다(알파벳 순서를 유지한다 — 그 목록은 정렬돼 있다).
-
-사용 지점(161행 근처)을 바꾼다. 지금은 이렇다.
+`docs/consumer-example.tsx:161` 이 지금 이렇다.
 
 ```tsx
           <NsNavGroup heading="프로젝트" onNsNavigate={(e) => log(e.detail.label)}>
@@ -852,58 +652,23 @@ import 목록에서 `NsNavGroup` 을 빼고 `NavGroup` 을 넣는다(알파벳 �
 이렇게 바꾼다.
 
 ```tsx
-          <NavGroup
+          <NsNavGroup
             heading="프로젝트"
             collapsible
-            defaultCollapsed={false}
-            onNavigate={(d) => log(d.label)}
-            onToggle={(nextOpen) => log(String(nextOpen))}
+            onNsNavigate={(e) => log(e.detail.label)}
+            /*
+              detail 을 실제로 읽는다. 인자 0개짜리 핸들러는 EventName<> 캐스트
+              누락을 감추므로 e.detail.open 까지 내려가야 검사가 성립한다.
+            */
+            onNsGroupToggle={(e) => log(String(e.detail.open))}
           >
 ```
 
-닫는 태그 `</NsNavGroup>` 도 `</NavGroup>` 으로 바꾼다.
+같은 파일 위쪽 주석(121-127행)의 설명도 함께 손본다 — 지금 그 문단은 `ns-navigate` 만 이야기한다. `ns-group-toggle` 도 여기서 검사된다는 한 줄을 더한다.
 
-같은 파일 121-127행의 주석 문단이 "`NsNavGroup`·`NsNavItem` 두 래퍼의 이벤트 타입을 검사한다" 고 적고 있다. 그 문장이 이제 틀렸다 — `ns-nav-group` 쪽 방어는 shim 으로 옮겨갔다. 문단을 고쳐 **비공개 래퍼가 셋이고 각각의 shim 이 어디서 `e.detail` 을 읽는지** 를 적는다.
+- [ ] **Step 2: 소비자 관점 타입 검사가 실제로 무는지 확인한다**
 
-- [ ] **Step 8: `verification.md` 의 개수를 고친다**
-
-`.claude/rules/verification.md` 의 "`npm run check` 가 못 보는 영역" 절이 이렇게 적고 있다.
-
-> 아홉 중 일곱(…)은 `consumer-example.tsx` 가 직접 검사한다. 나머지 둘은 래퍼가 비공개라 그 파일이 닿을 수 없어 shim 이 같은 방어를 한다 — `src/react/tags/Dialog.tsx` 가 …, `src/react/tags/Sidebar.tsx` 가 …
-
-`ns-nav-group` 의 래퍼가 비공개가 되면서 **일곱 → 여섯, 둘 → 셋** 이다. `아홉` 은 그대로다(이벤트를 가진 `createComponent` 호출 수는 변하지 않았다).
-
-고칠 것 셋이다.
-
-1. 공개 목록에서 `ns-navigate × 2(ns-nav-group·ns-nav-item)` 를 `ns-navigate(ns-nav-item)` 로 줄인다.
-2. `나머지 둘` → `나머지 셋`, 그리고 `src/react/tags/NavGroup.tsx` 가 `onNsGroupToggle={(e) => onToggle?.(e.detail.open)}` 와 `onNsNavigate={(e) => onNavigate?.(e.detail)}` 로 방어한다는 것을 적는다.
-3. 같은 절 위쪽의 "**이벤트를 가진 아홉 래퍼 전부에 핸들러를 붙여 `e.detail` 을 읽어야 한다**" 문장은 그대로 유효하다. 개수의 출처를 적은 문단도 그대로다.
-
-- [ ] **Step 9: 검사**
-
-```sh
-npm run check
-```
-
-기대: 전부 통과. `check-events.mjs` 는 `elements.ts` 의 매핑을 정규식으로 보므로 래퍼 이름이 `Base` 로 바뀌어도 영향이 없다.
-
-- [ ] **Step 10: 커밋**
-
-```sh
-git add src/react/tags/NavGroup.tsx \
-        src/react/elements.ts \
-        src/react/index.ts \
-        src/components/nav-group/ns-nav-group.ts \
-        src/tokens/tokens.css \
-        docs/consumer-example.tsx \
-        .claude/rules/verification.md
-git commit -m "feat(react): nav-group shim 으로 SSR 첫 페인트의 접힘을 살린다"
-git status --short    # 비어 있어야 한다
-```
-
-- [ ] **Step 11: 소비자 관점 타입 검사가 실제로 무는지 확인한다**
-
-shim 이 `e.detail` 을 읽는 것이 `EventName<>` 캐스트 누락을 잡는 유일한 수단이 됐다. 그것이 실제로 작동하는지 본다. **커밋 뒤에 한다** — `git checkout` 으로 되돌리므로.
+먼저 브랜딩을 일부러 벗긴다.
 
 ```sh
 node -e '
@@ -912,30 +677,34 @@ fs.writeFileSync(p,fs.readFileSync(p,"utf8").replace(
   /onNsGroupToggle: "ns-group-toggle" as EventName<CustomEvent<NsGroupToggleDetail>>/,
   `onNsGroupToggle: "ns-group-toggle"`));
 '
-npx tsc -p tsconfig.json; echo "exit=$?"
+npx tsc -p tsconfig.consumer.json; echo "exit=$?"
 ```
 
-기대: `exit` 이 0 이 아니고, `src/react/tags/NavGroup.tsx` 에서 `e.detail` 관련 오류가 난다(`Property 'detail' does not exist on type 'Event'` 계열).
+기대: `exit` 이 0 이 아니고, `docs/consumer-example.tsx` 에서 `e.detail` 관련 오류(`Property 'detail' does not exist on type 'Event'`)가 난다.
 
-**여기서는 `tsconfig.json` 이다, `tsconfig.consumer.json` 이 아니다.** 방어가 이제 라이브러리 소스 안(shim)에 있으므로 라이브러리 타입 검사가 잡는다. 그것이 이 태스크가 만든 개선이다.
+**이것이 이 태스크의 존재 이유 전체다.** 오류가 나지 않으면 핸들러가 `detail` 을 충분히 깊게 읽지 않은 것이다.
+
+되돌린다.
 
 ```sh
 git checkout src/react/elements.ts
-npx tsc -p tsconfig.json; echo "exit=$?"    # exit=0
-git status --short                          # 비어 있어야 한다
+npx tsc -p tsconfig.consumer.json; echo "exit=$?"    # exit=0
 ```
 
-- [ ] **Step 12: `data-ns-collapsed` 오타가 조용히 통과하지 않는지 확인한다**
-
-`check-tokens.mjs` 는 `data-ns-*` 훅 이름이 세 곳에서 일치하는지 본다(규칙 ⑤). 새 훅이 그 검사에 들어왔는지 확인한다.
+- [ ] **Step 3: 전체 검사**
 
 ```sh
-node scripts/check-tokens.mjs | grep "data-ns"
+npm run check
 ```
 
-기대: 훅 개수가 **1 에서 2 로** 늘어난 줄이 보인다(`data-ns-open` 과 `data-ns-collapsed`).
+기대: 전부 통과.
 
-**늘어나지 않았으면 그 검사가 새 훅을 못 보고 있는 것이다.** 그 경우 `scripts/check-tokens.mjs` 의 `data-ns-*` 수집 부분을 읽고, 세 곳(`tokens.css`·shim·엘리먼트)의 이름이 실제로 대조되도록 검사를 넓힌 뒤 일부러 오타를 넣어 실패를 확인한다. 검사를 넓혔으면 그 변경도 커밋한다.
+- [ ] **Step 4: 커밋**
+
+```sh
+git add docs/consumer-example.tsx
+git commit -m "test(react): 그룹 토글 이벤트의 detail 을 소비자 예시에서 읽는다"
+```
 
 ---
 
@@ -1026,47 +795,26 @@ node scripts/check-tokens.mjs | grep "data-ns"
   </p>
 ```
 
-- [ ] **Step 5: React 예시를 새 shim API 로 다시 쓴다**
+- [ ] **Step 5: React 예시에 접힘을 넣는다**
 
-**Task 3 이 `NsNavGroup` 을 `NavGroup` shim 으로 바꿨다.** `index.html:3060-3070` 의 `<script type="text/plain">` 에 있는 기존 React 예시가 지금 **틀린 이름을 쓰고 있다.** 그것부터 고친 뒤 접힘 예시를 더한다.
-
-기존 예시(`NsNavGroup`·`NsNavItem` 을 import 해서 `<NsNavGroup heading="프로젝트">` 를 쓰는 것)를 아래로 교체한다.
+`index.html:3060-3070` 의 `<script type="text/plain">` 을 연다. 아래를 더한다.
 
 ```jsx
-    import { NavGroup, NsNavItem } from "@neosimplix/common-ui/react";
-
-    <NavGroup heading="프로젝트" onNavigate={(d) => router.push(d.href)}>
-      {projects.map((p) => (
-        <NsNavItem key={p.href} href={p.href} label={p.label} badge={p.badge}
-                   active={pathname === p.href} />
-      ))}
-    </NavGroup>
-
-    {/* 접힘. 비제어 — 처음 접힌 채로 두고 나머지는 컴포넌트가 관리한다 */}
-    <NavGroup heading="관리" collapsible defaultCollapsed>
+    {/* 접힘. 상태를 소비자가 갖고 싶으면 open 프로퍼티를 쓴다 */}
+    <NsNavGroup heading="관리" collapsible defaultCollapsed>
       <NsNavItem href="/admin" label="사용자 관리" badge="UM" />
-    </NavGroup>
+    </NsNavGroup>
 
-    {/* 제어 모드 — 접힘 상태를 저장하고 싶을 때. onToggle 인자는 다음 상태다 */}
-    <NavGroup
+    {/* 제어 모드 — 접힘 상태를 저장하고 싶을 때 */}
+    <NsNavGroup
       heading="보관"
       collapsible
       open={openGroups.archive}
-      onToggle={(nextOpen) => setOpenGroups((g) => ({ ...g, archive: nextOpen }))}
+      onNsGroupToggle={(e) => setOpenGroups((g) => ({ ...g, archive: e.detail.open }))}
     >
       <NsNavItem href="/archive" label="지난 프로젝트" badge="AR" />
-    </NavGroup>
+    </NsNavGroup>
 ```
-
-**`NsNavItem` 은 개명되지 않았다** — shim 이 없는 태그라 래퍼가 평범한 이름을 갖는다. `NavGroup` 만 바뀐 것이 맞다.
-
-`index.html` 의 다른 절에도 `NsNavGroup` 이 남아 있는지 확인한다.
-
-```sh
-grep -n "NsNavGroup" index.html
-```
-
-기대: 출력 없음. 남아 있으면 그 절도 고친다 — 문서가 존재하지 않는 export 를 가리키게 된다.
 
 - [ ] **Step 6: `index.html` 정적 검사 넷을 돌린다**
 
@@ -1095,22 +843,23 @@ grep -oE '(^|[[:space:]])id="[^"]*"' index.html | sed -E 's/.*id="([^"]*)"/\1/' 
 
 표 맨 위(`v0.4.0` 행 위)에 넣는다. 버전 번호는 아직 정해지지 않았으므로 `릴리스 전` 으로 둔다 — `releasing` 스킬이 태그를 자를 때 채운다.
 
-**Task 3 이 React 공개 API 를 개명했으므로 이 릴리스는 breaking 이다.** "태그만 올린다" 가 아니다.
-
 ```md
-| (릴리스 전) | 변경 | **breaking 하나 — React 만.** `NsNavGroup` → `NavGroup` 이고 프롭이 `onNsNavigate={(e) => …e.detail}` 대신 `onNavigate={(d) => …d}`, 접힘은 `onToggle={(open) => …}` 다. shim 이 생긴 태그의 이름 규칙이라 `NsSidebar` → `Sidebar` 와 같은 변경이다. 순수 HTML 소비자는 할 일이 없다. 새 기능: `ns-nav-group` 의 `collapsible` — **쓰지 않으면 아무것도 바뀌지 않는다** |
+| (릴리스 전) | 변경 | 태그만 올린다. `ns-nav-group` 에 `collapsible` 이 생겼다 — **쓰지 않으면 아무것도 바뀌지 않는다.** 접힘 상태를 저장하려면 `open` 프로퍼티와 `onNsGroupToggle` 을 쓴다 |
 ```
-
-이관 안내를 한 줄 더 쓸 자리가 있는지 본다. `README.md` 는 `v0.4.0` 사이클에서 태그별 이관 절을 걷어내고 릴리스 표 한 행에 담는 형태로 정리됐으므로, **표 밖에 새 절을 만들지 않는다.** 필요한 내용은 위 행 안에 들어간다.
 
 - [ ] **Step 9: `docs/pending-human-checks.md` 를 채운다**
 
 **`## 범위` 절을 먼저 고친다.** 지금은 "이번 사이클이 넣은 것은 문서 정리 하나다. `dist/` 는 바뀌지 않는다" 인데, 이제 `dist/` 가 바뀐다.
 
-`## B`(재현 불가, 소비자 프로젝트 필요)에 둘:
+`## B`(재현 불가, 소비자 프로젝트 필요)에 하나. **문장을 아래 내용대로 쓴다 — 무엇을 보나 뿐 아니라 왜 이것이 낮은 위험인지까지 적어야 확인하는 사람이 판정할 수 있다.**
 
-- **Next.js SSR 에서 `defaultCollapsed` 를 준 `NavGroup` 이 첫 페인트부터 접혀 있는지.** 무엇이 잘못된 것인가: 항목이 그려졌다가 접히는 것(깜빡임), 또는 아예 펼쳐진 채로 남는 것. 이것을 막는 장치가 셋이고 한 곳만 끊겨도 증상이 돌아온다 — shim 이 싣는 `data-ns-collapsed`, `tokens.css` 의 `:not(:defined)` 예약, `connectedCallback` 의 씨앗. `index.html` 은 순수 HTML 이라 이 경로를 재현하지 못하므로 `npm run check` 가 초록인 것은 **아무 증거도 아니다.**
-- **`NsNavGroup` 을 쓰던 React 코드가 실제로 컴파일 오류로 막히는지.** 개명이 조용히 통과하면 이관 안내가 무의미하다. 소비자 프로젝트에서 옛 이름을 그대로 두고 빌드해 오류가 나는지 본다.
+- **Next.js SSR 에서 `default-collapsed` 를 준 그룹이 첫 페인트부터 접혀 있는지.** 무엇이 잘못된 것인가: 펼쳐진 채로 한 프레임 그려졌다가 접히는 것. **최종 상태는 어느 쪽이든 맞다** — `willUpdate` 씨앗이 늦게 도착한 값을 반영하므로 "펼쳐진 채로 남는" 결함은 없다. 남는 위험은 한 프레임뿐이다.
+
+  **이 위험이 낮다고 보는 근거를 함께 적는다.** 문제의 구간은 업그레이드와 하이드레이션 사이인데, `createComponent` 는 **모든** 반응형 프로퍼티를 `useLayoutEffect` 에서만 설정하므로 `label`·`badge` 도 같은 구간을 겪는다. 그 구간에서 페인트가 일어난다면 이번 변경 **전에도** 항목 글자가 비어 있다가 채워지는 것이 보였어야 하고, 소비자 프로젝트에서 그것이 관측된 적이 없다.
+
+  `ns-sidebar` 의 `data-ns-open` 과 `ns-icon` 의 문서 트리 짝이 이 종류를 방어하지만, **그 둘이 실제로 관측한 것은 업그레이드 *전* 구간이다**(예약이 그린 4rem 이 15rem 으로 벌어진 것, 아이콘 자식이 24 에서 20 으로 줄어든 것). 업그레이드 ↔ 하이드레이션 구간은 그 주석들이 **예측**으로 방어한 것이고 관측 기록이 없다. 그룹의 접힘은 업그레이드 전에 아무것도 그리지 않으므로(항목의 내용이 자기 shadow 안에 있다) 오직 이 미관측 구간에만 걸린다.
+
+  **여기서 깜빡임이 실제로 보이면 처방이 정해져 있다** — React shim(`src/react/tags/NavGroup.tsx`)이 `data-ns-collapsed` 를 서버 마크업에 실어 보내고 `connectedCallback` 이 그것을 씨앗으로 읽는 것이다. 다만 그 shim 은 이름 규칙상 `NsNavGroup` → `NavGroup` 개명(breaking)을 데려오므로, **관측 없이 미리 지불하지 않는다.** 별도 릴리스로 낸다.
 
 `## A`(`index.html` 육안)에 일곱:
 
@@ -1120,7 +869,7 @@ grep -oE '(^|[[:space:]])id="[^"]*"' index.html | sed -E 's/.*id="([^"]*)"/\1/' 
 - **그 전환 중에 항목이 깜빡이지 않는지.** 사이드바 너비 전환은 200ms 이고 caret 회전은 `--ns-transition-fast`(150ms)다.
 - **헤딩 버튼의 포커스 링이 잘리지 않는지.** `outline-offset` 이 음수(`-2px`)라 안쪽에 그린다 — 사이드바 폭 안에 들어와야 한다. 탭으로 이동해 확인한다.
 - **다크모드에서 헤딩 hover 색이 `ns-nav-item` hover 와 겨루지 않는지.** 헤딩은 글자색만 바뀌고 배경은 바뀌지 않는 것이 의도다.
-- **`button.heading` 이 `div.heading` 과 같은 자리에 놓이는지.** 이 항목은 **Safari 에서 따로 봐야 한다** — `<button>` 의 UA 기본값이 엔진마다 다르고, Safari 는 `-webkit-appearance` 때문에 폰트·패딩·정렬이 Chrome 과 어긋나는 이력이 있다. shadow 리셋이 `width`·`border`·`background`·`font-family`·`text-align` 만 되돌리므로 남은 UA 값이 어긋나면 접히는 그룹의 제목만 한 칸 밀린다. **한 엔진만 본 확인은 증거가 아니다** — 두 절의 헤딩을 나란히 두고 좌측 정렬과 높이를 비교한다.
+- **`button.heading` 이 `div.heading` 과 같은 자리에 놓이는지. 이 항목은 Safari 에서 따로 본다.** `<button>` 의 UA 기본값은 엔진마다 다르고 Safari 는 `-webkit-appearance` 때문에 폰트·패딩·정렬이 Chrome 과 어긋나는 이력이 있다. shadow 리셋이 `width`·`border`·`background`·`font-family`·`text-align` 만 되돌리므로, 남은 UA 값이 어긋나면 **접히는 그룹의 제목만 한 칸 밀린다.** `collapsible` 있는 절과 없는 절의 헤딩을 나란히 두고 좌측 정렬과 줄 높이를 비교한다. **한 엔진만 본 확인은 증거가 아니다.**
 
 - [ ] **Step 10: 전체 검사**
 
