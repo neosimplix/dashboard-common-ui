@@ -161,12 +161,24 @@ this.#observer.observe(this, {
 
 ```ts
 protected override willUpdate(changed: PropertyValues): void {
-  if (changed.has("defaultOpen") && !this.#toggled) this.#innerOpen = this.defaultOpen;
+  if (changed.has("defaultOpen") && !this.#toggled) {
+    this.#innerOpen = this.defaultOpen === true;
+  }
   if (changed.has("defaultActiveGroup") && !this.#selected) {
-    this.#innerActive = this.defaultActiveGroup;
+    this.#innerActive = typeof this.defaultActiveGroup === "string" ? this.defaultActiveGroup : "";
   }
 }
 ```
+
+**씨앗을 좁히는 것이 형식적인 방어가 아니다.** 반응형 프로퍼티는 필드 기본값을 갖지만 소비자가 `undefined` 를 대입하면 그 기본값이 지워진다. 그리고 그 경로는 흔하다 — shim 의 선택 프롭이 주어지지 않으면 값이 `undefined` 이고, `createComponent` 는 그것을 그대로 대입한다. `<Sidebar onNavigate={…} />` 하나로 충분하다.
+
+좁히지 않으면 이렇게 된다.
+
+- `#innerOpen` 이 `undefined` → `#isOpen` 도 `undefined` → **`toggleAttribute("data-ns-open", undefined)` 는 지우는 것이 아니라 토글이다**(두 번째 인자는 선택적이고, 없거나 `undefined` 면 뒤집는다). 갱신마다 패널이 열리고 닫힌다.
+- 같은 렌더에서 `selected = isActive && this.#isOpen` 도 `undefined` 라, 열려 있는 패널의 타일이 `aria-selected="false"` 로 나간다.
+- `#innerActive` 가 `undefined` → `#activeEntry` 의 `wanted !== ""` 가 참이 되어 **"활성 그룹 undefined 와 일치하는 그룹이 없다" 는 경고가 근거 없이 뜬다.**
+
+**타입 검사는 이것을 보지 못한다.** 프로퍼티 타입이 `boolean`·`string` 이므로 라이브러리 안에서는 `undefined` 가 들어올 수 없는 것처럼 보이고, shim 의 선택 프롭이 그 약속을 깨는 지점은 `createComponent` 안이다.
 
 `firstUpdated` 가 아니라 `willUpdate` 인 이유는 `ns-nav-group` 과 정확히 같다 — `customElements.define` 이 `hydrateRoot` 보다 먼저 실행되므로 첫 업데이트의 마이크로태스크가 하이드레이션 커밋의 `useLayoutEffect` 보다 먼저 흘러가고, `createComponent` 는 반응형 프로퍼티를 그 `useLayoutEffect` 에서만 설정한다. `firstUpdated` 로 한 번만 읽으면 React 소비자에게 `default-open` 이 조용히 무시된다.
 
@@ -228,12 +240,18 @@ protected override updated(): void {
   // 하이픈 든 이름은 반응형 프로퍼티가 아니므로 createComponent 가 가로채지 않고
   // 서버 마크업에 그대로 실린다. upgrade 시점에 Lit 의 속성 컨버터가 이것을 읽어
   // defaultOpen 을 세우므로, 하이드레이션을 기다리지 않고 첫 프레임부터 열려 있다.
-  default-open={defaultOpen === true ? "" : undefined}
+  default-open={open === true || defaultOpen === true ? "" : undefined}
   data-ns-open={open === true ? "" : undefined}
 >
 ```
 
-**`data-ns-open` 을 비제어에서도 렌더하는 쪽으로 넓히지 않는다.** 그러면 React 가 그 속성의 소유자가 되어 엘리먼트의 `toggleAttribute` 와 같은 속성을 두고 다툰다. `default-open` 은 소비자가 준 초기값일 뿐이고 엘리먼트가 쓰지 않는 이름이므로 그 다툼이 없다.
+**조건이 `open === true || defaultOpen === true` 인 것이 요점이다.** 제어 모드도 이 속성을 필요로 한다.
+
+`data-ns-open` 만으로는 **제어 React 경로의 upgrade~hydration 구간이 비어 있다.** shim 이 SSR 마크업에 `data-ns-open` 을 심어 upgrade 전까지는 19rem 으로 그려지는데, upgrade 직후 엘리먼트의 첫 `updated()` 가 돈다. 그 시점에 `open` 은 아직 `undefined` 이고 `#innerOpen` 은 `false` 이므로 `toggleAttribute` 가 **shim 이 심은 그 속성을 지운다.** 4rem 으로 접혔다가 하이드레이션이 `open` 을 세우면 19rem 으로 200ms 동안 벌어진다 — 비제어에서 막은 것과 같은 튐이 제어 쪽에 남는다.
+
+`default-open` 이 함께 있으면 upgrade 때 Lit 의 컨버터가 `defaultOpen = true` 를 세우고, `#isOpen` 이 `open ?? #innerOpen` 이므로 `open` 이 도착하기 전에도 참이 된다. 첫 `updated()` 가 속성을 유지하고 구간이 메워진다. 소비자가 나중에 `open={false}` 로 바꾸면 `open` 이 이기므로 초기값이 남아 있어도 해가 없다.
+
+**`data-ns-open` 을 비제어에서도 렌더하는 쪽으로 넓히지 않는다.** 그러면 React 가 그 속성의 소유자가 되어 엘리먼트의 `toggleAttribute` 와 같은 속성을 두고 다툰다. `default-open` 은 소비자가 준 초기값일 뿐이고 엘리먼트가 쓰지 않는 이름이므로 그 다툼이 없다 — **쓰는 쪽이 정확히 하나여야 한다는 것이 이 배선의 규칙이다.**
 
 `tokens.css` 의 예약을 함께 고친다. 순수 HTML 소비자는 이제 `default-open` 을 쓰므로 그 이름을 봐야 한다.
 

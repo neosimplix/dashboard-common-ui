@@ -1401,11 +1401,30 @@ git commit -m "feat(sidebar): 레일 타일에 방향키 이동을 얹는다"
 
 ```ts
   protected override willUpdate(changed: PropertyValues): void {
+    /*
+      씨앗을 대입하기 전에 좁힌다.
+
+      반응형 프로퍼티는 필드 기본값을 갖지만 소비자가 undefined 를 대입하면 그
+      기본값이 지워진다. 그 경로는 흔하다 — shim 의 선택 프롭이 주어지지 않으면
+      값이 undefined 이고 createComponent 는 그것을 그대로 대입한다.
+      <Sidebar onNavigate={…} /> 하나로 충분하다.
+
+      좁히지 않으면 #isOpen 이 undefined 가 되고, **toggleAttribute 의 두 번째
+      인자가 undefined 면 지우는 것이 아니라 뒤집는다** — 갱신마다 패널이 열리고
+      닫힌다. 같은 렌더에서 aria-selected 도 열린 타일에 "false" 로 나간다.
+      #innerActive 쪽은 "활성 그룹 undefined 와 일치하는 그룹이 없다" 는 경고를
+      근거 없이 띄운다.
+
+      타입 검사는 이것을 보지 못한다. 프로퍼티 타입이 boolean·string 이라
+      라이브러리 안에서는 undefined 가 들어올 수 없는 것처럼 보이고, 약속이
+      깨지는 지점은 createComponent 안이다.
+    */
     if (changed.has("defaultOpen") && !this.#toggled) {
-      this.#innerOpen = this.defaultOpen;
+      this.#innerOpen = this.defaultOpen === true;
     }
     if (changed.has("defaultActiveGroup") && !this.#selected) {
-      this.#innerActive = this.defaultActiveGroup;
+      this.#innerActive =
+        typeof this.defaultActiveGroup === "string" ? this.defaultActiveGroup : "";
     }
   }
 ```
@@ -1536,13 +1555,24 @@ export function Sidebar({
         하이픈 든 이름은 반응형 프로퍼티가 아니므로 createComponent 가 가로채지
         않고 React.createElement 로 흘러가 서버 마크업에 그대로 실린다.
 
-        **비제어 경로의 튐을 막는 것이 이 줄이다.** defaultOpen 은 반응형이라
-        useLayoutEffect 에서만 설정되므로 서버 마크업에 아무 표시도 남지 않고,
-        그러면 upgrade 시점에 아직 false 라 4rem 으로 그려지다 하이드레이션 직후
-        19rem 으로 벌어진다. 이 속성이 있으면 upgrade 때 Lit 의 속성 컨버터가
-        그것을 읽어 defaultOpen 을 세우므로 하이드레이션을 기다리지 않는다.
+        **제어·비제어 양쪽의 튐을 막는 것이 이 줄이다.** 조건에 open === true 가
+        함께 있는 이유가 그것이다.
+
+        비제어: defaultOpen 은 반응형이라 useLayoutEffect 에서만 설정되므로 서버
+        마크업에 아무 표시도 남지 않고, upgrade 시점에 아직 false 라 4rem 으로
+        그려지다 하이드레이션 직후 19rem 으로 벌어진다.
+
+        제어: shim 이 심은 data-ns-open 이 upgrade 전까지는 19rem 을 잡지만,
+        upgrade 직후 엘리먼트의 첫 updated() 가 돌 때 open 은 아직 undefined 이고
+        #innerOpen 은 false 라 **그 속성을 지운다.** 4rem 으로 접혔다가 하이드레이션
+        직후 다시 벌어진다.
+
+        이 속성이 있으면 upgrade 때 Lit 의 컨버터가 defaultOpen 을 세우고,
+        #isOpen 이 open ?? #innerOpen 이므로 open 이 도착하기 전에도 참이 되어
+        첫 updated() 가 속성을 유지한다. 나중에 open={false} 가 오면 open 이
+        이기므로 초기값이 남아 있어도 해가 없다.
       */
-      default-open={defaultOpen === true ? "" : undefined}
+      default-open={open === true || defaultOpen === true ? "" : undefined}
       // 하이드레이션 전에는 이것만 보인다. tokens.css 의 :not(:defined) 규칙이 읽는다.
       // 제어 모드에서만 렌더한다 — 비제어에서는 엘리먼트가 스스로 쓰므로
       // 여기서 함께 쓰면 React 가 이 속성의 소유자가 되어 엘리먼트의
@@ -1580,6 +1610,19 @@ Run: `grep -rn 'ns-sidebar open\|<ns-sidebar open' src/`
 - "그 구간을 덮는 것은 `ns-sidebar.styles.ts` 의 `:host(:not([open]):not([data-ns-open]))` 다" → 선택자가 `:host(:not([data-ns-open]))` 로 바뀌었다.
 
 `data-ns-open` 을 설명하는 문단에 **비제어 React 경로가 `default-open` 속성을 통해 덮인다**는 것을 한 문장 더한다. 그 경로가 없으면 튐이 남는다는 것이 Step 7 이 그 속성을 렌더하는 이유다.
+
+- [ ] **Step 8c: 남은 낡은 서술과 정렬을 고친다**
+
+Step 8b 가 셋을 고쳤고 리뷰가 넷을 더 찾았다.
+
+Run: `grep -rn 'data-ns-open\|\[open\]' src/ | grep -v '\.styles\.ts:.*host'`
+
+① `ns-sidebar.ts` 의 클래스 docstring 에 `open` 을 옛 뜻으로 쓰는 문장이 남아 있다.
+② `Sidebar.tsx` 의 shim 최상단 docstring 이 `data-ns-open` 을 **유일한** 통로로 서술한다 → 이제 `default-open` 이 함께 통로다. 두 속성이 각각 무엇을 덮는지 한 문단으로 적는다.
+③ `ns-sidebar.ts` 의 `updated()` 안 `data-ns-open` 주석이 타임라인을 옛 모델로 적는다.
+④ `tokens.css` 의 예약 주석에 `open` 을 옛 뜻으로 쓰는 문장이 하나 더 있다.
+
+**그리고 예약 규칙의 칼럼 정렬이 깨졌다.** `tokens.css` 의 `ns-sidebar:not(:defined)…` 줄들이 선택자가 길어져 값 칼럼이 어긋난다. 그 블록의 다른 줄들과 같은 자리에 값이 오도록 공백을 다시 맞춘다.
 
 - [ ] **Step 9: 검사를 돌린다**
 
