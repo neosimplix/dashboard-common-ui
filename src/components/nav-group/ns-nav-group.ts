@@ -106,6 +106,18 @@ export class NsNavGroup extends LitElement {
   /** 사용자가 한 번이라도 토글했나. 늦게 도착한 defaultCollapsed 가 그것을 덮지 않게 막는다. */
   #toggled = false;
 
+  /**
+   * 조상에 다른 `ns-nav-group` 이 있나. 하위 카테고리로 그려질지를 정한다.
+   *
+   * **CSS 로는 알 수 없다.** shadow 안에서 조상을 보는 수단은 `:host-context()`
+   * 하나인데 Chromium 전용이라 금지돼 있고, 부모 그룹의 shadow 에서
+   * `::slotted(ns-nav-group)` 으로 자식 호스트에 `padding-left` 를 주는 길은
+   * 문서 트리 규칙이 shadow 규칙을 이기므로(외곽 트리 우선) Tailwind preflight
+   * 의 `* { padding: 0 }` 이 지운다. `:host` 에 박스를 두지 못하는 것과 같은
+   * 함정이다. 그래서 판정은 JS 가 하고 들여쓰기는 자기 shadow 안에서 건다.
+   */
+  #nested = false;
+
   get #controlled(): boolean {
     return this.open !== undefined;
   }
@@ -118,6 +130,23 @@ export class NsNavGroup extends LitElement {
     super.connectedCallback();
     warnIfTokensMissing();
     warnPropertyOnlyAttributes(this, { open: "default-collapsed" });
+
+    /*
+      parentElement 부터 closest 로 올라가므로 소비자가 중간에 <div> 로 감싸도
+      잡히고, 바깥 그룹이 아직 upgrade 되지 않았어도 태그 이름만 보므로 잡힌다.
+      순수 HTML 파싱 · React 렌더 · createElement 후 append 세 경로가 모두
+      덮인다.
+
+      connectedCallback 이 첫 렌더보다 먼저이므로 잘못된 모양이 한 프레임도
+      나가지 않는다. 요소를 옮기면 다시 불려 재판정되므로 MutationObserver 가
+      필요 없다.
+    */
+    const nested = this.parentElement?.closest("ns-nav-group") != null;
+    if (nested !== this.#nested) {
+      this.#nested = nested;
+      // 반응형 프로퍼티가 아니므로 갱신을 직접 요청한다.
+      this.requestUpdate();
+    }
   }
 
   /*
@@ -141,7 +170,7 @@ export class NsNavGroup extends LitElement {
   override render() {
     const open = this.#isOpen;
     return html`
-      <div role="group" aria-label=${this.heading}>
+      <div role="group" aria-label=${this.heading} class=${this.#nested ? "nested" : ""}>
         ${this.collapsible
           ? html`
               <button

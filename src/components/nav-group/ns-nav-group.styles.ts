@@ -99,4 +99,53 @@ export const styles = css`
   .list.collapsed {
     display: none;
   }
+
+  /*
+    하위 카테고리. 중첩 여부는 JS 가 판정해 이 클래스로 남긴다 — 이유는
+    ns-nav-group.ts 의 #nested 주석에 있다.
+
+    240px 패널에서 글자 x 좌표가 이렇게 떨어진다.
+
+      상위 제목 16 · 상위 직속 항목 16 · 하위 제목 28 · 하위 항목 28
+
+    상위 제목의 padding-left(16)가 .list 패딩(8) + 행 패딩(8)과 같아서 상위
+    제목과 상위 항목이 정렬되는 것과 같은 산수다. 하위는 들여쓰기 12 + 행
+    패딩 8 = 20 이고 .list 패딩 8 을 더해 28 이다.
+
+    **.list 의 대칭 패딩을 하위에서 없애고 왼쪽 들여쓰기만 두는 이유**는 항목의
+    오른쪽 끝을 상위 항목과 같은 자리(232px)에 남기기 위해서다. 대칭 패딩을
+    유지하면 하위 항목의 hover 배경이 오른쪽에서 8px 짧아져 계단이 생긴다.
+
+    3단 이상을 넣으면 들여쓰기는 계속 누적된다(40 → 52). 제목 자가만 2단과
+    같아진다 — 판정이 "조상에 ns-nav-group 이 있나" 라는 참/거짓이기 때문이다.
+    패널 폭이 정해져 있어 깊이별로 다르게 만들 실익이 없다.
+
+    특정도: 기본 .heading 은 (0,1,0), 이 규칙은 (0,3,0) 이므로 이긴다.
+    button.heading 의 UA 되돌림(0,1,1)은 font-weight·letter-spacing 을 선언하지
+    않으므로 다투지 않는다.
+  */
+  [role="group"].nested > .heading {
+    padding-top: var(--ns-space-2);
+    padding-left: calc(var(--ns-space-3) + var(--ns-space-2));
+    font-weight: var(--ns-weight-medium);
+    letter-spacing: normal;
+  }
+
+  [role="group"].nested > .list {
+    padding: 0 0 0 var(--ns-space-3);
+  }
+
+  /*
+    하위 그룹 사이의 간격. Task 2 가 최상위용 규칙
+    (:host(:not(:first-child)) [role="group"] { padding-top: --ns-space-6 })을
+    지웠으므로 이것이 유일한 그룹 간 간격이다 — 그 규칙은 패널에 그룹이 하나만
+    오는 지금 :first-child 가 배정되지 않은 형제까지 세어 패널 위 여백을 마크업
+    순서에 따라 달라지게 만들었다.
+
+    **여기서는 :first-child 가 옳게 동작한다.** 중첩 그룹은 부모의 light DOM 에서
+    실제 형제이고 전부 렌더되므로 셈이 화면과 일치한다.
+  */
+  :host(:not(:first-child)) [role="group"].nested {
+    padding-top: var(--ns-space-2);
+  }
 `;
