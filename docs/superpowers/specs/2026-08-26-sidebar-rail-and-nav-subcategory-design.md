@@ -40,13 +40,14 @@
 | `--ns-sidebar-width` | `15rem` | `19rem` | **열린 총폭** (뜻 그대로) |
 | `--ns-sidebar-width-collapsed` | `4rem` | `4rem` | **닫힌 총폭 = 레일 폭** (뜻 그대로) |
 
-두 토큰의 **뜻이 바뀌지 않고 값 하나만 바뀐다.** 패널 폭은 파생값이다.
+두 토큰의 **뜻이 바뀌지 않고 값 하나만 바뀐다.** 패널 폭은 토큰도 `calc()` 도 아니고 **남는 폭**이다.
 
 ```css
---ns-sidebar-panel-width: calc(var(--ns-sidebar-width) - var(--ns-sidebar-width-collapsed));
+.rail  { flex: none; width: var(--ns-sidebar-width-collapsed); }
+.panel { flex: 1; min-width: 0; }
 ```
 
-이 파생값을 `tokens.css` 에 토큰으로 두지 않는다. 사용처가 `ns-sidebar` 의 shadow 한 곳이고 테마로 바뀔 값이 아니므로 "사용처가 하나인 토큰을 만드는 것은 추측이다" 에 걸린다. shadow 스타일 안에서 `calc()` 로 계산한다.
+`calc(var(--ns-sidebar-width) - var(--ns-sidebar-width-collapsed))` 로 계산하지 않는 이유는 **레일과 패널 사이의 1px 경계선이 그 산수에 들어가지 않기 때문이다.** 두 폭을 더하면 호스트의 content box 를 1px 넘겨 자식이 밖으로 밀린다. `flex: 1` 은 남은 폭을 그대로 받으므로 경계선이 몇 개든 맞는다. `min-width: 0` 은 flex 자식의 기본 `min-width: auto` 를 눌러 내용이 넓을 때 패널이 부풀지 않게 한다.
 
 **레일 폭을 위한 새 토큰(`--ns-sidebar-rail-width`)을 만들지 않는 이유**는 그것이 이미 `--ns-sidebar-width-collapsed` 이기 때문이다. 닫힌 상태의 총폭이 곧 레일 폭이다 — 이름이 표현하는 것이 정확히 같으므로 두 이름을 나란히 두면 어느 것을 덮어야 하는지가 모호해진다. 두 토큰을 덮어쓰던 소비자는 계속 같은 것을 제어한다.
 
@@ -57,14 +58,20 @@
 ```html
 <div class="shell">
   <div class="rail" role="tablist" aria-orientation="vertical">
-    <button role="tab" aria-selected="true" aria-controls="panel" class="tile selected">
+    <button id="tile-admin" role="tab" aria-selected="true" aria-controls="panel" class="tile selected">
       <span class="tile-body"><slot data-name="admin">관</slot></span>
     </button>
     …
   </div>
-  <nav class="panel" id="panel" role="tabpanel"><slot></slot></nav>
+  <nav class="panel">
+    <div id="panel" role="tabpanel" aria-labelledby="tile-admin">
+      <slot class="panel-slot"></slot>
+    </div>
+  </nav>
 </div>
 ```
+
+**`role="tabpanel"` 을 `<nav>` 에 두지 않는다.** `role` 은 요소의 암시적 역할을 덮으므로 `<nav>` 에 얹으면 navigation 랜드마크가 사라진다 — 네비게이션 사이드바에서 그것은 잃어도 되는 것이 아니다. 안쪽 `<div>` 가 tabpanel 을 지고, `aria-labelledby` 로 활성 타일을 가리켜 패널에 이름이 붙는다. 그 이름은 그룹의 `heading` 이다.
 
 ### 왜 레일을 사이드바가 렌더하는가
 
@@ -274,7 +281,7 @@ export interface NsGroupSelectDetail {
 
 ### 접근성
 
-`role="tablist"` + `aria-orientation="vertical"`, 타일은 `role="tab"` + `aria-selected` + `aria-controls="panel"`, 패널은 `role="tabpanel"`. roving tabindex 와 ↑↓ 키는 `ns-tabs` 의 구현을 그대로 따른다.
+`role="tablist"` + `aria-orientation="vertical"`, 타일은 `id="tile-<name>"` + `role="tab"` + `aria-selected` + `aria-controls="panel"`, 패널 안쪽 `<div>` 가 `role="tabpanel"` + `aria-labelledby` 로 활성 타일을 가리킨다. roving tabindex 와 ↑↓ 키는 `ns-tabs` 의 구현을 그대로 따른다.
 
 타일에는 `aria-label` 로 `heading` 을 준다. 타일 내용이 아이콘이거나 한 글자라 그것만으로는 읽히지 않는다. 툴팁은 `title` 속성으로 준다 — **`title` 을 프로퍼티 이름으로 쓰지 않는다는 규칙은 우리가 정의하는 API 이름에 대한 것이고, shadow 안 요소에 브라우저 툴팁을 띄우려고 쓰는 것은 그 규칙이 막으려는 것이 아니다.** `ns-nav-item` 이 이미 `<a title=…>` 를 그렇게 쓰고 있다.
 
@@ -352,6 +359,14 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 **3단 이상을 넣으면 들여쓰기는 계속 누적된다**(40 → 52). 제목 자가만 2단과 같아진다 — 감지가 "조상에 `ns-nav-group` 이 있나" 라는 참/거짓이기 때문이다. 조상 개수를 세어 깊이별로 다르게 만들 수도 있지만 패널 폭이 정해져 있어 실익이 없다. **문서에 "2단까지 시각적으로 구분된다" 로 적는다.**
 
 특정도를 확인해 둔다. 기본 `.heading` 은 (0,1,0), 중첩 규칙은 `[role="group"].nested > .heading` 으로 (0,3,0) 이므로 이긴다. 그룹 간 간격은 기본이 `:host(:not(:first-child)) [role="group"]` = (0,3,0), 중첩이 `.nested` 를 더해 (0,4,0) 이므로 이긴다. `button.heading` 의 UA 되돌림 규칙(0,1,1)은 `font-weight`·`letter-spacing` 을 선언하지 않으므로 다투지 않는다.
+
+### 그룹 간 간격 규칙을 최상위에서 걷는다
+
+0.4.0 의 `ns-nav-group` 에는 `:host(:not(:first-child)) [role="group"] { padding-top: var(--ns-space-6) }` 가 있었다. 그룹이 세로로 쌓이던 시절 그것들 사이의 간격이었다.
+
+**패널에는 그룹이 하나만 오므로 이 규칙은 쓸모가 없고, 그대로 두면 해롭다.** `:first-child` 는 호스트가 **부모의 자식들 중** 몇 번째인지를 보고, 배정되지 않은 형제도 그 셈에 들어간다. 그래서 두 번째 그룹을 고르면 패널 맨 위에 24px 이 붙고 첫 번째 그룹을 고르면 붙지 않는다 — **패널의 위 여백이 마크업 순서에 따라 달라진다.**
+
+규칙을 지우고 중첩 그룹 사이의 간격만 `.nested` 를 붙여 남긴다. 사이드바 밖에서 최상위 그룹을 세로로 쌓는 경우는 헤딩 자신의 `padding-top` 이 간격을 준다 — 24px 이 아니라 16px 이 되지만, 이 규칙이 0.2.0 에 도입될 때의 목적(호스트 마진이 preflight 에 지워지는 것을 shadow 안 padding 으로 되살리기)은 그 자리에서 이미 달성돼 있다.
 
 ### 접힘의 상호작용
 

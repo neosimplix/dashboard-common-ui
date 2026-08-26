@@ -219,11 +219,12 @@ export interface NsGroupSelectDetail {
 - [ ] **Step 2: `ns-sidebar.ts` 를 전면 교체한다**
 
 ```ts
-import { LitElement, html, type PropertyValues } from "lit";
+import { LitElement, html, nothing, type PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
+import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js";
 import type { NsNavGroup } from "../nav-group/ns-nav-group.js";
 
 // 타일 폴백이 <ns-icon> 을 쓴다. 등록 부수효과가 필요하다.
@@ -297,8 +298,12 @@ export class NsSidebar extends LitElement {
    * 제어 모드의 활성 그룹. `undefined` 면 비제어다.
    *
    * 속성이 아니라 프로퍼티 전용인 이유는 `ns-tabs` 의 `active` 와 같다 —
-   * `<ns-sidebar active-group="admin">` 이라고 쓰면 제어 모드로 들어가 컴포넌트가
-   * 스스로 그룹을 바꾸지 못한다. 순수 HTML 은 `default-active-group` 을 쓴다.
+   * `<ns-sidebar active-group="admin">` 이 속성으로 읽히면 제어 모드로 들어가
+   * 컴포넌트가 스스로 그룹을 바꾸지 못한다. 순수 HTML 은 `default-active-group`
+   * 을 쓴다.
+   *
+   * **그래서 그 속성은 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도
+   * 않는다. 붙어 있으면 connectedCallback 이 경고한다.
    */
   @property({ attribute: false }) activeGroup?: string;
 
@@ -323,6 +328,7 @@ export class NsSidebar extends LitElement {
   */
   #warnedNoMatch = false;
   #warnedNoName = false;
+  #warnedDupName = false;
 
   get #controlledGroup(): boolean {
     return this.activeGroup !== undefined;
@@ -361,6 +367,7 @@ export class NsSidebar extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
+    warnPropertyOnlyAttributes(this, { "active-group": "default-active-group" });
 
     this.#syncGroups();
 
@@ -368,6 +375,10 @@ export class NsSidebar extends LitElement {
       childList 는 그룹이 늘고 줄는 것을, attributeFilter 는 레일이 읽는 네 값이
       바뀌는 것을 본다. 수동 배정에서는 자식이 바뀌어도 배정이 자동으로 변하지
       않으므로 slotchange 가 발생하지 않는다 — 이 관찰자가 유일한 신호다.
+
+      **subtree 가 없으면 attributes 절반이 죽는다.** MutationObserver 의
+      attributes 는 관찰 대상 노드 **자신의** 속성만 보므로, subtree 없이는
+      호스트의 속성을 볼 뿐 자식 그룹의 heading 이 바뀌는 것을 보지 못한다.
 
       **불변 규칙의 "attributes 는 켜지 않는다" 와 어긋나지 않는다.** 그 규칙이
       막으려는 것은 동기화가 setAttribute 를 쓰므로 자기 쓰기에 재발동해 루프가
@@ -378,6 +389,7 @@ export class NsSidebar extends LitElement {
     this.#observer = new MutationObserver(() => this.#syncGroups());
     this.#observer.observe(this, {
       childList: true,
+      subtree: true,
       attributes: true,
       attributeFilter: ["name", "heading", "icon", "badge", "data-ns-rail"],
     });
@@ -412,8 +424,20 @@ export class NsSidebar extends LitElement {
         <div class="rail" role="tablist" aria-orientation="vertical">
           ${entries.map((entry) => this.#tile(entry, entry === active))}
         </div>
-        <nav class="panel" id="panel" role="tabpanel">
-          <slot class="panel-slot"></slot>
+        <nav class="panel">
+          <!--
+            role="tabpanel" 을 <nav> 에 두지 않는다. role 은 암시적 역할을 덮으므로
+            얹으면 navigation 랜드마크가 사라진다 — 네비게이션 사이드바에서 그것은
+            잃어도 되는 것이 아니다. 안쪽 <div> 가 tabpanel 을 지고 aria-labelledby
+            로 활성 타일을 가리켜 패널에 이름이 붙는다(그 이름이 그룹의 heading 이다).
+          -->
+          <div
+            id="panel"
+            role="tabpanel"
+            aria-labelledby=${active === undefined ? nothing : `tile-${active.key}`}
+          >
+            <slot class="panel-slot"></slot>
+          </div>
         </nav>
       </div>
     `;
@@ -428,6 +452,7 @@ export class NsSidebar extends LitElement {
     const selected = isActive && this.open;
     return html`
       <button
+        id=${`tile-${entry.key}`}
         class=${selected ? "tile selected" : "tile"}
         type="button"
         role="tab"
@@ -477,11 +502,23 @@ export class NsSidebar extends LitElement {
     const icons = new Map<string, Element>();
     for (const el of children) {
       const key = el.getAttribute("data-ns-rail");
+      if (key === null || key === "") continue;
+      /*
+        그룹 자신에 data-ns-rail 을 붙이면 그 그룹이 타일 슬롯으로 가버려 패널이
+        빈다. 노드 하나는 슬롯 하나에만 배정되기 때문이다. 걸러내고 경고한다.
+      */
+      if (el.tagName === "NS-NAV-GROUP") {
+        console.warn(
+          `[ns-sidebar] data-ns-rail 은 그룹이 아니라 아이콘 요소에 붙입니다. ns-nav-group 에 붙이면 그 그룹이 레일 타일로 가버려 패널이 빕니다.`,
+        );
+        continue;
+      }
       // 같은 키가 둘이면 문서 순서상 첫 번째를 쓴다. getElementById 와 같은 규약이다.
-      if (key !== null && key !== "" && !icons.has(key)) icons.set(key, el);
+      if (!icons.has(key)) icons.set(key, el);
     }
 
     const groups = children.filter((el) => el.tagName === "NS-NAV-GROUP");
+    const seen = new Set<string>();
 
     /*
       프로퍼티를 먼저 읽고 속성으로 폴백한다. 둘이 필요한 이유는 타이밍이다 —
@@ -511,6 +548,18 @@ export class NsSidebar extends LitElement {
       }
 
       const key = name === "" ? String(i) : name;
+
+      /*
+        키가 겹치면 두 번째 타일이 첫 번째의 아이콘을 가져가고, 키로 타일을 찾는
+        키보드 이동도 첫 번째만 찾는다. 고치지는 않고 들리게만 한다.
+      */
+      if (seen.has(key) && !this.#warnedDupName) {
+        this.#warnedDupName = true;
+        console.warn(
+          `[ns-sidebar] ns-nav-group 의 name 이 겹칩니다("${key}"). 레일 타일과 선택 상태가 첫 번째 그룹만 가리킵니다.`,
+        );
+      }
+      seen.add(key);
 
       /*
         타일 내용의 폴백 세 단. 슬롯에 배정된 것이 있으면 이것은 보이지 않는다.
@@ -653,8 +702,9 @@ export const styles = css`
   }
 
   /*
-    타일은 정사각형이다. 레일 폭에서 좌우 패딩을 뺀 것이 한 변이다.
-    <button> 의 UA 기본값(배경·테두리·글꼴)을 되돌린다.
+    타일은 정사각형이다. 레일 폭이 한 변이고(레일의 패딩은 위아래에만 있다)
+    aspect-ratio 가 높이를 따라오게 한다. <button> 의 UA 기본값(배경·테두리·글꼴)을
+    되돌린다.
   */
   .tile {
     box-sizing: border-box;
@@ -719,19 +769,28 @@ export const styles = css`
     height: var(--ns-control-height-sm);
   }
 
-  ::slotted(*) {
+  /*
+    **타일 슬롯에만 건다.** 접두사 없는 ::slotted(*) 는 패널 슬롯에 배정된 그룹까지
+    잡아 그 높이를 패널 높이로 묶는다 — 그러면 긴 목록에서 호스트 박스가 잘리고
+    패널의 scrollHeight 가 자라지 않아 스크롤이 죽는다.
+  */
+  slot.tile-slot::slotted(*) {
     max-width: 100%;
     max-height: 100%;
   }
 
   /*
-    패널 폭은 파생값이다. 열린 총폭에서 레일 폭을 뺀 것이라 두 토큰을 덮어쓰던
-    소비자가 계속 같은 것을 제어한다. 사용처가 하나이므로 토큰을 만들지 않는다.
+    패널은 **남는 폭**을 받는다. calc(열린 총폭 - 레일 폭) 으로 계산하지 않는 이유는
+    레일과 패널 사이의 1px 경계선이 그 산수에 들어가지 않아 자식이 호스트 content
+    box 를 1px 넘기기 때문이다. flex: 1 은 경계선이 몇 개든 남은 폭을 그대로 받는다.
+
+    min-width: 0 이 필요한 이유는 flex 자식의 기본값이 min-width: auto 라서다 —
+    내용이 넓으면 패널이 부풀어 레일을 밀어낸다.
   */
   .panel {
     box-sizing: border-box;
-    flex: none;
-    width: calc(var(--ns-sidebar-width) - var(--ns-sidebar-width-collapsed));
+    flex: 1;
+    min-width: 0;
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
@@ -771,6 +830,16 @@ export const styles = css`
     display: none;
   }
 ```
+
+**그룹 간 간격 규칙을 지운다.** `ns-nav-group.styles.ts` 의 이 규칙과 그 위 긴 주석을 통째로 삭제한다.
+
+```css
+  :host(:not(:first-child)) [role="group"] {
+    padding-top: var(--ns-space-6);
+  }
+```
+
+패널에는 그룹이 하나만 오므로 이 규칙은 쓸모가 없고, 그대로 두면 해롭다 — `:first-child` 는 호스트가 **부모의 자식들 중** 몇 번째인지를 보고 배정되지 않은 형제도 그 셈에 들어가므로, 두 번째 그룹을 고르면 패널 맨 위에 24px 이 붙고 첫 번째 그룹을 고르면 붙지 않는다. **패널의 위 여백이 마크업 순서에 따라 달라진다.** 중첩 그룹 사이의 간격은 Task 7 이 `.nested` 를 붙여 다시 세운다. 삭제 근거는 `docs/gotchas.md` 가 맡는다(Task 6).
 
 `.heading` 위쪽 주석에서 신호를 설명하는 문단을 아래로 교체한다.
 
@@ -844,6 +913,12 @@ export const styles = css`
 ```
 
 - [ ] **Step 6: `tokens.css` 를 고친다**
+
+`--ns-sidebar-width` 를 언급하는 **다른 주석도 함께 본다.** 그 파일에는 15rem 을 리터럴로 적은 서술이 남아 있다.
+
+Run: `grep -n '15rem\|sidebar-width' src/tokens/tokens.css`
+
+찾은 곳의 숫자와 뜻을 새 값(열린 총폭 19rem = 레일 4 + 패널 15)에 맞춘다.
 
 폭 토큰의 값과 주석.
 
@@ -1043,11 +1118,13 @@ Run: `grep -n 'NsNavGroup\|Sidebar' docs/consumer-example.tsx`
         onGroupSelect={(name) => setActiveGroup(name)}
         onNavigate={(detail) => router.push(detail.href)}
       >
-        <NsNavGroup name="admin" heading="관리" badge="관">
-          <NsNavItem href="/users" label="사용자" badge="사" />
+        <NsNavGroup name="projects" heading="프로젝트" badge="프">
+          <NsNavItem href="/a" label="프로젝트 A" badge="PA" />
         </NsNavGroup>
       </Sidebar>
 ```
+
+**`name` 은 그 그룹의 `heading` 과 뜻이 맞아야 한다.** 키와 표시가 어긋난 예시는 문서로서 나쁘다.
 
 `setActiveGroup`·`sidebarOpen` 같은 상태는 그 파일의 기존 관례대로 선언한다. **이 파일은 타입 검사만 받는다** — 실행되지 않으므로 값이 무엇이든 타입이 맞으면 된다.
 
@@ -1870,8 +1947,14 @@ git commit -m "docs(sidebar): 레일 재설계의 규칙·경위·이주를 적�
   }
 
   /*
-    그룹 사이 간격. 기본은 --ns-space-6 이고 하위 그룹 사이에는 그것이 너무
-    넓다. 특정도가 (0,3,0) 대 (0,4,0) 이라 이 규칙이 이긴다.
+    하위 그룹 사이의 간격. Task 2 가 최상위용 규칙
+    (:host(:not(:first-child)) [role="group"] { padding-top: --ns-space-6 })을
+    지웠으므로 이것이 유일한 그룹 간 간격이다 — 그 규칙은 패널에 그룹이 하나만
+    오는 지금 :first-child 가 배정되지 않은 형제까지 세어 패널 위 여백을 마크업
+    순서에 따라 달라지게 만들었다.
+
+    **여기서는 :first-child 가 옳게 동작한다.** 중첩 그룹은 부모의 light DOM 에서
+    실제 형제이고 전부 렌더되므로 셈이 화면과 일치한다.
   */
   :host(:not(:first-child)) [role="group"].nested {
     padding-top: var(--ns-space-2);
