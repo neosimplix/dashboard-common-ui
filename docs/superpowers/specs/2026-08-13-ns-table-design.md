@@ -214,6 +214,7 @@ DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 *
 | `perPage` | `per-page` | number | `20` | |
 | `page` | 없음 (프로퍼티 전용) | number \| undefined | `undefined` | 설정하면 제어 |
 | `defaultPage` | `default-page` | number | `1` | 비제어 초기값 |
+| `pageWindow` | `page-window` | number | `7` | 이전·다음 사이 슬롯 수. 5 이상의 홀수 |
 
 `page` 가 프로퍼티 전용인 이유는 `sortKey` · `ns-dialog` 의 `open` 과 같다 — 속성으로 두면 `<ns-pagination page="3">` 이 제어 모드로 들어가 컴포넌트가 스스로 페이지를 넘기지 못한다. 순수 HTML 은 `default-page` 를 쓴다.
 
@@ -228,13 +229,15 @@ DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 *
 ```html
 <nav aria-label="페이지 이동">
   <button class="ns-button ns-button--ghost ns-button--sm">이전</button>
-  <button class="ns-button ns-button--ghost ns-button--sm">1</button>
-  <span class="ns-pagination-gap">…</span>
-  <button class="ns-button ns-button--ghost ns-button--sm">3</button>
-  <button class="ns-button ns-button--outline ns-button--sm" aria-current="page">4</button>
-  <button class="ns-button ns-button--ghost ns-button--sm">5</button>
-  <span class="ns-pagination-gap">…</span>
-  <button class="ns-button ns-button--ghost ns-button--sm">12</button>
+  <span class="ns-pagination-pages">
+    <button class="ns-button ns-button--ghost ns-button--sm">1</button>
+    <span class="ns-pagination-gap">…</span>
+    <button class="ns-button ns-button--ghost ns-button--sm">3</button>
+    <button class="ns-button ns-button--outline ns-button--sm" aria-current="page">4</button>
+    <button class="ns-button ns-button--ghost ns-button--sm">5</button>
+    <span class="ns-pagination-gap">…</span>
+    <button class="ns-button ns-button--ghost ns-button--sm">12</button>
+  </span>
   <button class="ns-button ns-button--ghost ns-button--sm">다음</button>
 </nav>
 ```
@@ -243,8 +246,14 @@ DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 *
 
 ### 7.3 번호 윈도우 규칙
 
-- 페이지 수 ≤ 7 이면 전부 표시
-- 그 외에는 **첫 페이지 · 현재±1 · 마지막 페이지**, 빈 구간에 `…`
+- **슬롯 수는 언제나 `min(페이지 수, page-window)` 다.** 현재 페이지가 어디에 있든 달라지지 않는다 — 이전·다음 버튼을 제자리에 붙들기 위한 것이고, 폭까지 고정하는 것은 `.ns-pagination-pages` 가 맡는다(**둘 다 필요하다**)
+- 페이지 수 ≤ `page-window` 면 전부 표시
+- 그 외 세 배치. `h = (page-window - 5)/2` 다
+  - 앞쪽(`현재 ≤ page-window-2`): `1 … page-window-2` · `…` · 마지막
+  - 뒤쪽(`현재 > 페이지 수 - (page-window-2)`): `1` · `…` · 마지막 직전 `page-window-2` 개
+  - 가운데: `1` · `…` · `현재±h` · `…` · 마지막
+- **`page-window` 는 5 이상의 홀수여야 한다.** 가운데 배치의 번호 개수가 `page-window - 4 = 2h + 1` 이라 짝수면 `h` 가 정수가 아니고, 3이면 `h = -1` 이라 현재 페이지가 들어갈 자리가 없다. 잘못된 값은 경고 한 번 뒤 `7` 로 그린다
+- `…` 이 감추는 페이지는 어느 배치에서든 **최소 2개**다
 - 현재 페이지는 `--outline` + `aria-current="page"`. **비활성화하지 않는다** — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다. 클릭은 아무 일도 하지 않는다
 - 이전/다음은 양 끝에서 `disabled`
 
@@ -253,6 +262,7 @@ DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 *
 - **페이지가 1개 이하면 아무것도 렌더하지 않는다.** 쓸모없는 컨트롤을 남기지 않는다
 - `total = 0` 도 같다. 빈 상태 문구는 소비자 것이다
 - `page` 가 범위를 벗어나면 표시용으로만 clamp 하고 콘솔 경고를 한 번 낸다. **이벤트로 교정하지 않는다** — 소비자 상태와 서로 밀어내는 루프가 된다
+- **`page-window` 가 잘못돼도 렌더를 멈추지 않는다.** `per-page` 와 달리 페이지 수 계산에 쓰이지 않는 표시 설정이다
 
 ## 8. 구현 제약 — Light DOM 에서 Lit 이 소비자 자식을 지운다
 

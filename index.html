@@ -2319,15 +2319,15 @@
   <template class="ex">
     <div style="display:grid;gap:var(--ns-space-4)">
       <ns-pagination total="60" per-page="20" default-page="1"></ns-pagination>
-      <ns-pagination total="140" per-page="20" default-page="7"></ns-pagination>
+      <ns-pagination total="180" per-page="20" default-page="7"></ns-pagination>
       <ns-pagination total="15" per-page="20"></ns-pagination>
     </div>
   </template>
   <div class="demo block" id="pagination-edge-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p>
-    위에서부터 3페이지(전부 표시) · 7페이지(<code>…</code> 등장) · 1페이지
-    (<strong>아무것도 렌더하지 않는다</strong>) 다.
+    위에서부터 3페이지(<strong>전부 표시</strong> — 페이지 수가 <code>page-window</code> 이하다) ·
+    9페이지(<code>…</code> 등장) · 1페이지(<strong>아무것도 렌더하지 않는다</strong>) 다.
   </p>
 
   <h3>슬롯 수</h3>
@@ -2379,8 +2379,8 @@
 
   <h3>번호 윈도우</h3>
   <ul>
-    <li>페이지 수 ≤ 7 이면 전부 표시</li>
-    <li>그 외에는 <strong>첫 페이지 · 현재±1 · 마지막 페이지</strong>, 빈 구간에 <code>…</code></li>
+    <li><strong>슬롯 수는 언제나 <code>min(페이지 수, page-window)</code> 다.</strong> 현재 페이지가 어디에 있든 달라지지 않는다 — 그래야 "이전"·"다음" 이 제자리에 있다. <strong>폭까지 고정하는 것은 <code>.ns-pagination-pages</code> 가 맡는다</strong>. 둘 중 하나만으로는 진폭만 줄고 여전히 움직인다</li>
+    <li>페이지 수 ≤ <code>page-window</code> 면 전부 표시. 그 외에는 <strong>앞쪽</strong>(<code>1 … n</code> · <code>…</code> · 마지막) · <strong>가운데</strong>(<code>1</code> · <code>…</code> · 현재±h · <code>…</code> · 마지막) · <strong>뒤쪽</strong>(<code>1</code> · <code>…</code> · 끝의 n개) 셋 중 하나다. <code>h = (page-window - 5)/2</code> 라 <code>page-window</code> 가 <strong>5 이상의 홀수</strong>여야 한다</li>
     <li>현재 페이지는 <code>--outline</code> + <code>aria-current="page"</code>. <strong>비활성화하지 않는다</strong> — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다</li>
     <li>이전·다음은 양 끝에서 <code>aria-disabled="true"</code> 다. <strong><code>disabled</code> 가 아니다</strong> — 포커스된 버튼이 <code>disabled</code> 되면 브라우저가 blur 시켜, "다음" 을 눌러 마지막 페이지에 닿는 순간 포커스가 <code>body</code> 로 떨어진다. 위 항목과 같은 이유다. 눌러도 아무 일도 일어나지 않고, <code>.ns-button</code> 이 <code>:disabled</code> 와 같은 회색·<code>not-allowed</code> 를 준다</li>
   </ul>
