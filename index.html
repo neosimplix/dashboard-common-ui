@@ -2945,10 +2945,13 @@
         <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
         <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
       </ns-nav-group>
-      <ns-nav-group heading="관리">
+      <ns-nav-group heading="관리" collapsible>
         <ns-nav-item href="/admin" label="사용자 관리" badge="UM">
           <span slot="trailing">2</span>
         </ns-nav-item>
+      </ns-nav-group>
+      <ns-nav-group heading="보관" collapsible default-collapsed>
+        <ns-nav-item href="/archive" label="지난 프로젝트" badge="AR"></ns-nav-item>
       </ns-nav-group>
     </ns-sidebar>
   </template>
@@ -3022,7 +3025,10 @@
   </p>
 
   <h2 id="ns-nav-group">ns-nav-group</h2>
-  <p>제목이 붙은 네비게이션 그룹. 하위에 <code>ns-nav-item</code> 을 넣는다.</p>
+  <p>
+    제목이 붙은 네비게이션 그룹. 하위에 <code>ns-nav-item</code> 을 넣는다.
+    <code>collapsible</code> 을 쓰면 헤딩이 토글 버튼이 되어 그룹을 접고 펼 수 있다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">
