@@ -2321,15 +2321,38 @@
   <template class="ex">
     <div style="display:grid;gap:var(--ns-space-4)">
       <ns-pagination total="60" per-page="20" default-page="1"></ns-pagination>
-      <ns-pagination total="140" per-page="20" default-page="7"></ns-pagination>
+      <ns-pagination total="180" per-page="20" default-page="7"></ns-pagination>
       <ns-pagination total="15" per-page="20"></ns-pagination>
     </div>
   </template>
   <div class="demo block" id="pagination-edge-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
   <p>
-    위에서부터 3페이지(전부 표시) · 7페이지(<code>…</code> 등장) · 1페이지
-    (<strong>아무것도 렌더하지 않는다</strong>) 다.
+    위에서부터 3페이지(<strong>전부 표시</strong> — 페이지 수가 <code>page-window</code> 이하다) ·
+    9페이지(<code>…</code> 등장) · 1페이지(<strong>아무것도 렌더하지 않는다</strong>) 다.
+  </p>
+
+  <h3>슬롯 수</h3>
+  <template class="ex">
+    <div style="display:grid;gap:var(--ns-space-4)">
+      <ns-pagination total="240" per-page="20" default-page="6" page-window="5"></ns-pagination>
+      <ns-pagination total="240" per-page="20" default-page="6"></ns-pagination>
+      <ns-pagination total="240" per-page="20" default-page="6" page-window="9"></ns-pagination>
+      <ns-pagination total="2200" per-page="20" default-page="50"></ns-pagination>
+    </div>
+  </template>
+  <div class="demo block" id="pagination-window-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <p>
+    위에서부터 <code>page-window="5"</code> · 기본값 <code>7</code> · <code>page-window="9"</code> 다.
+    셋 다 12페이지이고, <strong>어느 것이든 끝까지 넘기는 동안 "다음" 버튼이 제자리에 있어야 한다</strong> —
+    슬롯 수가 달라지는 것은 세 컨트롤 <em>사이</em>지 한 컨트롤 <em>안</em>이 아니다.
+  </p>
+  <p>
+    네 번째는 <code>total="2200" per-page="20"</code>, 110페이지다. 창이 두 자리(<code>49</code>)와
+    세 자리(<code>110</code>) 번호를 동시에 보여주는 유일한 컨트롤이라, <code>tabular-nums</code>
+    (§6.2)가 실제로 자릿수만으로 폭을 맞추는지는 여기서만 드러난다 — 이 문서의 다른 데모는 전부
+    12페이지 이하라 두 자리를 넘지 않는다.
   </p>
 
   <h3>프로퍼티</h3>
@@ -2339,6 +2362,7 @@
     <tr><td><code>perPage</code></td><td><code>per-page</code></td><td>number</td><td><code>20</code></td><td></td></tr>
     <tr><td><code>page</code></td><td>없음</td><td>number | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
     <tr><td><code>defaultPage</code></td><td><code>default-page</code></td><td>number</td><td><code>1</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>pageWindow</code></td><td><code>page-window</code></td><td>number</td><td><code>7</code></td><td>이전·다음 사이 슬롯 수. <code>…</code> 칸도 센다. <strong>5 이상의 홀수</strong> — 아니면 경고 후 <code>7</code></td></tr>
   </table>
 
   <h3>이벤트</h3>
@@ -2351,19 +2375,21 @@
   <table>
     <tr><th>이름</th><th>붙이는 요소</th><th>설명</th></tr>
     <tr><td><code>ns-pagination</code></td><td>(요소 선택자)</td><td>배치. 클래스가 아니라 태그 자체를 스타일한다</td></tr>
+    <tr><td><code>.ns-pagination-pages</code></td><td>컴포넌트가 렌더하는 <code>span</code></td><td>번호 버튼과 <code>…</code> 를 감싸는 균등 그리드. <strong>칸을 전부 같은 폭으로 만들어 이전·다음을 제자리에 붙든다</strong></td></tr>
     <tr><td><code>.ns-pagination-gap</code></td><td>컴포넌트가 렌더하는 <code>span</code></td><td><code>…</code> 자리. 나머지 버튼은 전부 <code>.ns-button</code> 재사용이다</td></tr>
   </table>
   <p>
     <code>nav</code> 는 이 컴포넌트가 렌더하는 유일한 자식이라 요소 타입으로 특정되어
-    클래스가 없다. 이 표에 <code>.ns-pagination-gap</code> 이 적혀 있어야
-    <code>check-controls.mjs</code> 가 통과한다 — 데모 템플릿에는 그 클래스가 소스로
+    클래스가 없다. 이 표에 <code>.ns-pagination-pages</code> 와
+    <code>.ns-pagination-gap</code> 이 적혀 있어야
+    <code>check-controls.mjs</code> 가 통과한다 — 데모 템플릿에는 그 클래스들이 소스로
     등장하지 않는다(컴포넌트가 런타임에 만든다).
   </p>
 
   <h3>번호 윈도우</h3>
   <ul>
-    <li>페이지 수 ≤ 7 이면 전부 표시</li>
-    <li>그 외에는 <strong>첫 페이지 · 현재±1 · 마지막 페이지</strong>, 빈 구간에 <code>…</code></li>
+    <li><strong>슬롯 수는 언제나 <code>min(페이지 수, page-window)</code> 다.</strong> 현재 페이지가 어디에 있든 달라지지 않는다 — 그래야 "이전"·"다음" 이 제자리에 있다. <strong>폭까지 고정하는 것은 <code>.ns-pagination-pages</code> 가 맡는다</strong>. 둘 중 하나만으로는 진폭만 줄고 여전히 움직인다</li>
+    <li>페이지 수 ≤ <code>page-window</code> 면 전부 표시. 그 외에는 <strong>앞쪽</strong>(<code>1 … n</code> · <code>…</code> · 마지막) · <strong>가운데</strong>(<code>1</code> · <code>…</code> · 현재±h · <code>…</code> · 마지막) · <strong>뒤쪽</strong>(<code>1</code> · <code>…</code> · 끝의 n개) 셋 중 하나다. <code>h = (page-window - 5)/2</code> 라 <code>page-window</code> 가 <strong>5 이상의 홀수</strong>여야 한다</li>
     <li>현재 페이지는 <code>--outline</code> + <code>aria-current="page"</code>. <strong>비활성화하지 않는다</strong> — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다</li>
     <li>이전·다음은 양 끝에서 <code>aria-disabled="true"</code> 다. <strong><code>disabled</code> 가 아니다</strong> — 포커스된 버튼이 <code>disabled</code> 되면 브라우저가 blur 시켜, "다음" 을 눌러 마지막 페이지에 닿는 순간 포커스가 <code>body</code> 로 떨어진다. 위 항목과 같은 이유다. 눌러도 아무 일도 일어나지 않고, <code>.ns-button</code> 이 <code>:disabled</code> 와 같은 회색·<code>not-allowed</code> 를 준다</li>
   </ul>
