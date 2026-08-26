@@ -135,15 +135,15 @@
 <ns-header project-name="common-ui" sidebar-open id="docs-header"></ns-header>
 
 <div class="shell">
-  <ns-sidebar open id="docs-nav">
-    <ns-nav-group heading="시작하기">
+  <ns-sidebar id="docs-nav">
+    <ns-nav-group name="start" heading="시작하기" badge="시">
       <ns-nav-item href="#install" label="설치" badge="설" active></ns-nav-item>
       <ns-nav-item href="#usage" label="환경별 연동" badge="연"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group heading="기초">
+    <ns-nav-group name="basics" heading="기초" badge="기">
       <ns-nav-item href="#tokens" label="디자인 토큰" badge="토"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group heading="클래스">
+    <ns-nav-group name="classes" heading="클래스" badge="클">
       <ns-nav-item href="#ns-button" label=".ns-button" badge="BT"></ns-nav-item>
       <ns-nav-item href="#ns-input" label=".ns-input" badge="IN"></ns-nav-item>
       <ns-nav-item href="#ns-textarea" label=".ns-textarea" badge="TA"></ns-nav-item>
@@ -156,7 +156,7 @@
       <ns-nav-item href="#ns-message" label=".ns-message" badge="MG"></ns-nav-item>
       <ns-nav-item href="#ns-chip" label=".ns-chip" badge="CH"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group heading="컴포넌트">
+    <ns-nav-group name="components" heading="컴포넌트" badge="컴">
       <ns-nav-item href="#ns-icon" label="ns-icon" badge="IC"></ns-nav-item>
       <ns-nav-item href="#ns-page-heading" label="ns-page-heading" badge="PH"></ns-nav-item>
       <ns-nav-item href="#ns-skeleton" label="ns-skeleton" badge="SK"></ns-nav-item>
@@ -171,7 +171,7 @@
       <ns-nav-item href="#ns-nav-group" label="ns-nav-group" badge="NG"></ns-nav-item>
       <ns-nav-item href="#ns-nav-item" label="ns-nav-item" badge="NI"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group heading="예시">
+    <ns-nav-group name="examples" heading="예시" badge="예">
       <ns-nav-item href="#full" label="전체 셸 조합" badge="셸"></ns-nav-item>
     </ns-nav-group>
   </ns-sidebar>
@@ -427,8 +427,8 @@
     <ns-header project-name="대시보드" sidebar-open>
       <button class="ns-button ns-button--outline ns-button--sm" slot="actions">로그아웃</button>
     </ns-header>
-    <ns-sidebar open>
-      <ns-nav-group heading="프로젝트">
+    <ns-sidebar>
+      <ns-nav-group name="projects" heading="프로젝트" badge="프">
         <ns-nav-item href="/a" label="프로젝트 A" badge="PA"></ns-nav-item>
       </ns-nav-group>
     </ns-sidebar>
@@ -439,10 +439,21 @@
     const header = document.querySelector("ns-header");
     const sidebar = document.querySelector("ns-sidebar");
 
-    header.addEventListener("ns-toggle", (e) => {
-      header.sidebarOpen = e.detail.open;
-      sidebar.open = e.detail.open;
-    });
+    // 셸은 제어 모드다. 시작부터 프로퍼티로 세워 반쪽 제어를 만들지 않는다 —
+    // open 을 첫 토글에서만 대입하면 그때까지는 비제어(default-open)였다가
+    // 그 뒤 제어로 바뀌는 반쪽 제어가 된다.
+    sidebar.open = true;
+
+    // ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일
+    // 타일. 두 엘리먼트에 각각 붙인다. 공통 조상(body)에 붙이면 이벤트가
+    // composed 라 다른 데모의 토글까지 받는다.
+    const setOpen = (open) => {
+      header.sidebarOpen = open;
+      sidebar.open = open;
+    };
+    header.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
+    sidebar.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
+
     sidebar.addEventListener("ns-navigate", (e) => { location.href = e.detail.href; });
   </script>
 
@@ -463,7 +474,7 @@
   <p>
     <strong>액센트는 토큰 하나가 아니라 두 벌이다.</strong>
     <code>--ns-color-accent</code> 는 <strong>선과 링</strong>의 색이고
-    (포커스 링 일곱 · <code>.ns-input</code> 계열의 포커스 테두리 · 탭 활성 밑줄 ·
+    (포커스 링 여덟 · <code>.ns-input</code> 계열의 포커스 테두리 · 탭 활성 밑줄 ·
     체크박스 <code>accent-color</code>),
     <code>--ns-color-accent-fill</code> 세 토큰은 <strong>채움면</strong>의 색이다
     (<code>.ns-button--solid</code> · 선택된 <code>.ns-chip</code> ·
@@ -2969,44 +2980,80 @@
   </p>
 
   <h3>데모</h3>
-  <template class="ex">
-    <ns-sidebar open id="demo-sidebar">
-      <ns-nav-group heading="프로젝트">
+  <div class="demo" style="height: 22rem">
+    <ns-sidebar default-open id="sidebar-rail-demo">
+      <ns-icon data-ns-rail="admin" name="menu"></ns-icon>
+      <ns-nav-group name="projects" heading="프로젝트" badge="프">
         <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
         <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
       </ns-nav-group>
-      <ns-nav-group heading="관리" collapsible>
-        <ns-nav-item href="/admin" label="사용자 관리" badge="UM">
-          <span slot="trailing">2</span>
-        </ns-nav-item>
-      </ns-nav-group>
-      <ns-nav-group heading="보관" collapsible default-collapsed>
-        <ns-nav-item href="/archive" label="지난 프로젝트" badge="AR"></ns-nav-item>
+      <ns-nav-group name="admin" heading="관리" badge="관">
+        <ns-nav-item href="/users" label="사용자" badge="사"></ns-nav-item>
       </ns-nav-group>
     </ns-sidebar>
-  </template>
-  <div class="demo"></div>
-  <pre></pre>
-  <p><button id="demo-sidebar-toggle">접기 / 펴기</button> <span id="sidebar-log"></span></p>
+  </div>
 
   <h3>프로퍼티</h3>
   <table>
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>open</code></td><td><code>open</code></td><td>boolean</td><td><code>false</code></td><td>펼침 여부. 접히면 <code>--ns-sidebar-width-collapsed</code>(4rem) 레일만 남는다</td></tr>
-    <tr><td>—</td><td><code>data-ns-open</code></td><td>속성 전용</td><td>없음</td><td>SSR 통로. <code>&lt;Sidebar&gt;</code> shim 이 채운다. 정의 전 레이아웃 예약만 읽는다 — 컴포넌트는 보지 않는다</td></tr>
+    <tr><td><code>open</code></td><td>—</td><td>boolean</td><td><code>undefined</code></td><td><strong>프로퍼티 전용.</strong> 주면 제어 모드다. HTML 에서는 <code>default-open</code> 을 쓴다</td></tr>
+    <tr><td><code>defaultOpen</code></td><td><code>default-open</code></td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 패널이 열린 채로 시작한다</td></tr>
+    <tr><td><code>activeGroup</code></td><td>—</td><td>string</td><td><code>undefined</code></td><td><strong>프로퍼티 전용.</strong> 패널에 보일 그룹의 <code>name</code></td></tr>
+    <tr><td><code>defaultActiveGroup</code></td><td><code>default-active-group</code></td><td>string</td><td><code>""</code></td><td>비제어 초기 그룹. 비우면 첫 번째 그룹</td></tr>
   </table>
 
   <h3>slot</h3>
   <table>
     <tr><th>이름</th><th>위치</th><th>용도</th></tr>
-    <tr><td>(기본)</td><td>사이드바 전체</td><td><code>ns-nav-group</code> 목록. 접힘은 직계 자식 <code>ns-nav-group</code> 에만 전해진다 — 직접 슬롯에 넣은 <code>ns-nav-item</code> 은 접혀도 라벨이 그대로 보인다</td></tr>
+    <tr><td>(기본)</td><td>사이드바 전체</td><td>직계 자식 <code>ns-nav-group</code> 목록. <code>activeGroup</code>/<code>default-active-group</code> 이 지목한 그룹 하나만 패널에 배정되고, 나머지는 숨는 것이 아니라 <strong>렌더되지 않는다</strong> — 접힘 상태는 그대로 남아 그룹을 오갔다 돌아오면 복원된다</td></tr>
   </table>
 
   <h3>이벤트</h3>
+  <table>
+    <tr><th>이름</th><th>detail</th><th>발생 시점</th></tr>
+    <tr><td><code>ns-group-select</code></td><td><code>{ name }</code></td><td>레일 타일이 요청하는 다음 그룹</td></tr>
+    <tr><td><code>ns-toggle</code></td><td><code>{ open }</code></td><td>패널의 다음 상태 요청. <code>ns-header</code> 와 같은 이름이다</td></tr>
+  </table>
   <p>
-    자체 이벤트가 없다. 하위 <code>ns-nav-item</code> 의 <code>ns-navigate</code> 가
-    <code>composed: true</code> 로 통과해 올라오므로, 사이드바에서 한 번만 듣는 것이 편하다.
+    하위 <code>ns-nav-item</code> 의 <code>ns-navigate</code> 도 <code>composed: true</code> 로
+    통과해 올라오므로, 사이드바에서 한 번만 듣는 것이 편하다.
   </p>
+
+  <h3>동작</h3>
+  <ol>
+    <li>
+      <strong>레일은 항상 보인다.</strong> 패널이 닫히면 레일 폭
+      (<code>--ns-sidebar-width-collapsed</code>)만 남는다. 열린 총폭은
+      <code>--ns-sidebar-width</code> 다.
+    </li>
+    <li>
+      <strong>패널은 선택된 그룹 하나만 보여준다.</strong> 나머지 그룹은 숨는 것이
+      아니라 렌더되지 않고, 접힘 상태는 그대로 남아 그룹을 오갔다 돌아오면 복원된다.
+    </li>
+    <li>
+      <strong>레일 아이콘은 사이드바의 직계 자식에 <code>data-ns-rail="&lt;name&gt;"</code>
+      로 넣는다.</strong> 그룹 안에 넣으면 슬롯 배정이 자기 shadow root 안에서만
+      일어나므로 레일에 도달하지 않는다. 아이콘을 그룹 바로 앞에 두면 짝이 국소적으로
+      읽힌다. 이 이름은 정적 검사가 없으므로 오타가 조용히 폴백 글자로 나타난다.
+    </li>
+    <li>
+      <strong><code>slot</code> 속성은 동작하지 않는다.</strong> 이 컴포넌트는
+      <code>slotAssignment: "manual"</code> 이다.
+    </li>
+    <li>
+      <strong>레일 키보드.</strong> ↑↓ 는 타일 사이를 돌며 <strong>선택을 함께
+      옮기지만 패널을 열지는 않는다.</strong> 패널이 닫혀 있을 때 화살표를 눌러도
+      열리지 않고, 그 타일에서 Enter·Space 를 누르면(= 클릭) 열린다. 사용자가
+      일부러 닫은 패널을 포커스 이동이 강제로 열지 않게 한 것이다. Home·End 는
+      처음·끝으로 간다.
+    </li>
+    <li>
+      <strong>활성 타일을 다시 누르면 패널이 닫힌다.</strong> VS Code 와 같다.
+      그래서 패널이 닫혀 있으면 어느 타일도 <code>aria-selected="true"</code> 가
+      아니다 — 선택된 탭이 없는 tablist 는 유효한 상태이고, 열림 여부는 패널의
+      존재로 드러난다.
+    </li>
+  </ol>
 
   <h3>주의</h3>
   <p>
@@ -3016,8 +3063,8 @@
 
   <h3>HTML — 마크업</h3>
   <script type="text/plain">
-    <ns-sidebar open>
-      <ns-nav-group heading="프로젝트">
+    <ns-sidebar>
+      <ns-nav-group name="projects" heading="프로젝트" badge="프">
         <ns-nav-item href="/a" label="프로젝트 A" badge="PA"></ns-nav-item>
       </ns-nav-group>
     </ns-sidebar>
@@ -3030,7 +3077,7 @@
     // ns-navigate 는 composed 라 항목에서 사이드바까지 올라온다.
     sidebar.addEventListener("ns-navigate", (e) => { location.href = e.detail.href; });
 
-    sidebar.open = false;   // 접기. 컴포넌트가 스스로 바꾸지 않는다
+    sidebar.open = false;   // 제어 모드. open 이 프로퍼티 전용이라 컴포넌트가 스스로 바꾸지 않는다
   </script>
 
   <h3>React</h3>
@@ -3038,7 +3085,7 @@
     import { Sidebar, NsNavGroup, NsNavItem } from "@neosimplix/common-ui/react";
 
     <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
-      <NsNavGroup heading="프로젝트">
+      <NsNavGroup name="projects" heading="프로젝트" badge="프">
         <NsNavItem href="/a" label="프로젝트 A" badge="PA" active={pathname === "/a"} />
       </NsNavGroup>
     </Sidebar>
@@ -3267,12 +3314,12 @@
     <div style="display:flex;flex-direction:column;height:100%;width:100%" id="full-demo">
       <ns-header project-name="대시보드" sidebar-open></ns-header>
       <div style="display:flex;flex:1;min-height:0">
-        <ns-sidebar open>
-          <ns-nav-group heading="프로젝트">
+        <ns-sidebar id="full-nav">
+          <ns-nav-group name="projects" heading="프로젝트" badge="프">
             <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
             <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
           </ns-nav-group>
-          <ns-nav-group heading="관리">
+          <ns-nav-group name="admin" heading="관리" badge="관">
             <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
           </ns-nav-group>
         </ns-sidebar>
@@ -3290,11 +3337,18 @@
     const header = document.querySelector("ns-header");
     const sidebar = document.querySelector("ns-sidebar");
 
-    // 컴포넌트는 자기 상태를 바꾸지 않는다. 이벤트를 받아 되돌려준다.
-    header.addEventListener("ns-toggle", (e) => {
-      header.sidebarOpen = e.detail.open;
-      sidebar.open = e.detail.open;
-    });
+    // 셸은 제어 모드다. 시작부터 프로퍼티로 세운다 — 첫 토글에서만 대입하면
+    // 반쪽 제어(처음엔 비제어, 첫 토글에 제어로 바뀜)가 된다.
+    sidebar.open = true;
+
+    // ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일
+    // 타일. 두 엘리먼트에 각각 붙인다.
+    const setOpen = (open) => {
+      header.sidebarOpen = open;
+      sidebar.open = open;
+    };
+    header.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
+    sidebar.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
 
     // ns-navigate 는 composed 라 사이드바에서 한 번만 들으면 된다.
     sidebar.addEventListener("ns-navigate", (e) => {
@@ -3370,10 +3424,26 @@
   const docsHeader = document.getElementById("docs-header");
   const docsNav = document.getElementById("docs-nav");
 
-  docsHeader.addEventListener("ns-toggle", (e) => {
-    docsHeader.sidebarOpen = e.detail.open;
-    docsNav.open = e.detail.open;
-  });
+  /*
+    셸은 제어 모드다. 시작부터 프로퍼티로 세워 반쪽 제어를 만들지 않는다 —
+    open 을 첫 토글에서만 대입하면 그때까지는 비제어이므로 default-open 이
+    진실이고, 그 뒤에는 프로퍼티가 진실이 된다.
+  */
+  docsNav.open = true;
+
+  /*
+    ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일 타일.
+    **두 엘리먼트에 각각 붙인다.** 둘의 공통 조상은 body 이고 이벤트가
+    composed 라 거기 붙이면 데모 안에서 난 ns-toggle 까지 받는다. 리스너는
+    자기가 소유한 엘리먼트에만 붙인다.
+  */
+  const setShellOpen = (open) => {
+    docsHeader.sidebarOpen = open;
+    docsNav.open = open;
+  };
+
+  docsHeader.addEventListener("ns-toggle", (e) => setShellOpen(e.detail.open));
+  docsNav.addEventListener("ns-toggle", (e) => setShellOpen(e.detail.open));
 
   // document 가 아니라 셸 사이드바에 붙인다. ns-navigate 는 composed 라
   // 데모 안에서 발생한 것도 document 까지 올라온다.
@@ -3400,18 +3470,10 @@
     if (target) observer.observe(target);
   }
 
-  const demoSidebar = document.getElementById("demo-sidebar");
-  const demoSidebarToggle = document.getElementById("demo-sidebar-toggle");
-  const sidebarLog = document.getElementById("sidebar-log");
-  if (demoSidebar && demoSidebarToggle) {
-    demoSidebarToggle.addEventListener("click", () => {
-      demoSidebar.open = !demoSidebar.open;
-    });
-    // 사이드바에 붙인다. document 에 붙이면 다른 데모의 이벤트까지 잡는다.
-    demoSidebar.addEventListener("ns-navigate", (e) => {
-      sidebarLog.textContent = `ns-navigate  href=${e.detail.href}`;
-    });
-  }
+  /*
+    sidebar-rail-demo 는 uncontrolled 다 — 헤더 짝이 없어 레일 타일 클릭이
+    스스로 패널을 열고 닫으므로 배선이 필요 없다.
+  */
 
   const navItemDemo = document.getElementById("nav-item-demo");
   const navItemLog = document.getElementById("nav-item-log");
@@ -3478,11 +3540,25 @@
     const fullItems = [...fullDemo.querySelectorAll("ns-nav-item")];
     const fullLog = fullDemo.querySelector("#full-log");
 
-    fullHeader.addEventListener("ns-toggle", (e) => {
-      fullHeader.sidebarOpen = e.detail.open;
-      fullSidebar.open = e.detail.open;
-      fullLog.textContent = `ns-toggle  open=${e.detail.open}`;
-    });
+    /*
+      셸은 제어 모드다. 시작부터 프로퍼티로 세워 반쪽 제어를 만들지 않는다 —
+      open 을 첫 토글에서만 대입하면 그때까지는 비제어이므로 default-open 이
+      진실이고, 그 뒤에는 프로퍼티가 진실이 된다.
+    */
+    fullSidebar.open = true;
+
+    /*
+      ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일
+      타일. 두 엘리먼트에 각각 붙인다. 공통 조상은 이 데모 컨테이너뿐이고
+      composed 라 거기 붙이면 다른 데모의 토글까지 받는다.
+    */
+    const setFullOpen = (open) => {
+      fullHeader.sidebarOpen = open;
+      fullSidebar.open = open;
+      fullLog.textContent = `ns-toggle  open=${open}`;
+    };
+    fullHeader.addEventListener("ns-toggle", (e) => setFullOpen(e.detail.open));
+    fullSidebar.addEventListener("ns-toggle", (e) => setFullOpen(e.detail.open));
 
     fullSidebar.addEventListener("ns-navigate", (e) => {
       for (const item of fullItems) item.active = item.href === e.detail.href;
