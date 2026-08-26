@@ -232,15 +232,21 @@ DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 *
   <span class="ns-pagination-pages">
     <button class="ns-button ns-button--ghost ns-button--sm">1</button>
     <span class="ns-pagination-gap">…</span>
-    <button class="ns-button ns-button--ghost ns-button--sm">3</button>
-    <button class="ns-button ns-button--outline ns-button--sm" aria-current="page">4</button>
     <button class="ns-button ns-button--ghost ns-button--sm">5</button>
+    <button class="ns-button ns-button--outline ns-button--sm" aria-current="page">6</button>
+    <button class="ns-button ns-button--ghost ns-button--sm">7</button>
     <span class="ns-pagination-gap">…</span>
     <button class="ns-button ns-button--ghost ns-button--sm">12</button>
   </span>
   <button class="ns-button ns-button--ghost ns-button--sm">다음</button>
 </nav>
 ```
+
+`size=7 · total=12 · current=6` 의 가운데 배치다(`edge=5 · h=1`) — `current=6` 은
+`edge=5` 를 넘어 앞쪽 분기를 벗어나고, `total-edge=7` 을 넘지 않아 뒤쪽 분기도
+아니므로 가운데로 떨어져 `1 … current-h…current+h … 12` = `1 … 5 6 7 … 12` 를
+낸다. `2026-08-26-pagination-stable-width-design.md` §4.3 의 손 추적 표에 같은
+자리(`current=6`)가 있다.
 
 **Light DOM 이라 `.ns-button` 이 그대로 먹는다.** shadow 였다면 이 버튼 스타일을 전부 다시 적어야 했다.
 
@@ -255,7 +261,7 @@ DOM 에 있는 행만 대상이다. 서버 페이징에서 "전체 선택" 은 *
 - **`page-window` 는 5 이상의 홀수여야 한다.** 가운데 배치의 번호 개수가 `page-window - 4 = 2h + 1` 이라 짝수면 `h` 가 정수가 아니고, 3이면 `h = -1` 이라 현재 페이지가 들어갈 자리가 없다. 잘못된 값은 경고 한 번 뒤 `7` 로 그린다
 - `…` 이 감추는 페이지는 어느 배치에서든 **최소 2개**다
 - 현재 페이지는 `--outline` + `aria-current="page"`. **비활성화하지 않는다** — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다. 클릭은 아무 일도 하지 않는다
-- 이전/다음은 양 끝에서 `disabled`
+- 이전/다음은 양 끝에서 `aria-disabled="true"` 다. **`disabled` 가 아니다** — 포커스된 버튼이 `disabled` 되면 브라우저가 blur 시켜, "다음" 을 눌러 마지막 페이지에 닿는 순간 포커스가 `body` 로 떨어진다
 
 ### 7.4 경계
 
@@ -329,6 +335,7 @@ protected override createRenderRoot(): HTMLElement {
 |---|---|
 | `.ns-table` | `<table>` |
 | `.ns-table-sort` | `<th>` 안의 `<button>` |
+| `.ns-pagination-pages` | 번호 버튼과 `…` 를 감싸는 `<span>` — 균등 그리드로 모든 칸의 폭을 맞춰 이전·다음을 제자리에 고정한다 |
 | `.ns-pagination-gap` | `…` `<span>` |
 
 요소 선택자: `ns-table`, `ns-pagination`.

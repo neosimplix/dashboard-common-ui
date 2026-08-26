@@ -203,8 +203,10 @@ export class NsPagination extends LitElement {
   get #window(): number {
     const raw = this.pageWindow;
     /*
-      Number.isInteger 가 NaN·Infinity·소수를 한 번에 걸러낸다. raw >= 5 를 먼저
-      보므로 음수의 나머지 연산을 걱정할 필요가 없다.
+      Number.isInteger 가 NaN·Infinity·소수를 한 번에 걸러낸다. 음수는 순서와
+      무관하게 둘 다 스스로 걸러낸다 — raw >= 5 가 곧바로 떨어뜨리고, 설령 그
+      조건이 없어도 JS 의 % 는 피제수의 부호를 따르므로(`-5 % 2 === -1`) raw % 2
+      === 1 도 참이 되지 않는다.
     */
     if (Number.isInteger(raw) && raw >= 5 && raw % 2 === 1) return raw;
 
@@ -430,7 +432,14 @@ export class NsPagination extends LitElement {
             (entry) =>
               entry === "gap"
                 ? html`<span class="ns-pagination-gap" aria-hidden="true">…</span>`
-                : html`<button
+                : /*
+                    비활성 번호의 --ghost 문자열은 controls.css 의
+                    `.ns-pagination-pages > .ns-button--ghost` 투명 테두리 규칙과
+                    짝이다(§6.1). 그 선택자가 변형 이름으로 걸려 있으므로 여기서
+                    변형을 바꾸면 조용히 안 맞고, 트랙 폭이 다시 흔들린다.
+                    npm run check 는 이 결합을 보지 못한다.
+                  */
+                  html`<button
                     class=${entry === current
                       ? "ns-button ns-button--outline ns-button--sm"
                       : "ns-button ns-button--ghost ns-button--sm"}

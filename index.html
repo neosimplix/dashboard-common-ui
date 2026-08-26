@@ -2336,6 +2336,7 @@
       <ns-pagination total="240" per-page="20" default-page="6" page-window="5"></ns-pagination>
       <ns-pagination total="240" per-page="20" default-page="6"></ns-pagination>
       <ns-pagination total="240" per-page="20" default-page="6" page-window="9"></ns-pagination>
+      <ns-pagination total="2200" per-page="20" default-page="50"></ns-pagination>
     </div>
   </template>
   <div class="demo block" id="pagination-window-demo" style="padding: var(--ns-space-4)"></div>
@@ -2344,6 +2345,12 @@
     위에서부터 <code>page-window="5"</code> · 기본값 <code>7</code> · <code>page-window="9"</code> 다.
     셋 다 12페이지이고, <strong>어느 것이든 끝까지 넘기는 동안 "다음" 버튼이 제자리에 있어야 한다</strong> —
     슬롯 수가 달라지는 것은 세 컨트롤 <em>사이</em>지 한 컨트롤 <em>안</em>이 아니다.
+  </p>
+  <p>
+    네 번째는 <code>total="2200" per-page="20"</code>, 110페이지다. 창이 두 자리(<code>49</code>)와
+    세 자리(<code>110</code>) 번호를 동시에 보여주는 유일한 컨트롤이라, <code>tabular-nums</code>
+    (§6.2)가 실제로 자릿수만으로 폭을 맞추는지는 여기서만 드러난다 — 이 문서의 다른 데모는 전부
+    12페이지 이하라 두 자리를 넘지 않는다.
   </p>
 
   <h3>프로퍼티</h3>
