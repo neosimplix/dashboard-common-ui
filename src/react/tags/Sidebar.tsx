@@ -4,8 +4,15 @@ import { NsSidebarBase } from "../elements.js";
 import type { NsNavigateDetail } from "../../types.js";
 
 export type SidebarProps = {
-  /** 패널 보임 여부. 소비자가 내려준다 — 컴포넌트가 스스로 바꾸지 않는다. */
-  open: boolean;
+  /**
+   * 패널 보임 여부. 주면 제어 모드다 — 컴포넌트가 스스로 바꾸지 않으므로
+   * `onToggle` 을 받아 다시 내려줘야 한다.
+   *
+   * 주지 않으면 컴포넌트가 스스로 여닫고, 초기값은 `defaultOpen` 이다.
+   */
+  open?: boolean;
+  /** 비제어 초기값. */
+  defaultOpen?: boolean;
   /**
    * 패널에 보일 그룹의 `name`. 주면 제어 모드다 — 컴포넌트가 스스로 바꾸지 않는다.
    *
@@ -58,6 +65,7 @@ export type SidebarProps = {
  */
 export function Sidebar({
   open,
+  defaultOpen,
   activeGroup,
   defaultActiveGroup,
   onGroupSelect,
@@ -70,10 +78,13 @@ export function Sidebar({
   return (
     <NsSidebarBase
       open={open}
+      defaultOpen={defaultOpen}
       activeGroup={activeGroup}
       defaultActiveGroup={defaultActiveGroup}
       // 하이드레이션 전에는 이것만 보인다. tokens.css 의 :not(:defined) 규칙이 읽는다.
-      data-ns-open={open ? "" : undefined}
+      // 제어 모드에서만 렌더한다 — 비제어에서는 엘리먼트가 스스로 쓰므로
+      // 여기서 함께 쓰면 두 쪽이 같은 속성을 두고 다툰다.
+      data-ns-open={open === true ? "" : undefined}
       className={className}
       style={style}
       // e.detail 을 여기서 실제로 읽는다. elements.ts 의 EventName<> 캐스트가

@@ -202,6 +202,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </NsNavItem>
           </NsNavGroup>
         </Sidebar>
+        {/* 비제어. open 을 주지 않으면 레일 타일이 스스로 패널을 여닫는다. */}
+        <Sidebar defaultOpen defaultActiveGroup="admin" onNavigate={(d) => router.push(d.href)}>
+          <NsNavGroup name="admin" heading="관리" badge="관">
+            <NsNavItem href="/users" label="사용자" badge="사" />
+          </NsNavGroup>
+        </Sidebar>
         <main>
           <Card>
             <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />

@@ -67,11 +67,41 @@ export class NsSidebar extends LitElement {
   };
 
   /**
-   * 패널 보임 여부. 거짓이면 레일만 남는다 — 사이드바가 사라지지는 않는다.
-   * 컴포넌트가 스스로 바꾸지 않는다 — `ns-header` 의 `ns-toggle` 을 받아
-   * 소비자가 내려준다.
+   * 제어 모드. `undefined` 면 비제어다.
+   *
+   * 속성이 아니라 프로퍼티 전용이다. 겸용했다면 `<ns-sidebar open>` 이 boolean
+   * 속성으로 읽혀 제어 모드로 들어가고, 그러면 컴포넌트가 스스로 패널을 여닫지
+   * 못한다. 순수 HTML 소비자가 쓸 것은 `default-open` 이다.
+   *
+   * 그 속성이 관찰되지 않으므로 `<ns-sidebar open>` 은 제어 모드로 들어가는
+   * 것이 아니라 통째로 무시된다. connectedCallback 이 경고한다.
    */
-  @property({ type: Boolean, reflect: true }) open = false;
+  @property({ attribute: false }) open?: boolean;
+
+  /**
+   * 비제어 초기값. 있으면 패널이 열린 채로 시작한다.
+   *
+   * 기본이 닫힘이므로 **기본값에서 벗어나는 쪽**이 속성 이름이다. ns-nav-group 이
+   * `default-collapsed` 인 것과 반대로 보이지만 규칙은 같다 — 그쪽은 기본이
+   * 펼침이었다.
+   *
+   * 나중에 이 값을 바꾸면 **아직 토글되지 않은 사이드바에만** 반영된다.
+   */
+  @property({ type: Boolean, attribute: "default-open" }) defaultOpen = false;
+
+  /** 비제어일 때의 진실. */
+  #innerOpen = false;
+
+  /** 사용자가 한 번이라도 토글했나. 늦게 도착한 defaultOpen 이 그것을 덮지 않게 막는다. */
+  #toggled = false;
+
+  get #controlledOpen(): boolean {
+    return this.open !== undefined;
+  }
+
+  get #isOpen(): boolean {
+    return this.open ?? this.#innerOpen;
+  }
 
   /**
    * 제어 모드의 활성 그룹. `undefined` 면 비제어다.
@@ -146,7 +176,10 @@ export class NsSidebar extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
-    warnPropertyOnlyAttributes(this, { "active-group": "default-active-group" });
+    warnPropertyOnlyAttributes(this, {
+      open: "default-open",
+      "active-group": "default-active-group",
+    });
 
     this.#syncGroups();
 
@@ -189,6 +222,9 @@ export class NsSidebar extends LitElement {
     읽으면 React 소비자에게 default-active-group 이 조용히 무시된다.
   */
   protected override willUpdate(changed: PropertyValues): void {
+    if (changed.has("defaultOpen") && !this.#toggled) {
+      this.#innerOpen = this.defaultOpen;
+    }
     if (changed.has("defaultActiveGroup") && !this.#selected) {
       this.#innerActive = this.defaultActiveGroup;
     }
@@ -233,7 +269,7 @@ export class NsSidebar extends LitElement {
       같다. roving tabindex 는 그것과 무관하게 활성 항목을 따라간다. 둘이 갈라져야
       패널이 닫혀도 레일에 Tab 으로 닿을 수 있다.
     */
-    const selected = isActive && this.open;
+    const selected = isActive && this.#isOpen;
     return html`
       <button
         id=${`tile-${entry.key}`}
@@ -262,6 +298,23 @@ export class NsSidebar extends LitElement {
     아이콘이 없는 경우가 그것이다.
   */
   protected override updated(): void {
+    /*
+      호스트에 속성을 쓴다. 불변 규칙("호스트의 속성을 쓰지 않는다")의 좁은
+      예외다 — open 이 프로퍼티 전용이 되면서 CSS 가 볼 속성이 없어졌는데, 폭은
+      :host 에 있어야 한다(소비자가 ns-sidebar { width: … } 로 덮을 자리를
+      남기려면 그렇다).
+
+      규칙이 막으려던 것은 소비자가 쓴 속성을 덮어 문서화된 override 를 조용히
+      죽이는 것이고, 이 이름은 소비자가 쓰는 이름이 아니다 — 소비자가 쓰는 것은
+      default-open 이다. 덮을 값이 애초에 없으므로 ns-toast 의 position 과 같은
+      형태의 예외다.
+
+      새 이름이 아니다. Sidebar.tsx shim 이 SSR 마크업에 이미 렌더하고 tokens.css
+      의 upgrade 전 예약이 이미 그것을 본다. 바뀌는 것은 하이드레이션 이후에도
+      계속 쓴다는 것뿐이다.
+    */
+    this.toggleAttribute("data-ns-open", this.#isOpen);
+
     const active = this.#activeEntry;
 
     const panel = this.renderRoot.querySelector<HTMLSlotElement>("slot.panel-slot");
@@ -417,12 +470,12 @@ export class NsSidebar extends LitElement {
 
     if (active?.key === key) {
       // 활성 타일을 다시 누르면 패널을 접는다. VS Code 그대로다.
-      this.#requestOpen(!this.open);
+      this.#requestOpen(!this.#isOpen);
       return;
     }
 
     this.#select(key);
-    if (!this.open) this.#requestOpen(true);
+    if (!this.#isOpen) this.#requestOpen(true);
   }
 
   #select(key: string): void {
@@ -466,11 +519,20 @@ export class NsSidebar extends LitElement {
   }
 
   /*
-    open 은 아직 제어 전용이다 — 요청만 올리고 스스로 바꾸지 않는다.
+    제어 중이면 그 값을 바꾸지 않는다. 이벤트는 양쪽 모두 낸다.
+
     composed 라 ns-header 의 ns-toggle 을 셸에서 듣던 소비자에게 같은 핸들러로
-    도착한다. 두 이벤트가 뜻하는 것이 정확히 같으므로 이름을 나누지 않는다.
+    도착한다. 두 이벤트가 뜻하는 것이 정확히 같으므로 이름을 나누지 않는다 —
+    ns-nav-group 의 접힘이 별도 이름을 가진 것은 그것이 다른 것이었기 때문이다.
   */
   #requestOpen(open: boolean): void {
+    this.#toggled = true;
+
+    if (!this.#controlledOpen) {
+      this.#innerOpen = open;
+      this.requestUpdate();
+    }
+
     const detail: NsToggleDetail = { open };
     this.dispatchEvent(new CustomEvent("ns-toggle", { detail, bubbles: true, composed: true }));
   }

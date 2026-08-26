@@ -20,18 +20,15 @@ export const styles = css`
   }
 
   /*
-    접힘 너비 = 레일 폭. 두 속성을 함께 보는 이유는 타이밍이다.
+    접힘 너비 = 레일 폭.
 
-    customElements.define 은 모듈 평가 시점에 실행되므로 hydrateRoot 보다
-    먼저다. 그 사이 구간에서는 엘리먼트가 이미 upgrade 돼 tokens.css 의
-    :not(:defined) 예약이 떨어져 나갔는데, React 는 아직 open 을 설정하지
-    않았다. [open] 만 보면 이 구간이 4rem 으로 그려지고 하이드레이션 직후
-    벌어진다.
-
-    data-ns-open 은 서버 마크업부터 DOM 에 있고 React 가 open 을 끌 때 함께
-    지우므로 두 속성이 어긋나지 않는다.
+    open 이 프로퍼티 전용이라 호스트에는 그 이름의 속성이 없다. 대신 컴포넌트가
+    updated() 에서 data-ns-open 을 쓰고, upgrade 전 구간은 tokens.css 의 예약이
+    default-open 과 data-ns-open 을 함께 봐서 덮는다. 세 구간이 이렇게 이어진다 —
+    upgrade 전에는 문서 예약이, upgrade 와 hydration 사이에는 shim 이 렌더한
+    data-ns-open 이, hydration 이후에는 컴포넌트가 쓰는 data-ns-open 이 폭을 잡는다.
   */
-  :host(:not([open]):not([data-ns-open])) {
+  :host(:not([data-ns-open])) {
     width: var(--ns-sidebar-width-collapsed);
   }
 
@@ -170,7 +167,7 @@ export const styles = css`
     overflow-y: auto;
   }
 
-  :host(:not([open]):not([data-ns-open])) .panel {
+  :host(:not([data-ns-open])) .panel {
     display: none;
   }
 `;
