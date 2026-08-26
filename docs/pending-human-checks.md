@@ -25,7 +25,7 @@
 - **문서 정리.** 소비자가 저자 한 사람뿐이라 태그별 이관 안내를 `README.md` 와 `index.html` 양쪽에서 걷어냈다. 이것만 있었다면 `dist/` 는 바뀌지 않았다.
 - **Safari 전용 결함 하나.** 대화상자 본문이 WebKit 에서 높이 0 으로 붕괴해 한 줄짜리 문장에도 스크롤 막대가 생겼다. `.body` 를 `flex: 1` 에서 `flex: 1 1 auto` 로 바꿔 고쳤고, 근거는 `docs/gotchas.md` 에 있다. **`dist/` 가 바뀐다.**
 - **세로 정렬 두 곳.** `ns-toast` 의 닫기 버튼이 첫 줄 글자와 세로 중심을 맞추고, `ns-dialog` 의 footer 가 우측이 아니라 가운데로 정렬한다. **후자는 배치의 자리를 옮긴 변경이라 파급이 넓다** — footer 슬롯에 들어온 것이 곧 flex 항목이어야 정렬과 `gap` 이 걸리므로, `confirm.ts` 와 `index.html` 데모가 버튼을 감싸던 `<div>` 를 걷어냈고 React `Dialog` shim 은 걷어낼 수 없는 래퍼에 `display: contents` 를 줬다. **`dist/` 가 바뀐다.**
-- **`ns-nav-group` 그룹 접힘.** `collapsible` 을 쓴 그룹의 헤딩이 `div` 에서 `button` 이 되고 caret(`chevron-down`, 스프라이트에 새로 들어왔다)이 붙는다. `ns-sidebar` 의 레일 상태와도 맞물리고 React 래퍼에 토글 이벤트가 늘었다. **`dist/` 가 바뀐다.**
+- **`ns-nav-group` 그룹 접힘.** `collapsible` 을 쓴 그룹의 헤딩이 `div` 에서 `button` 이 되고 caret(`chevron-down`, 스프라이트에 새로 들어왔다)이 붙는다. React 래퍼에 토글 이벤트가 늘었다. **`dist/` 가 바뀐다.** (도입 당시에는 `ns-sidebar` 의 레일 상태와 신호 프로퍼티로 맞물려 있었으나, 아래 레일 재설계가 그 배선을 걷어냈다 — 이제 두 컴포넌트 사이에 접힘 신호가 없다.)
 - **페이지네이션 폭 고정.** 페이지를 넘길 때마다 "이전"·"다음" 이 움직이던 것을 고쳤다. 슬롯 수를 현재 페이지와 무관하게 고정하고, 번호 칸을 균등 그리드로 묶었다. `page-window` 속성이 새로 생겼고 **DOM 에 래퍼 `<span class="ns-pagination-pages">` 가 하나 늘었다.** `dist/` 가 바뀐다. 설계 문서는 `docs/superpowers/specs/2026-08-26-pagination-stable-width-design.md` 다
 - **`ns-sidebar` 레일 재설계.** 이번 사이클에서 가장 큰 변경이고 **breaking 이다(0.5.0).** 접힘 상태의 화면이 완전히 달라진다 — 0.4.0 은 모든 항목을 4rem 에 배지로 납작하게 늘어놓았고, 이제는 최상위 그룹의 타일이 쌓인 레일이 **항상** 보이고 패널이 선택된 그룹 하나만 보여준다. 열린 총폭이 15rem → **19rem** 이 되고(레일 + 패널), `ns-sidebar` 의 `open` 이 **프로퍼티 전용**이 되어 `<ns-sidebar open>` 은 조용히 무시되며 경고가 뜬다(HTML 은 `default-open` 을 쓴다). 그룹에 `name`·`icon`·`badge` 가 생기고, 수동 슬롯 배정을 쓰므로 `slot` 속성이 동작하지 않는다. 신호 프로퍼티 둘(`--ns-label-display`·`--ns-group-list-display`)이 사라졌다. **`dist/` 가 바뀐다.** 설계 문서는 `docs/superpowers/specs/2026-08-26-sidebar-rail-and-nav-subcategory-design.md` 다
 
@@ -218,20 +218,28 @@ roving tabindex 는 `ns-tabs` 의 구현을 따른다. **화살표가 패널을 
 - **잘못된 것:** 화살표가 패널을 열어 버린다 · 화살표를 눌렀는데 포커스만 가고 선택이 안 따라온다(제어 모드가 아닌 데모에서 그러면 결함이다) · Tab 이 타일마다 멈춘다(roving tabindex 가 깨진 것) · 포커스가 `tabindex="-1"` 인 타일에 앉는다 · Tab 순서가 패널 → 레일이다
 - **릴리스 때 할 일:** 결함이면 이번 릴리스를 막는다.
 
-### A-19. 타일 내용 세 종류가 같은 크기로 보이는가
+### A-19. 타일 내용의 네 단이 같은 크기로 보이는가
 
 폴백이 네 단(`data-ns-rail` 슬롯 → `icon` → `badge` → `heading` 첫 글자)이고, **넷이 같은 정사각형 안에서 같은 크기로 보여야** 레일이 줄로 읽힌다.
 
-- **볼 것:** `ns-sidebar` 절의 데모가 `data-ns-rail` 아이콘 하나와 `badge` 타일을 함께 갖고 있다. ① 아이콘과 글자의 시각적 크기가 비슷하다 ② 둘 다 타일 정사각형의 가로·세로 **가운데**에 있다 ③ 두 글자 배지가 타일 폭을 넘지 않는다
-- **넷째 단은 콘솔로 만든다** — 데모의 두 그룹 모두 `badge` 를 갖고 있어 `heading` 첫 글자 폴백이 화면에 없다.
+`ns-sidebar` 절의 데모(`#sidebar-rail-demo`)에 **화면으로 보이는 것은 1단과 3단 둘**이다 — 「관리」 타일이 `data-ns-rail` 아이콘(1단), 「프로젝트」 타일이 `badge`(3단)다.
+
+- **볼 것 (화면):** ① 아이콘 타일과 글자 타일의 시각적 크기가 비슷하다 ② 둘 다 타일 정사각형의 가로·세로 **가운데**에 있다
+- **잘못된 것:** 아이콘만 크거나 작다 · 글자가 위쪽에 붙어 있다 · 두 타일의 높이가 다르다
+
+**나머지 두 단과 두 글자 배지는 콘솔로 만든다.** 데모에 그 상태가 없다. **`badge` 만 지우는 것으로는 판정할 수 없다** — 두 그룹 모두 `badge` 가 `heading` 의 첫 글자와 **같은 글자**여서(`프`/`프로젝트`, `관`/`관리`) 지워도 같은 글자가 다시 나온다. 3단이 남았는지 4단으로 떨어졌는지 화면으로 구분되지 않으므로 `heading` 을 함께 바꾼다.
 
 ```js
-document.querySelector("#sidebar-rail-demo ns-nav-group[name=projects]").removeAttribute("badge")
+const g = document.querySelector("#sidebar-rail-demo ns-nav-group[name=projects]");
+
+g.setAttribute("heading", "기타"); g.removeAttribute("badge");  // 4단 → 「기」
+g.setAttribute("badge", "기타");                                 // 3단, 두 글자 → 「기타」
+g.setAttribute("icon", "menu");                                  // 2단 → 아이콘 (배지를 이긴다)
 ```
 
-  그 타일이 「프」(= `heading` 의 첫 글자)로 떨어지고 크기·정렬이 나머지와 같아야 한다. 이모지를 `heading` 첫 글자로 만들어도 반쪽 문자로 쪼개지지 않는다(코드 포인트 단위로 자른다).
-- **잘못된 것:** 아이콘만 크거나 작다 · 글자가 위쪽에 붙어 있다 · 배지가 잘리거나 타일을 넓힌다 · 첫 글자 폴백이 깨진 문자로 나온다
-- **릴리스 때 할 일:** 결함이면 이번 릴리스를 막는다.
+- **볼 것 (콘솔):** ③ 첫 줄 뒤 그 타일이 **「기」** 다 — `heading` 의 첫 글자이고, `badge` 를 지웠으므로 4단이라는 것이 이 글자 하나로 확정된다 ④ 둘째 줄 뒤 **「기타」** 두 글자가 타일 폭을 넘지 않고 잘리지도 않는다 ⑤ 셋째 줄 뒤 배지가 **아이콘으로 바뀐다**(2단이 3단을 이긴다) ⑥ 세 상태 모두 크기·정렬이 1단 아이콘 타일과 같다
+- **잘못된 것:** 첫 줄 뒤에도 「프」 가 남는다(관찰자가 `heading` 을 안 보는 것 — `attributeFilter` 에 그 이름이 없다) · 「기타」 가 잘리거나 타일을 넓힌다 · 셋째 줄 뒤에도 배지가 보인다(폴백 우선순위가 뒤집힌 것) · 타일이 빈 채로 남는다
+- **릴리스 때 할 일:** 결함이면 이번 릴리스를 막는다. 콘솔로 만든 상태는 새로고침하면 사라지므로 되돌릴 일이 없다
 
 ### A-20. `data-ns-rail` 의 이름을 틀렸을 때 폴백 글자가 보이는가 — 정적 검사가 없는 자리다
 
@@ -243,7 +251,7 @@ document.querySelector("#sidebar-rail-demo ns-nav-group[name=projects]").removeA
 document.querySelector("#sidebar-rail-demo [data-ns-rail]").setAttribute("data-ns-rail", "admn")
 ```
 
-- **볼 것:** ① 그 타일이 아이콘 대신 `badge` 글자(없으면 `heading` 첫 글자)로 떨어진다 ② 나머지 타일과 패널은 아무 영향이 없다 ③ 이름을 되돌리면(`admin`) 아이콘이 다시 나타난다 — 관찰자의 `attributeFilter` 에 `data-ns-rail` 이 들어 있어야 이것이 동작한다
+- **볼 것:** ① 그 타일이 아이콘 대신 **「관」**(= 그 그룹의 `badge`)으로 떨어진다 ② 나머지 타일과 패널은 아무 영향이 없다 ③ 이름을 되돌리면(`admin`) 아이콘이 다시 나타난다 — 관찰자의 `attributeFilter` 에 `data-ns-rail` 이 들어 있어야 이것이 동작한다
 - **잘못된 것:** 아무 일도 일어나지 않는다(관찰자가 이 이름을 안 보는 것 — 되돌려도 안 돌아온다) · 타일이 빈 채로 남는다(폴백이 끊긴 것) · 그 요소가 패널에 나타난다 · 콘솔에 예외가 난다
 - **릴리스 때 할 일:** 결함이면 이번 릴리스를 막는다. 폴백이 동작하는 것 자체는 정상이므로 **결함은 "폴백이 안 나오는 것"** 이다
 

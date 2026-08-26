@@ -37,7 +37,7 @@
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 열이다. `ns-toggle`(`{ open }`, `ns-header`·`ns-sidebar` 둘이 같은 이름으로 올린다), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-group-select`(`{ name }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 열이다. `ns-toggle`(`{ open }`, `ns-header`·`ns-sidebar` 둘이 같은 이름으로 올린다), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-group-select`(`{ name }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **이 개수의 출처는 `src/types.ts` 의 `HTMLElementEventMap` 확장이다** — 목록이 자기 자신을 세는 문장은 늘어난 이름을 놓친다. `.claude/rules/verification.md` 가 세는 것은 이것과 다르다(래퍼 수와 `EventName<>` 캐스트 수). **세 숫자가 서로 다른 것을 세므로 출처를 각각 적어 둔다** — 그 구분이 없어서 두 문서의 "아홉" 이 한동안 서로 다른 것을 뜻했다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 

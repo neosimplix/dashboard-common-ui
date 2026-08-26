@@ -5,7 +5,7 @@ Next.js · React 18/19 · 순수 HTML 에서 동일하게 쓰는 대시보드 �
 - `ns-header` — 토글 버튼, 프로젝트 이름, 우측 `actions` slot
 - `ns-sidebar` — 레일 + 패널 두 칼럼. 레일은 항상 보이고 최상위 그룹마다 타일 하나를 그린다. 패널은 선택된 그룹 하나만 보여준다
 - `ns-nav-group` / `ns-nav-item` — 네비게이션 그룹과 항목. 항목 좌측은 `leading` slot 이라 아이콘을 넣을 수 있고, 비우면 `badge` 가 대신 보인다
-- `ns-icon` — 아무 아이콘이나 감싸 크기·색을 통일한다. `<ns-icon><House /></ns-icon>` 처럼 자식으로 넣는 것이 기본이고, `name` 은 내장 셋(`menu`·`close`·`google`)과 `registerIcons()` 로 등록한 것에만 쓴다
+- `ns-icon` — 아무 아이콘이나 감싸 크기·색을 통일한다. `<ns-icon><House /></ns-icon>` 처럼 자식으로 넣는 것이 기본이고, `name` 은 내장 넷(`menu`·`close`·`google`·`chevron-down` — 라이브러리 자신이 쓰는 것들이다)과 `registerIcons()` 로 등록한 것에만 쓴다
 
 ## 설치
 
