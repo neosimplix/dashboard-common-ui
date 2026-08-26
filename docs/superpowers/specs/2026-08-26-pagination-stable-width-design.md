@@ -276,8 +276,8 @@ gap 이 최댓값을 다툴 여지만 생긴다. 색·글꼴 크기는 그대로
 | `docs/gotchas.md` | §6.1·§6.2 의 두 함정과 grid `1fr` 균등이 성립하는 조건 |
 | `docs/pending-human-checks.md` | §10 의 육안 목록 |
 
-`index.html` 클래스 표는 선택이 아니다 — `check-tokens.mjs` 의 규칙 ④ 가
-`controls.css` 의 클래스와 그 표를 대조한다. 새 절의 id 에는 절 이름을
+`index.html` 클래스 표는 선택이 아니다 — `check-controls.mjs`(`npm run check` 의
+규칙 ④)가 `controls.css` 의 클래스와 그 표를 **양방향으로** 대조한다. 새 절의 id 에는 절 이름을
 접두사로 붙인다.
 
 `docs/pending-human-checks.md` 는 목록만 늘리지 않는다. **`## 범위` 절에도 이번
@@ -304,7 +304,7 @@ DOM 에 래퍼가 하나 생기므로 **`ns-pagination nav > button` 으로 번�
 ### 10.1 `npm run check` 가 잡는 것
 
 - 라이브러리·소비자 타입 (`pageWindow` 3인자화가 호출부와 맞는지)
-- 규칙 ④ — `.ns-pagination-pages` 가 `index.html` 클래스 표에 있는지
+- 규칙 ④(`check-controls.mjs`) — `.ns-pagination-pages` 가 `index.html` 클래스 표에 있는지
 
 **새 검사 스크립트를 만들지 않는다.** 이 변경이 만드는 조용한 드리프트는 둘이고
 둘 다 기존 수단이 덮는다 — 기본값 드리프트는 `DEFAULT_PAGE_WINDOW` 상수 하나가,
