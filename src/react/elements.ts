@@ -16,6 +16,7 @@ import { NsTabs as NsTabsElement } from "../components/tabs/ns-tabs.js";
 import type {
   NsToggleDetail,
   NsNavigateDetail,
+  NsGroupToggleDetail,
   NsDialogCloseDetail,
   NsSelectChangeDetail,
   NsSortDetail,
@@ -80,6 +81,7 @@ export const NsNavGroup = createComponent({
   events: {
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
+    onNsGroupToggle: "ns-group-toggle" as EventName<CustomEvent<NsGroupToggleDetail>>,
   },
 });
 

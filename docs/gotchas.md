@@ -677,4 +677,32 @@ Light DOM 인 진짜 이유는 셋이다.
 
 → **`margin-inline: auto` 는 쓸 수 없다.** `left: 0; right: 0` 으로 펴고 마진으로 가운데를 잡는 것이 흔한 대안인데, `:host` 의 `margin` 은 Tailwind preflight 가 0 으로 덮는다(위 "`:host` 는 소비자 문서 규칙에 진다"). `check-tokens.mjs` 규칙 ④ 가 그 선언을 실패시키는 것도 같은 이유다 — **막힌 길이 이미 규칙으로 표시돼 있었다.**
 
+## `ns-nav-group` 접힘이 이름·시점·방향을 셋 다 거꾸로 골랐다
+
+`collapsible` 을 넣으면서 세 가지가 직관과 반대로 갔다. 셋 다 "자연스러운 쪽을 골랐다가 소비자가 손댈 방법이 없어지는" 같은 모양의 함정이라 한 절에 묶는다.
+
+### 이름은 `default-open` 이 아니라 `default-collapsed` 다
+
+boolean 속성은 **없으면 언제나 `false` 다.** Lit 은 속성이 없을 때는 컨버터를 부르지 않으므로 그 자리는 필드 초기값이 그대로 남는다. 기본이 펼침이라는 사실(`open` 은 `true` 가 자연스러운 기본)을 그대로 옮겨 `default-open = true` 로 잡았다면, 소비자가 그것을 `false` 로 만들 방법이 없다 — `<ns-nav-group default-open="false">` 도 boolean 속성이라 존재만으로 `true` 로 읽힌다.
+
+그래서 극성을 뒤집어 **기본값에서 벗어나는 쪽**을 속성 이름으로 삼았다. `default-collapsed` 가 없으면 펼침(기본), 있으면 접힘이다 — "있으면 무언가 켜진다" 는 boolean 속성의 성질과 방향이 맞는다.
+
+`ns-dialog` 의 `default-open` 과 극성이 반대로 보이지만 규칙은 같다. 그쪽은 기본이 닫힘(`false`)이라 "벗어나는 쪽" 이 `open` 이었을 뿐이다. **속성 이름이 좇는 것은 "무엇을 뜻하는가" 가 아니라 "기본값에서 벗어나는 쪽이 무엇인가" 다.**
+
+### 씨앗은 `firstUpdated` 가 아니라 `willUpdate` 에서 심는다
+
+`customElements.define` 은 모듈 평가 시점에 실행되므로 `hydrateRoot` 보다 항상 먼저다. React 트리가 하이드레이션되기 전에 이미 커스텀 엘리먼트가 upgrade 돼 있고, upgrade 된 엘리먼트의 첫 업데이트는 마이크로태스크로 예약된다 — 이것이 하이드레이션 커밋의 `useLayoutEffect` 보다 먼저 흘러간다. `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 그 `useLayoutEffect` 안에서만 설정하므로, `firstUpdated` 가 한 번 읽는 시점의 `defaultCollapsed` 는 **아직 필드 초기값인 `false` 다.** 뒤늦게 `true` 가 도착해도 `firstUpdated` 는 이름 그대로 한 번만 돌므로 다시 읽지 않는다.
+
+결과는 에러도 경고도 없이 **`default-collapsed` 가 React 소비자에게만 조용히 무시되는 것**이다. 순수 HTML 소비자는 upgrade 시점에 속성이 이미 마크업에 있으므로 이 구간 자체가 없어 증상이 나타나지 않는다 — React 소비자에서만, 그것도 초기 렌더에서만 재현된다.
+
+`willUpdate` 는 `changed.has("defaultCollapsed")` 를 볼 때마다(즉 그 프로퍼티가 바뀔 때마다) 실행되므로 언제 값이 도착하든 반영된다. `#toggled` 플래그로 사용자가 이미 한 번이라도 토글한 뒤에는 늦게 온 `defaultCollapsed` 가 그 조작을 덮지 않게 막는다 — 그러지 않으면 소비자가 그룹을 펼친 순간 뒤늦게 도착한 초기값이 다시 접어 버릴 수 있다.
+
+`ns-dialog` 의 `default-open` 도 같은 성질을 잠재적으로 갖고 있지만 아직 드러나지 않았다 — 대화상자를 SSR 로 열어 둔 채 내려보내는 조합을 아직 아무도 쓰지 않았을 뿐이다.
+
+### 신호는 그룹이 세우지 않고 읽기만 한다
+
+`--ns-group-list-display` 를 그룹이 `:host` 에 세우고 사이드바가 `::slotted(ns-nav-group)` 로 덮는 구조도 가능해 보였다. 하지만 그러면 두 선언이 **같은 요소, 즉 호스트를 겨냥**하게 된다 — 그룹 자신의 `:host(:not(...))` 와 사이드바의 `::slotted(ns-nav-group)` 다. 특정도를 비교하면 `:host(:not(...))` 는 (0,2,0), `::slotted(ns-nav-group)` 는 (0,0,2) 다. **`:host` 쪽이 이기므로 사이드바가 내려보낸 값이 조용히 덮인다** — 레일에서도 그룹이 자기가 세운 값을 계속 이겨 접힘 목록이 사라지지 않는다.
+
+그룹이 이 값을 세우지 않고 읽기만 하면 애초에 겨냥이 겹치지 않으므로 이 싸움 자체가 없다. `--ns-label-display` 가 이미 같은 구조였다 — 사이드바만 쓰고 그룹은 읽기만 한다 — 를 그대로 따른 것이고, 같은 이유로 두 이름이 나란히 `check-tokens.mjs` 의 `WIRING` 에 있다.
+
 → 일반화하면, **인셋을 한쪽만 준 auto 폭 상자는 남은 자리를 "쓸 수 있는 폭" 으로 삼는다.** 가운데를 노리고 `left: 50%` 를 쓰는 순간 그 값이 절반이 된다. 폭을 내용이 정해야 하는 자리에서는 `width` 를 명시한다.

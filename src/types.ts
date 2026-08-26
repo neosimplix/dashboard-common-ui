@@ -9,6 +9,17 @@ export interface NsNavigateDetail {
   label: string;
 }
 
+/**
+ * ns-nav-group 의 헤딩 버튼이 올리는 이벤트. open 은 "요청되는 다음 상태"다.
+ *
+ * 어느 그룹인지는 e.target 이 준다. heading 을 함께 싣지 않는 이유는 그것이
+ * 표시용 문자열이라 상태를 저장할 키로 나쁘고, 필드가 둘이 되는 순간 필드를
+ * 하나 더하는 것이 breaking 이 되기 때문이다.
+ */
+export interface NsGroupToggleDetail {
+  open: boolean;
+}
+
 /** ns-dialog 가 닫히기를 요청할 때 올리는 이벤트의 사유. */
 export type NsDialogCloseReason = "escape" | "close-button" | "backdrop";
 
@@ -80,6 +91,7 @@ declare global {
   interface HTMLElementEventMap {
     "ns-toggle": CustomEvent<NsToggleDetail>;
     "ns-navigate": CustomEvent<NsNavigateDetail>;
+    "ns-group-toggle": CustomEvent<NsGroupToggleDetail>;
     "ns-dialog-close": CustomEvent<NsDialogCloseDetail>;
     "ns-sort": CustomEvent<NsSortDetail>;
     "ns-select-change": CustomEvent<NsSelectChangeDetail>;

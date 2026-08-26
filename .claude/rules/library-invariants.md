@@ -36,7 +36,7 @@
 ## 스타일
 
 - **토큰은 문서 `:root` 에만 정의한다.** 컴포넌트 shadow 의 `:host` 에 토큰을 정의하지 않는다.
-- **컴포넌트 스타일에 `var()` 폴백을 쓰지 않는다.** 색·치수는 `tokens.css` 한 곳에만 존재한다. 유일한 예외는 `--ns-label-display`.
+- **컴포넌트 스타일에 `var()` 폴백을 쓰지 않는다.** 색·치수는 `tokens.css` 한 곳에만 존재한다. **예외는 신호 프로퍼티다** — `ns-sidebar` 가 `::slotted` 로 자식에게 상태를 알리는 `--ns-label-display` 와 `--ns-group-list-display` 둘. 정의가 `tokens.css` 에 없고 사이드바가 세워 주지 않는 상황에서는 폴백이 곧 기본 동작이라, 지우면 배선이 끊긴다. 목록의 출처는 `scripts/check-tokens.mjs` 의 `WIRING` 집합이다.
 - `:host-context()` 를 쓰지 않는다. Chromium 전용이다.
 - **`invalid` 는 클래스가 아니라 `[aria-invalid="true"]` 로 스타일한다.** `--invalid` 변형 클래스를 만들지 않는다.
 - **`controls.css` 는 `@layer ns-controls` 로 감싼다.** 감싸지 않으면 소비자의 Tailwind 유틸 오버라이드가 막힌다.
