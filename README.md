@@ -3,7 +3,7 @@
 Next.js · React 18/19 · 순수 HTML 에서 동일하게 쓰는 대시보드 셸 웹 컴포넌트.
 
 - `ns-header` — 토글 버튼, 프로젝트 이름, 우측 `actions` slot
-- `ns-sidebar` — 접으면 좌측 레일이 남는 사이드바
+- `ns-sidebar` — 레일 + 패널 두 칼럼. 레일은 항상 보이고 최상위 그룹마다 타일 하나를 그린다. 패널은 선택된 그룹 하나만 보여준다
 - `ns-nav-group` / `ns-nav-item` — 네비게이션 그룹과 항목. 항목 좌측은 `leading` slot 이라 아이콘을 넣을 수 있고, 비우면 `badge` 가 대신 보인다
 - `ns-icon` — 아무 아이콘이나 감싸 크기·색을 통일한다. `<ns-icon><House /></ns-icon>` 처럼 자식으로 넣는 것이 기본이고, `name` 은 내장 셋(`menu`·`close`·`google`)과 `registerIcons()` 로 등록한 것에만 쓴다
 
@@ -89,13 +89,44 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 **자기 CSS 에서 `color-scheme` 을 세우고 있다면 지우고 `data-theme` 으로 옮긴다.** 소비자의 `:root { color-scheme: … }` 와 `tokens.css` 의 `:root` 는 특정도가 같아 승자를 임포트 순서가 정한다 — 토큰 이름에서 없앤 그 종속이 이 한 프로퍼티에는 그대로 남아 있다. `color-scheme` 은 이름을 바꿀 수 없는 표준 프로퍼티라 `--ns-` 같은 이름공간을 줄 수 없기 때문이다. 근거는 `docs/gotchas.md` 의 "`color-scheme` 에는 이름공간이 없어 접두사로 막을 수 없다" 에 있다.
 
+## 0.5.0 이주 — 사이드바 레일
+
+**`ns-sidebar` 가 접혔을 때의 화면이 완전히 달라진다.** 0.4.0 의 접힘은 "모든 항목을 4rem 에 배지로 납작하게 늘어놓은 것" 이었고, 0.5.0 의 접힘은 "최상위 그룹의 타일이 쌓인 레일" 이다. 레일은 패널이 열려도 사라지지 않으므로 **열린 총폭이 레일 + 패널**이다. VS Code 의 활동 바 + 사이드 바 모델이다.
+
+| 지금 (0.4.0) | 바뀐 뒤 (0.5.0) |
+|---|---|
+| `<ns-sidebar open>` | `<ns-sidebar default-open>` |
+| `<NsSidebar open={x}>` | 그대로 (제어 모드) |
+| `<ns-nav-group heading="관리">` | `<ns-nav-group name="admin" heading="관리" badge="관">` |
+| 열린 총폭 15rem (`--ns-sidebar-width`) | 19rem — 뜻은 그대로 "열린 총폭" 이고 값만 바뀐다 |
+| 접힘 = 모든 항목의 배지 목록 | 접힘 = 최상위 그룹 타일 (`--ns-sidebar-width-collapsed` = 레일 폭) |
+| `collapsible` 을 최상위 그룹에 | 하위 그룹에 |
+
+**`<ns-sidebar open>` 은 조용히 무시되고 콘솔 경고가 뜬다.** `open` 이 프로퍼티 전용이 되어 관찰되지 않으므로 제어 모드로 들어가지도 않는다 — HTML 에서 초기 상태를 열어 두려면 `default-open` 이다. React 의 제어 모드(`open={x}` + `onToggle`)는 그대로다.
+
+**`name` 을 빠뜨려도 화면이 죽지 않는다.** DOM 순서 인덱스를 키로 쓰고 콘솔 경고를 한 번 낸다. 다만 마크업 순서가 바뀌면 선택이 엉뚱한 그룹을 가리키므로 `name` 을 주는 것이 맞다. 타일 내용은 네 단으로 떨어진다 — 사이드바 직계 자식의 `data-ns-rail="<name>"`, 그룹의 `icon`(`ns-icon` 스프라이트 이름), 그룹의 `badge`, 마지막으로 `heading` 의 첫 글자다. **마지막 단이 있으므로 `heading` 만 있는 0.4.0 마크업도 빈 타일이 되지 않는다.**
+
+```html
+<ns-sidebar default-open>
+  <!-- 아이콘은 그룹 안이 아니라 사이드바의 직계 자식이다. 그 그룹 바로 앞에 둔다 -->
+  <ns-icon data-ns-rail="admin"><svg>…</svg></ns-icon>
+  <ns-nav-group name="admin" heading="관리" badge="관">
+    <ns-nav-item href="/users" label="사용자"></ns-nav-item>
+  </ns-nav-group>
+</ns-sidebar>
+```
+
+**`slot` 속성은 `ns-sidebar` 에서 동작하지 않는다.** 이 컴포넌트는 수동 슬롯 배정(`slotAssignment: "manual"`)을 쓰고 배정을 전부 스스로 한다. 그래서 레일 아이콘의 표시가 `slot=` 이 아니라 `data-ns-rail` 이다. 사이드바 직계 자식 중 `ns-nav-group` 이 아니고 `data-ns-rail` 도 없는 것은 어디에도 배정되지 않아 **렌더되지 않는다.**
+
+새 이벤트가 둘이다. `ns-group-select`(`{ name }`)는 레일 타일이 요청하는 다음 그룹이고, `ns-toggle`(`{ open }`)은 패널의 다음 상태 요청이다 — `ns-header` 가 쓰던 것과 **같은 이름이다.** 뜻이 정확히 같으므로(패널의 다음 상태를 요청한다) 셸 컨테이너에서 한 핸들러로 받는 배선이 그대로 동작한다. React 는 `onGroupSelect(name)`·`onToggle(open)` 이다.
+
 ## 릴리스
 
 **`dist/` 가 바뀌었는지**를 태그마다 적는다. 안 바뀐 릴리스는 설치해도 화면이 그대로이므로, 소비자가 태그별로 받아 `diff -rq` 하기 전에는 알 수 없다.
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
-| (릴리스 전) | 변경 | 태그만 올린다. `ns-nav-group` 에 `collapsible` 이 생겼다 — **쓰지 않으면 아무것도 바뀌지 않는다.** 접힘 상태를 저장하려면 `open` 프로퍼티와 `onNsGroupToggle` 을 쓴다 |
+| (릴리스 전 · 0.5.0) | 변경 | **breaking.** `ns-sidebar` 가 레일 + 패널로 재설계됐다. 위 **0.5.0 이주** 절을 보고 마크업을 고친다. `ns-nav-group` 의 `collapsible` 도 이 릴리스에 함께 나간다 — 이제 **하위 그룹**에 쓴다 |
 | `v0.4.0` | 변경 | **breaking 둘.** 액센트 토큰 `--ns-color-accent-hover`·`--ns-color-accent-fg` 가 없어졌다(`--ns-color-accent-fill-hover`·`--ns-color-accent-fill-fg` 로 옮겨간다). `nsToast()` 기본 자리가 상단 중앙 — 우하단을 유지하려면 시작 지점에서 `nsToastPosition("bottom-right")` |
 | `v0.3.0` | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
 | `v0.2.5` | 변경 | 태그만 올린다. `ns-icon` 슬롯 자식이 하이드레이션 때 튀지 않는다. 프로퍼티 전용 이름을 속성으로 쓰면 경고가 나온다 |

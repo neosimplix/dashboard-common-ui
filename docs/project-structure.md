@@ -7,8 +7,8 @@
 | 태그 | 역할 |
 |---|---|
 | `ns-header` | 좌측 토글 버튼과 프로젝트 이름, 우측 `actions` slot |
-| `ns-sidebar` | 네비게이션 컨테이너. 접으면 좌측에 4rem 레일이 남는다 |
-| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다 |
+| `ns-sidebar` | 레일 + 패널 두 칼럼. **레일은 항상 보이고** 최상위 `ns-nav-group` 마다 타일 하나를 그린다(`role="tablist"`). 패널은 선택된 그룹 **하나만** 보여준다 |
+| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다. `name` 이 레일의 키이고 `icon`·`badge` 가 타일 내용이다 |
 | `ns-nav-item` | 그룹 하위 항목. 행 좌측에 `leading` slot(비우면 `badge` 폴백), 우측에 `trailing` slot |
 | `ns-icon` | 이름으로 꺼내는 인라인 SVG |
 | `ns-page-heading` | `h1` + 설명 `p` |
@@ -37,7 +37,7 @@
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 아홉이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 열이다. `ns-toggle`(`{ open }`, `ns-header`·`ns-sidebar` 둘이 같은 이름으로 올린다), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-group-select`(`{ name }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 
@@ -67,6 +67,8 @@ common-ui/
 │   │   ├── ns-<name>.ts               Lit 엘리먼트 + 등록 + 태그 타입 선언
 │   │   └── ns-<name>.styles.ts        shadow CSS (css`` 템플릿, .css 파일 아님)
 │   ├── components/icon/icons.ts                       아이콘 이름 → 인라인 SVG 스프라이트
+│   ├── components/sidebar/ns-sidebar.ts               shadow + 렌더. slotAssignment: "manual" — 선택된 그룹만 패널에 배정하고
+│   │                                                  나머지는 배정하지 않아 렌더되지 않는다. 그래서 slot 속성이 동작하지 않는다
 │   ├── components/table/ns-table.ts                   ReactiveElement. .styles.ts 가 없다(Light DOM)
 │   ├── components/pagination/ns-pagination.ts         LitElement + light DOM 렌더
 │   ├── components/tabs/ns-tabs.ts                     ReactiveElement. 소비자 자식에 ARIA·키보드
@@ -80,7 +82,7 @@ common-ui/
 │   │   ├── cx.ts                      조건부 클래스 합치기(내부 전용)
 │   │   ├── controls/*.tsx             네이티브 요소에 클래스를 붙이는 컴포넌트 7종
 │   │   ├── tags/*.tsx                 커스텀 엘리먼트 래퍼의 프롭 이름을 맞추는 shim
-│   │   │   └── Sidebar.tsx            open 을 data-ns-open 으로도 내보내는 SSR shim
+│   │   │   └── Sidebar.tsx            open·defaultOpen 을 data-ns-open · default-open 으로도 내보내는 SSR shim
 │   │   ├── elements.ts                @lit/react 래퍼. 이벤트 매핑의 단일 출처
 │   │   └── index.ts                   재export 허브
 ├── scripts/
@@ -174,5 +176,5 @@ grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
 
 ## 남은 일
 
-- **`ns-header`·`ns-sidebar` 의 비제어 지원.** 토글을 소비자 코드 없이 동작시키는 것. 지금 소비자 코드가 필요한 이유는 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다는 것이다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다. (0.2.0 이 해결한 것은 **SSR 너비 튐**이다 — `Sidebar` shim 의 `data-ns-open` 과 `:not(:defined)` 예약으로 소비자 래퍼 `div` 가 필요 없어졌다. 상태를 누가 들고 있느냐는 그대로 남았다.)
+- **`ns-header` 토글의 배선.** 원래 문제(두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다)의 **절반이 남았다.** 사이드바 쪽은 0.5.0 이 해결했다 — `open`/`default-open` 짝이 생겨 레일 타일만으로 소비자 코드 없이 여닫고, 사이드바 자신도 `ns-toggle` 을 올린다. 남은 것은 `ns-header` 의 토글 버튼이다: 헤더는 여전히 자기가 누구를 여는지 모르므로 `ns-toggle` 을 받아 사이드바의 `open` 에 내려주는 한 줄이 소비자 코드로 남는다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다. (0.2.0 이 해결한 것은 **SSR 너비 튐**이다 — `Sidebar` shim 의 `data-ns-open`·`default-open` 과 `:not(:defined)` 예약으로 소비자 래퍼 `div` 가 필요 없어졌다.)
 - **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 정리(0.2.0 부터는 이름이 겹치지 않으므로 **삭제가 강제되지 않는다** — 그대로 두거나 `--ns-` 로 옮긴다), Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.
