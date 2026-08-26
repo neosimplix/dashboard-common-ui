@@ -23,9 +23,9 @@
 
 React 래퍼의 `events` 값은 라이브러리 안에서는 그냥 문자열이라, `EventName<>` 브랜딩이 빠져도 라이브러리 타입 검사는 통과한다. 소비자 쪽에서만 드러난다.
 
-그래서 `docs/consumer-example.tsx` 와 `tsconfig.consumer.json` 이 `check` 에 포함돼 있다. **이벤트를 가진 아홉 래퍼 전부에 핸들러를 붙여 `e.detail` 을 읽어야 한다.** 일부만 붙이면 나머지의 회귀가 조용히 통과한다. 개수의 출처는 `src/react/elements.ts` 에서 `events` 가 비어 있지 않은 `createComponent` 호출이다 — 래퍼를 더하면 이 문단의 숫자도 함께 고친다.
+그래서 `docs/consumer-example.tsx` 와 `tsconfig.consumer.json` 이 `check` 에 포함돼 있다. **이벤트를 가진 아홉 래퍼가 내는 이벤트 전부에 핸들러를 붙여 `e.detail` 을 읽어야 한다.** 바는 래퍼 단위가 아니라 이벤트 단위다 — 이벤트를 둘 이상 내는 래퍼(`ns-nav-group`)에서 하나만 읽고 나머지를 빼먹으면 그 이벤트의 회귀는 이 문단이 말하는 "아홉 래퍼 전부" 를 만족하고도 조용히 통과한다. 일부만 붙이면 나머지의 회귀가 조용히 통과한다. 개수의 출처는 `src/react/elements.ts` 에서 `events` 가 비어 있지 않은 `createComponent` 호출이다 — 래퍼를 더하면 이 문단의 숫자도 함께 고친다.
 
-아홉 중 일곱(`ns-header` 의 `ns-toggle`, `ns-navigate` × 2(`ns-nav-group`·`ns-nav-item`), `ns-table` 의 `ns-sort`·`ns-select-change`, `ns-pagination` 의 `ns-page-change`, `ns-tabs` 의 `ns-tab-change`, `ns-multi-select` 의 `ns-multi-select-change`)은 `consumer-example.tsx` 가 직접 검사한다. 나머지 둘은 래퍼가 비공개라 그 파일이 닿을 수 없어 shim 이 같은 방어를 한다 — `src/react/tags/Dialog.tsx` 가 `onNsDialogClose={(e) => onClose(e.detail.reason)}`, `src/react/tags/Sidebar.tsx` 가 `onNsNavigate={(e) => onNavigate?.(e.detail)}` 로 `e.detail` 을 실제로 읽는다. 메커니즘은 `docs/gotchas.md` 의 "인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다" 에 있다.
+아홉 중 일곱(`ns-header` 의 `ns-toggle`, `ns-navigate` × 2(`ns-nav-group`·`ns-nav-item`), `ns-nav-group` 의 `ns-group-toggle`, `ns-table` 의 `ns-sort`·`ns-select-change`, `ns-pagination` 의 `ns-page-change`, `ns-tabs` 의 `ns-tab-change`, `ns-multi-select` 의 `ns-multi-select-change`)은 `consumer-example.tsx` 가 직접 검사한다. 나머지 둘은 래퍼가 비공개라 그 파일이 닿을 수 없어 shim 이 같은 방어를 한다 — `src/react/tags/Dialog.tsx` 가 `onNsDialogClose={(e) => onClose(e.detail.reason)}`, `src/react/tags/Sidebar.tsx` 가 `onNsNavigate={(e) => onNavigate?.(e.detail)}` 로 `e.detail` 을 실제로 읽는다. 메커니즘은 `docs/gotchas.md` 의 "인자 0개짜리 핸들러는 `EventName<>` 캐스트 검사를 무력화한다" 에 있다.
 
 ## 브라우저 확인은 사람이 한다
 
