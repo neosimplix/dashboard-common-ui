@@ -1532,9 +1532,22 @@ export function Sidebar({
 ```tsx
       open={open}
       defaultOpen={defaultOpen}
+      /*
+        하이픈 든 이름은 반응형 프로퍼티가 아니므로 createComponent 가 가로채지
+        않고 React.createElement 로 흘러가 서버 마크업에 그대로 실린다.
+
+        **비제어 경로의 튐을 막는 것이 이 줄이다.** defaultOpen 은 반응형이라
+        useLayoutEffect 에서만 설정되므로 서버 마크업에 아무 표시도 남지 않고,
+        그러면 upgrade 시점에 아직 false 라 4rem 으로 그려지다 하이드레이션 직후
+        19rem 으로 벌어진다. 이 속성이 있으면 upgrade 때 Lit 의 속성 컨버터가
+        그것을 읽어 defaultOpen 을 세우므로 하이드레이션을 기다리지 않는다.
+      */
+      default-open={defaultOpen === true ? "" : undefined}
       // 하이드레이션 전에는 이것만 보인다. tokens.css 의 :not(:defined) 규칙이 읽는다.
       // 제어 모드에서만 렌더한다 — 비제어에서는 엘리먼트가 스스로 쓰므로
-      // 여기서 함께 쓰면 두 쪽이 같은 속성을 두고 다툰다.
+      // 여기서 함께 쓰면 React 가 이 속성의 소유자가 되어 엘리먼트의
+      // toggleAttribute 와 다툰다. default-open 은 엘리먼트가 쓰지 않는 이름이라
+      // 그 다툼이 없다.
       data-ns-open={open === true ? "" : undefined}
 ```
 
@@ -1550,6 +1563,23 @@ Task 2 에서 만든 제어 사용처는 그대로 두고, 그 아래에 비제�
         </NsNavGroup>
       </Sidebar>
 ```
+
+- [ ] **Step 8b: 낡은 서술 셋을 고친다**
+
+`open` 의 뜻이 바뀌었으므로 그것을 설명하던 문장들이 낡았다. 세 곳이다.
+
+Run: `grep -rn 'ns-sidebar open\|<ns-sidebar open' src/`
+
+① `ns-sidebar.ts` 의 클래스 docstring 예시가 `<ns-sidebar open>` 이다 → `<ns-sidebar default-open>`.
+
+② `Sidebar.tsx` 의 `onGroupSelect` docstring 이 "`open` 을 소비자가 들고 있으므로 `onToggle` 과 짝으로 다뤄야 한다" 고 단정한다 → 이제 비제어에서는 엘리먼트가 스스로 연다. 제어일 때만 짝이 필요하다는 것으로 고친다.
+
+③ `tokens.css` 의 "정의 전 레이아웃 예약" 주석 블록(329행 부근)이 옛 모델을 서술한다. 두 문장이 사실이 아니다.
+
+- "순수 HTML 소비자는 마크업에 `open` 을 직접 쓰므로 첫 짝이 걸린다" → 이제 `default-open` 을 쓴다.
+- "그 구간을 덮는 것은 `ns-sidebar.styles.ts` 의 `:host(:not([open]):not([data-ns-open]))` 다" → 선택자가 `:host(:not([data-ns-open]))` 로 바뀌었다.
+
+`data-ns-open` 을 설명하는 문단에 **비제어 React 경로가 `default-open` 속성을 통해 덮인다**는 것을 한 문장 더한다. 그 경로가 없으면 튐이 남는다는 것이 Step 7 이 그 속성을 렌더하는 이유다.
 
 - [ ] **Step 9: 검사를 돌린다**
 

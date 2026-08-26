@@ -209,11 +209,31 @@ protected override updated(): void {
 
 타임라인이 이렇게 정리된다.
 
-| 구간 | 폭을 정하는 것 |
-|---|---|
-| upgrade 전 | `tokens.css` 의 `ns-sidebar:not(:defined)[default-open]` / `[data-ns-open]` |
-| upgrade ~ hydration | shim 이 렌더한 `data-ns-open` |
-| hydration 이후 | 사이드바가 쓰는 `data-ns-open` |
+| 구간 | 제어 (`open`) | 비제어 (`default-open`) |
+|---|---|---|
+| upgrade 전 | `tokens.css` 예약이 shim 의 `data-ns-open` 을 본다 | `tokens.css` 예약이 shim 의 `default-open` 을 본다 |
+| upgrade ~ hydration | shim 이 렌더한 `data-ns-open` | **Lit 의 속성 컨버터**가 `default-open` 을 읽어 세운 `data-ns-open` |
+| hydration 이후 | 사이드바가 쓰는 `data-ns-open` | 사이드바가 쓰는 `data-ns-open` |
+
+### 비제어 React 경로에는 `default-open` 을 속성으로도 내보낸다
+
+`Sidebar.tsx` 가 `data-ns-open` 을 **제어 모드에서만** 렌더한다면 비제어 React 소비자에게 튐이 그대로 남는다. `defaultOpen` 은 반응형 프로퍼티이므로 `createComponent` 가 가로채 `useLayoutEffect` 에서만 설정하고, 서버 마크업에는 아무 표시도 남지 않는다 — upgrade 시점에 `defaultOpen` 은 아직 `false` 라 4rem 으로 그려지고 하이드레이션 직후 19rem 으로 벌어진다. **이 메커니즘 전체가 막으려던 바로 그 튐이 새 경로에 다시 생긴다.**
+
+그래서 shim 이 `default-open` 을 **하이픈 든 원시 속성으로 함께** 렌더한다.
+
+```tsx
+<NsSidebarBase
+  open={open}
+  defaultOpen={defaultOpen}
+  // 하이픈 든 이름은 반응형 프로퍼티가 아니므로 createComponent 가 가로채지 않고
+  // 서버 마크업에 그대로 실린다. upgrade 시점에 Lit 의 속성 컨버터가 이것을 읽어
+  // defaultOpen 을 세우므로, 하이드레이션을 기다리지 않고 첫 프레임부터 열려 있다.
+  default-open={defaultOpen === true ? "" : undefined}
+  data-ns-open={open === true ? "" : undefined}
+>
+```
+
+**`data-ns-open` 을 비제어에서도 렌더하는 쪽으로 넓히지 않는다.** 그러면 React 가 그 속성의 소유자가 되어 엘리먼트의 `toggleAttribute` 와 같은 속성을 두고 다툰다. `default-open` 은 소비자가 준 초기값일 뿐이고 엘리먼트가 쓰지 않는 이름이므로 그 다툼이 없다.
 
 `tokens.css` 의 예약을 함께 고친다. 순수 HTML 소비자는 이제 `default-open` 을 쓰므로 그 이름을 봐야 한다.
 
