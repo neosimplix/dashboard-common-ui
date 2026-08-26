@@ -40,11 +40,27 @@ export class NsNavGroup extends LitElement {
   @property({ type: String, reflect: true }) name = "";
 
   /**
+   * 레일 타일에 그릴 아이콘의 이름. `<ns-icon name="…">` 에 그대로 넘어간다.
+   *
+   * **스프라이트는 열려 있다** — 내장 셋에 없는 이름은 `registerIcons()` 로
+   * 더한다. 그룹의 정의가 마크업 한 자리에 모이므로 이것이 기본 경로다.
+   *
+   * 이것으로 부족한 경우가 둘 있고 그때는 사이드바의 직계 자식에
+   * `data-ns-rail="<name>"` 로 요소를 직접 넣는다 — React 아이콘 컴포넌트를
+   * 쓸 때, 그리고 `registerIcons` 가 Next 번들에 들어가지 않는 배치일 때다.
+   */
+  @property({ type: String, reflect: true }) icon = "";
+
+  /**
    * 레일 타일에 보이는 짧은 글자. 1~2자를 넣는다.
    *
-   * 타일의 슬롯(`data-ns-rail`)이 비었을 때만 보인다. 이것도 비어 있으면
-   * `heading` 의 첫 글자가 보인다. `ns-nav-item` 의 `badge` 와 같은 종류의
-   * 폴백이지만 **그쪽은 행 안에 늘 보이고 이것은 레일에만 보인다.**
+   * 타일 내용은 네 단계로 떨어진다 — `data-ns-rail` 슬롯 → `icon` → 이
+   * `badge` → `heading` 의 첫 글자. 마지막 단이 있는 이유는 이주다: 0.4.0
+   * 소비자는 `heading` 만 갖고 있으므로 아무것도 더하지 않아도 레일이 빈
+   * 타일이 되지 않는다.
+   *
+   * `ns-nav-item` 의 `badge` 와 같은 종류의 폴백이지만 **그쪽은 행 안에 늘
+   * 보이고 이것은 레일에만 보인다.**
    */
   @property({ type: String, reflect: true }) badge = "";
 

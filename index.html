@@ -3082,7 +3082,8 @@
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td>그룹 제목. 접히면 시각적으로 숨지만 <code>aria-label</code> 로 남는다</td></tr>
     <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td><code>ns-sidebar</code> 레일의 키. <strong><code>key</code> 는 React 가 먹으므로 쓸 수 없다</strong></td></tr>
-    <tr><td><code>badge</code></td><td><code>badge</code></td><td>string</td><td><code>""</code></td><td>레일 타일의 글자 폴백. 1~2자</td></tr>
+    <tr><td><code>icon</code></td><td><code>icon</code></td><td>string</td><td><code>""</code></td><td>레일 타일에 그릴 <code>ns-icon</code> 이름. 내장 셋에 없으면 <code>registerIcons()</code> 로 더한다</td></tr>
+    <tr><td><code>badge</code></td><td><code>badge</code></td><td>string</td><td><code>""</code></td><td>레일 타일의 글자 폴백. 1~2자. <code>icon</code> 이 없을 때 보인다</td></tr>
     <tr><td><code>collapsible</code></td><td><code>collapsible</code></td><td>boolean</td><td><code>false</code></td><td>헤딩 줄을 토글 버튼으로 만든다. 쓰지 않으면 렌더 결과가 이전과 같다</td></tr>
     <tr><td><code>open</code></td><td>없음 (프로퍼티 전용)</td><td>boolean</td><td><code>undefined</code></td><td>설정하면 제어 모드가 되어 컴포넌트가 스스로 접지 않는다. HTML 에서는 <code>default-collapsed</code> 를 쓴다</td></tr>
     <tr><td><code>defaultCollapsed</code></td><td><code>default-collapsed</code></td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 나중에 바꾸면 <strong>아직 토글되지 않은 그룹에만</strong> 반영된다</td></tr>
