@@ -50,6 +50,15 @@ export const styles = css`
     button 은 그것을 상속하지 않고 UA 가 정한 값을 갖는다.
   */
   button.heading {
+    /*
+      <button> 의 UA 기본값은 이미 border-box 라(div 와 다르다) 이 줄은 오늘
+      아무것도 바꾸지 않는다. 그래도 적어 두는 이유는 이 규칙이 명시적
+      width 와 padding 을 함께 쓰기 때문이다 — 이 저장소의 다른 모든 그런
+      요소가 그렇게 한다(ns-sidebar.styles.ts, ns-header.styles.ts,
+      ns-dialog.styles.ts). UA 기본값에 기대는 것과 그것을 적어 두는 것은
+      다르다.
+    */
+    box-sizing: border-box;
     width: 100%;
     border: 0;
     background: none;
@@ -63,7 +72,13 @@ export const styles = css`
     color: var(--ns-color-fg-body);
   }
 
-  /* controls.css 의 :focus-visible 규칙은 전역이라 shadow 안에 닿지 않는다. */
+  /*
+    controls.css 의 :focus-visible 규칙은 전역이라 shadow 안에 닿지 않는다.
+
+    outline-offset 이 음수인 이유: 헤딩 버튼은 사이드바 폭 전체를 채우는데
+    ns-sidebar.styles.ts 의 <nav> 가 overflow-x: hidden 이다. 바깥으로 그리면
+    링이 그 경계에서 잘린다.
+  */
   button.heading:focus-visible {
     outline: 2px solid var(--ns-color-accent);
     outline-offset: -2px;

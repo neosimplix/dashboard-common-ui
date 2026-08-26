@@ -19,9 +19,11 @@ export class NsNavGroup extends LitElement {
   /**
    * 헤딩 줄을 토글 버튼으로 만든다.
    *
-   * opt-in 이다. 이 속성이 없으면 렌더 결과가 0.4.0 과 한 노드도 다르지 않다 —
-   * 전부 접히게 만들면 소비자가 코드를 한 줄도 바꾸지 않았는데 헤딩에
-   * hover·포커스 링·caret 이 생긴다.
+   * opt-in 이다. 이 속성이 없으면 노드 구조가 0.4.0 과 달라지지 않는다 — 유일한
+   * 차이는 목록 `<div>` 가 이제 항상 `id="list"` 를 갖는 것인데(`aria-controls`
+   * 가 필요해서), shadow root 안이라 소비자가 관측할 길이 없어 이 non-breaking
+   * 주장을 깨지 않는다. 전부 접히게 만들면 소비자가 코드를 한 줄도 바꾸지
+   * 않았는데 헤딩에 hover·포커스 링·caret 이 생긴다.
    */
   @property({ type: Boolean }) collapsible = false;
 
@@ -82,7 +84,7 @@ export class NsNavGroup extends LitElement {
 
     #toggled 가 있어 사용자가 손댄 뒤에는 늦게 온 값이 그 조작을 덮지 않는다.
   */
-  override willUpdate(changed: PropertyValues): void {
+  protected override willUpdate(changed: PropertyValues): void {
     if (changed.has("defaultCollapsed") && !this.#toggled) {
       this.#innerCollapsed = this.defaultCollapsed;
     }
@@ -106,7 +108,6 @@ export class NsNavGroup extends LitElement {
                   <ns-icon
                     class=${open ? "caret" : "caret closed"}
                     name="chevron-down"
-                    aria-hidden="true"
                   ></ns-icon>
                 </span>
               </button>
