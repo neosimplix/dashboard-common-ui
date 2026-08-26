@@ -20,6 +20,17 @@ import { styles } from "./ns-sidebar.styles.js";
 interface RailEntry {
   /** activeGroup 이 가리키는 키. name 이 비면 DOM 순서 인덱스의 문자열이다. */
   key: string;
+  /**
+   * 타일의 DOM id. 패널의 `aria-labelledby` 가 이것을 가리킨다.
+   *
+   * **소비자의 `name` 을 쓰지 않는다.** IDREF 목록은 공백으로 나뉘므로
+   * `name="my group"` 이면 `aria-labelledby` 가 두 IDREF 로 파싱되어 패널이
+   * 접근성 이름을 조용히 잃는다(공백이 든 `id` 자체도 무효다). DOM 순서
+   * 인덱스는 shadow root 안에서 언제나 유일하므로 `name` 이 겹칠 때 `id` 까지
+   * 겹쳐 `aria-labelledby` 가 첫 타일만 가리키던 것도 함께 없어진다.
+   * 키는 계속 `data-name` 이 들고 있어 devtools 에서도 `name` 이 보인다.
+   */
+  id: string;
   /** 타일의 aria-label 과 title. */
   heading: string;
   /** 타일 슬롯이 비었을 때 보이는 것. ns-icon 템플릿이거나 글자다. */
@@ -140,6 +151,40 @@ export class NsSidebar extends LitElement {
   #warnedNoName = false;
   #warnedDupName = false;
 
+  /*
+    **진단을 한 매크로태스크 뒤로 미룬다.**
+
+    #syncGroups 는 connectedCallback 에서 돈다. 그 시점에 React 소비자의 자식
+    ns-nav-group 은 DOM 에 이미 있지만 @lit/react 의 createComponent 는 아직
+    프로퍼티를 설정하지 않았다 — 그것은 하이드레이션 커밋의 useLayoutEffect
+    에서만 일어나고, customElements.define 이 hydrateRoot 보다 먼저 실행되므로
+    이 콜백은 그보다 앞이다. 그리고 name 의 필드 기본값이 "" 라 read() 의
+    own ?? attribute ?? "" 가 "" 를 주므로 **"아직 하이드레이션되지 않았다" 와
+    "정말로 이름이 없다" 가 구분되지 않는다.**
+
+    플래그가 인스턴스 평생 한 번이므로 그대로 두면 React 소비자 전부가 마운트
+    마다 거짓 경고를 받고 그것이 영구히 남는다. 같은 창이 #warnedNoMatch 에도
+    걸린다 — 사이드바의 activeGroup 은 설정됐는데 그룹의 name 반영이 아직
+    도착하지 않은 순간에는 없는 불일치가 관측된다.
+
+    **동기적으로 가를 방법이 없다** — 두 경우 모두 속성이 없고 프로퍼티가 "" 다.
+    그래서 판정 자체를 미룬다. willUpdate 씨앗을 firstUpdated 에서 옮긴 것과
+    같은 타이밍 사실이고, 한 걸음 더 나간 것이다.
+
+    #warnedDupName 은 미루지 않는다. 이름이 겹치는 것은 하이드레이션 부작용일
+    수 없다 — 비어 있지 않은 값 둘이 필요하고, 하이드레이션 전의 키는 DOM 순서
+    인덱스라 언제나 유일하다.
+
+    남는 위험 하나는 적어 둔다. React 18 의 하이드레이션 렌더는 태스크를
+    나눌 수 있으므로 아주 큰 트리에서는 이 타이머가 커밋보다 먼저 도착할 수
+    있다. 실무에서는 스케줄러가 MessageChannel(클램프 없음)을 쓰고 setTimeout
+    은 최소 클램프가 있어 뒤로 밀리며, 클라이언트 마운트에서는 삽입과
+    layout effect 가 같은 태스크 안이라 언제나 이 타이머가 뒤다. 완전한
+    보장이 아니라 **거짓 경고를 남기지 않는 방향으로 기울인 것**이다.
+  */
+  #settled = false;
+  #settleTimer?: ReturnType<typeof setTimeout>;
+
   get #controlledGroup(): boolean {
     return this.activeGroup !== undefined;
   }
@@ -162,12 +207,12 @@ export class NsSidebar extends LitElement {
     const fallback = entries[0];
 
     // 빈 문자열은 지목이 아니다 — 비제어 기본값(첫 그룹)을 뜻하므로 거른다.
-    if (wanted !== "" && !this.#warnedNoMatch) {
+    if (this.#settled && wanted !== "" && !this.#warnedNoMatch) {
       this.#warnedNoMatch = true;
       console.warn(
         this.#controlledGroup
           ? `[ns-sidebar] activeGroup="${wanted}" 와 일치하는 ns-nav-group[name] 이 없습니다. 첫 그룹 "${fallback.key}" 을 보여주지만 그 타일을 눌러도 ns-group-select 가 나가지 않습니다. 대소문자까지 맞는지 확인하세요.`
-          : `[ns-sidebar] 활성 그룹 "${wanted}" 와 일치하는 ns-nav-group[name] 이 없습니다. 첫 그룹 "${fallback.key}" 을 보여줍니다. default-active-group 값이 name 과 맞는지 확인하세요.`,
+          : `[ns-sidebar] 활성 그룹 "${wanted}" 와 일치하는 ns-nav-group[name] 이 없습니다. 첫 그룹 "${fallback.key}" 을 보여줍니다. default-active-group 값이 name 과 맞는지, 또는 그 그룹이 제거되지 않았는지 확인하세요.`,
       );
     }
 
@@ -206,11 +251,31 @@ export class NsSidebar extends LitElement {
       attributes: true,
       attributeFilter: ["name", "heading", "icon", "badge", "data-ns-rail"],
     });
+
+    /*
+      진단을 켜고 다시 동기한다. 다시 도는 것이 요점이다 — 미루기만 하면 정말로
+      name 이 없는 그룹이 아무 경고도 받지 못한다. #syncGroups 의 requestUpdate
+      가 렌더를 예약하므로 #activeEntry 의 불일치 진단도 이때 함께 돈다.
+    */
+    this.#settleTimer = setTimeout(() => {
+      this.#settleTimer = undefined;
+      this.#settled = true;
+      this.#syncGroups();
+    }, 0);
   }
 
   override disconnectedCallback(): void {
     this.#observer?.disconnect();
     this.#observer = undefined;
+
+    /*
+      떼어낸 엘리먼트에 대해 경고하지 않는다. 다시 붙으면 connectedCallback 이
+      타이머를 새로 걸어 그때 다시 판정한다 — 이동(제거 후 삽입)이 진단을
+      영구히 죽이지 않는다.
+    */
+    clearTimeout(this.#settleTimer);
+    this.#settleTimer = undefined;
+    this.#settled = false;
     super.disconnectedCallback();
   }
 
@@ -274,7 +339,7 @@ export class NsSidebar extends LitElement {
           <div
             id="panel"
             role="tabpanel"
-            aria-labelledby=${active === undefined ? nothing : `tile-${active.key}`}
+            aria-labelledby=${active === undefined ? nothing : active.id}
           >
             <slot class="panel-slot"></slot>
           </div>
@@ -292,7 +357,7 @@ export class NsSidebar extends LitElement {
     const selected = isActive && this.#isOpen;
     return html`
       <button
-        id=${`tile-${entry.key}`}
+        id=${entry.id}
         class=${selected ? "tile selected" : "tile"}
         type="button"
         role="tab"
@@ -404,7 +469,7 @@ export class NsSidebar extends LitElement {
         name 이 없으면 인덱스를 키로 쓴다. 마크업 순서가 바뀌면 상태가 엉뚱한
         그룹을 가리키게 되므로 키로 쓰기 나쁘지만, 화면이 죽는 것보다 낫다.
       */
-      if (name === "" && !this.#warnedNoName) {
+      if (this.#settled && name === "" && !this.#warnedNoName) {
         this.#warnedNoName = true;
         console.warn(
           `[ns-sidebar] ns-nav-group 에 name 이 없습니다("${heading}"). DOM 순서를 키로 쓰지만 순서가 바뀌면 선택이 엉뚱한 그룹을 가리킵니다. name 을 주세요.`,
@@ -437,7 +502,7 @@ export class NsSidebar extends LitElement {
             ? badge
             : ([...heading][0] ?? "");
 
-      return { key, heading, fallback, group, icon: icons.get(key) };
+      return { id: `tile-${i}`, key, heading, fallback, group, icon: icons.get(key) };
     });
 
     this.requestUpdate();
