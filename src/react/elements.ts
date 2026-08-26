@@ -17,6 +17,7 @@ import type {
   NsToggleDetail,
   NsNavigateDetail,
   NsGroupToggleDetail,
+  NsGroupSelectDetail,
   NsDialogCloseDetail,
   NsSelectChangeDetail,
   NsSortDetail,
@@ -71,6 +72,8 @@ export const NsSidebarBase = createComponent({
   events: {
     // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
     onNsNavigate: "ns-navigate" as EventName<CustomEvent<NsNavigateDetail>>,
+    onNsGroupSelect: "ns-group-select" as EventName<CustomEvent<NsGroupSelectDetail>>,
+    onNsToggle: "ns-toggle" as EventName<CustomEvent<NsToggleDetail>>,
   },
 });
 

@@ -27,7 +27,7 @@ export const styles = css`
     color: var(--ns-color-fg);
   }
 
-  /* 접힌 레일에서 유일하게 남는 자리라 flex 축소를 막는다. */
+  /* 배지든 아이콘이든 이 사각형이 행의 고정 자리라 flex 축소를 막는다. */
   .leading {
     flex: none;
     display: grid;
@@ -82,13 +82,9 @@ export const styles = css`
     flex: 1 과 min-width: 0 이 함께 있어야 한다. flex 자식은 기본이
     min-width: auto 라 내용보다 작아지지 않고, 그러면 text-overflow 가
     동작하지 않는다.
-
-    --ns-label-display 는 ns-sidebar 가 ::slotted 로 내려주는 패키지
-    내부 프로퍼티다. 사이드바 밖에서 단독으로 쓰일 때를 위해 여기만
-    폴백을 둔다.
   */
   .label {
-    display: var(--ns-label-display, block);
+    display: block;
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -100,7 +96,7 @@ export const styles = css`
   }
 
   .trailing {
-    display: var(--ns-label-display, block);
+    display: block;
     flex: none;
   }
 `;

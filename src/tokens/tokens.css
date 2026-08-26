@@ -168,7 +168,13 @@
 
   /* 레이아웃 상수 */
   --ns-header-height: 3.5rem;
-  --ns-sidebar-width: 15rem;
+  /*
+    열린 총폭이다. 레일(--ns-sidebar-width-collapsed)과 패널의 합이고, 패널 폭은
+    ns-sidebar 의 shadow 에서 이 둘의 차로 파생된다. 사용처가 하나인 파생값이라
+    토큰으로 뽑지 않는다.
+  */
+  --ns-sidebar-width: 19rem;
+  /* 닫힌 총폭이자 레일 폭이다. 레일은 패널이 열려도 사라지지 않는다. */
   --ns-sidebar-width-collapsed: 4rem;
   --ns-page-padding-x: var(--ns-space-6);
   --ns-page-padding-y: var(--ns-space-6);
