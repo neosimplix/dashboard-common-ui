@@ -2949,14 +2949,25 @@
   </script>
 
   <h3>HTML — 배선</h3>
+  <p>
+    헤더에 토글이 있으면 사이드바는 제어 모드다. 토글이 없는 예시라면
+    <code>default-open</code> 만 주고 이 배선 자체를 두지 않는다.
+  </p>
   <script type="text/plain">
     const header = document.querySelector("ns-header");
     const sidebar = document.querySelector("ns-sidebar");
 
-    header.addEventListener("ns-toggle", (e) => {
-      header.sidebarOpen = e.detail.open;   // 상태는 우리가 되돌려준다
-      sidebar.open = e.detail.open;
-    });
+    // 제어 모드. 시작부터 세워 반쪽 제어를 만들지 않는다.
+    sidebar.open = true;
+
+    const setOpen = (open) => {
+      header.sidebarOpen = open;
+      sidebar.open = open;
+    };
+
+    // ns-toggle 을 올리는 곳이 둘이다 — 헤더의 토글 버튼과 사이드바의 레일 타일.
+    header.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
+    sidebar.addEventListener("ns-toggle", (e) => setOpen(e.detail.open));
   </script>
 
   <h3>React</h3>
@@ -3316,7 +3327,7 @@
     <div style="display:flex;flex-direction:column;height:100%;width:100%" id="full-demo">
       <ns-header project-name="대시보드" sidebar-open></ns-header>
       <div style="display:flex;flex:1;min-height:0">
-        <ns-sidebar id="full-nav">
+        <ns-sidebar>
           <ns-nav-group name="projects" heading="프로젝트" badge="프">
             <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
             <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
