@@ -200,7 +200,12 @@ export class NsSidebar extends LitElement {
 
     return html`
       <div class="shell">
-        <div class="rail" role="tablist" aria-orientation="vertical">
+        <div
+          class="rail"
+          role="tablist"
+          aria-orientation="vertical"
+          @keydown=${this.#onKeyDown}
+        >
           ${entries.map((entry) => this.#tile(entry, entry === active))}
         </div>
         <nav class="panel">
@@ -357,6 +362,55 @@ export class NsSidebar extends LitElement {
 
     this.requestUpdate();
   }
+
+  /** 이벤트가 레일 타일에서 났으면 그 타일의 키, 아니면 null. */
+  #keyFrom(target: EventTarget | null): string | null {
+    const el = (target as Element | null)?.closest?.(".tile") ?? null;
+    // 이 레일의 타일인지 확인한다. shadow 안이라 경계가 있지만 조회 지점을 맞춘다.
+    if (el === null || el.getRootNode() !== this.renderRoot) return null;
+    return (el as HTMLElement).dataset.name ?? null;
+  }
+
+  /*
+    자동 활성화 패턴. 화살표를 누르면 포커스와 선택이 함께 움직인다 — 그룹 전환이
+    싼 화면이라 이 패턴이 맞다. 목록 끝에서는 반대쪽으로 순환한다.
+
+    **기준점은 키가 발생한 타일이지 선택된 타일이 아니다.** 둘은 제어 모드에서
+    갈라진다 — 소비자가 ns-group-select 를 무시하거나 비동기로 미루면 포커스는
+    옆 타일로 갔는데 활성은 그대로다. 선택된 타일을 기준으로 세면 다음 화살표가
+    같은 곳을 다시 골라 포커스가 한 칸 옆에 영영 갇히고, 그 사이 DOM 포커스는
+    tabindex="-1" 인 요소에 앉아 roving tabindex 규약 자체가 깨진다.
+    ns-tabs 의 #onKeyDown 과 같은 판단이다.
+  */
+  #onKeyDown = (e: KeyboardEvent): void => {
+    const from = this.#keyFrom(e.target);
+    if (from === null) return;
+
+    const entries = this.#entries;
+    const index = entries.findIndex((entry) => entry.key === from);
+    // 기준점이 없으면 화살표를 삼키지 않는다.
+    if (index === -1) return;
+
+    const at = (next: number): void => {
+      e.preventDefault();
+      const entry = entries[(next + entries.length) % entries.length];
+      this.#select(entry.key);
+      /*
+        제어 모드에서 소비자가 activeGroup 을 바꾸지 않으면 업데이트가 일어나지
+        않아 tabindex 가 옮겨가지 않는다. 화살표 이동은 그 자리에서 포커스를
+        옮겨야 하므로 직접 부른다 — 비제어에서는 #select 의 requestUpdate 가
+        렌더를 예약하지만 포커스는 그것과 무관하다.
+      */
+      this.renderRoot
+        .querySelector<HTMLElement>(`.tile[data-name="${entry.key}"]`)
+        ?.focus();
+    };
+
+    if (e.key === "ArrowDown") at(index + 1);
+    else if (e.key === "ArrowUp") at(index - 1);
+    else if (e.key === "Home") at(0);
+    else if (e.key === "End") at(entries.length - 1);
+  };
 
   #onTile(key: string): void {
     const active = this.#activeEntry;
