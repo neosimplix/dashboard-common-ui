@@ -20,7 +20,7 @@
 
 **`v0.4.0` 이후의 변경이다.** `v0.2.5..v0.4.0` 을 덮던 목록(B-1…B-5 · A-1…A-27)은 `v0.4.0` 이 나간 뒤 비웠다. 무엇이 있었는지는 `git log -p docs/pending-human-checks.md` 가 갖고 있다.
 
-이번 사이클이 넣은 것은 여섯이다.
+이번 사이클이 넣은 것은 일곱이다.
 
 - **문서 정리.** 소비자가 저자 한 사람뿐이라 태그별 이관 안내를 `README.md` 와 `index.html` 양쪽에서 걷어냈다. 이것만 있었다면 `dist/` 는 바뀌지 않았다.
 - **Safari 전용 결함 하나.** 대화상자 본문이 WebKit 에서 높이 0 으로 붕괴해 한 줄짜리 문장에도 스크롤 막대가 생겼다. `.body` 를 `flex: 1` 에서 `flex: 1 1 auto` 로 바꿔 고쳤고, 근거는 `docs/gotchas.md` 에 있다. **`dist/` 가 바뀐다.**
@@ -28,6 +28,7 @@
 - **`ns-nav-group` 그룹 접힘.** `collapsible` 을 쓴 그룹의 헤딩이 `div` 에서 `button` 이 되고 caret(`chevron-down`, 스프라이트에 새로 들어왔다)이 붙는다. React 래퍼에 토글 이벤트가 늘었다. **`dist/` 가 바뀐다.** (도입 당시에는 `ns-sidebar` 의 레일 상태와 신호 프로퍼티로 맞물려 있었으나, 아래 레일 재설계가 그 배선을 걷어냈다 — 이제 두 컴포넌트 사이에 접힘 신호가 없다.)
 - **페이지네이션 폭 고정.** 페이지를 넘길 때마다 "이전"·"다음" 이 움직이던 것을 고쳤다. 슬롯 수를 현재 페이지와 무관하게 고정하고, 번호 칸을 균등 그리드로 묶었다. `page-window` 속성이 새로 생겼고 **DOM 에 래퍼 `<span class="ns-pagination-pages">` 가 하나 늘었다.** `dist/` 가 바뀐다. 설계 문서는 `docs/superpowers/specs/2026-08-26-pagination-stable-width-design.md` 다
 - **`ns-sidebar` 레일 재설계.** 이번 사이클에서 가장 큰 변경이고 **breaking 이다(0.5.0).** 접힘 상태의 화면이 완전히 달라진다 — 0.4.0 은 모든 항목을 4rem 에 배지로 납작하게 늘어놓았고, 이제는 최상위 그룹의 타일이 쌓인 레일이 **항상** 보이고 패널이 선택된 그룹 하나만 보여준다. 열린 총폭이 15rem → **19rem** 이 되고(레일 + 패널), `ns-sidebar` 의 `open` 이 **프로퍼티 전용**이 되어 `<ns-sidebar open>` 은 조용히 무시되며 경고가 뜬다(HTML 은 `default-open` 을 쓴다). 그룹에 `name`·`icon`·`badge` 가 생기고, 수동 슬롯 배정을 쓰므로 `slot` 속성이 동작하지 않는다. 신호 프로퍼티 둘(`--ns-label-display`·`--ns-group-list-display`)이 사라졌다. **`dist/` 가 바뀐다.** 설계 문서는 `docs/superpowers/specs/2026-08-26-sidebar-rail-and-nav-subcategory-design.md` 다
+- **`ns-nav-group` 하위 카테고리.** `ns-nav-group` 을 `ns-nav-group` 안에 그냥 중첩하면 하위 카테고리가 된다 — 새 태그·이벤트·프로퍼티가 없다. 그룹이 `connectedCallback` 에서 `this.parentElement?.closest("ns-nav-group")` 로 자기 중첩을 스스로 판정하고, 들여쓰기는 **자기 shadow 안**에서 건다(부모 shadow 가 자식 shadow 를 볼 수 없어서). 2단까지 시각적으로 구분되고(들여쓰기·글자 굵기·자간) 3단 이상은 들여쓰기만 계속 누적된다. **`dist/` 가 바뀐다.** 설계 문서는 위와 같다(`2026-08-26-sidebar-rail-and-nav-subcategory-design.md` 가 두 기능을 함께 다룬다)
 
 ---
 

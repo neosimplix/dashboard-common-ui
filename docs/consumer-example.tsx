@@ -168,7 +168,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <NsNavGroup
             name="projects"
             heading="프로젝트"
-            collapsible
             onNsNavigate={(e) => log(e.detail.label)}
             /*
               detail 을 실제로 읽는다. 인자 0개짜리 핸들러는 EventName<> 캐스트
