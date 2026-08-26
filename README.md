@@ -101,6 +101,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 | 열린 총폭 15rem (`--ns-sidebar-width`) | 19rem — 뜻은 그대로 "열린 총폭" 이고 값만 바뀐다 |
 | 접힘 = 모든 항목의 배지 목록 | 접힘 = 최상위 그룹 타일 (`--ns-sidebar-width-collapsed` = 레일 폭) |
 | `collapsible` 을 최상위 그룹에 | 하위 그룹에 |
+| 최상위 그룹 사이에 24px 이 얹힘 | 얹지 않는다 — 사이드바 밖에서 쌓으면 그만큼 좁아진다 |
 
 **`<ns-sidebar open>` 은 조용히 무시되고 콘솔 경고가 뜬다.** `open` 이 프로퍼티 전용이 되어 관찰되지 않으므로 제어 모드로 들어가지도 않는다 — HTML 에서 초기 상태를 열어 두려면 `default-open` 이다. React 의 제어 모드(`open={x}` + `onToggle`)는 그대로다.
 
@@ -114,6 +115,19 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
     <ns-nav-item href="/users" label="사용자"></ns-nav-item>
   </ns-nav-group>
 </ns-sidebar>
+```
+
+**`ns-sidebar` 밖에서 최상위 `ns-nav-group` 을 세로로 쌓으면 사이가 24px 좁아진다.**
+0.4.0 은 첫 형제가 아닌 그룹의 wrapper 에 `padding-top: var(--ns-space-6)`(24px)을
+얹었다. 패널에는 그룹이 하나만 오므로 그 규칙의 `:first-child` 가 **배정되지 않은
+형제까지 세어** 패널 위 여백이 마크업 순서에 따라 달라졌고, 그래서 지웠다. 남는 것은
+헤딩 자신의 `padding-top: var(--ns-space-4)`(16px)뿐이다. 사이드바 안에서는 보이지
+않는 차이지만, 그룹을 평범한 컨테이너에 쌓아 쓰던 소비자는 화면이 좁아진 것을 본다.
+되돌리려면 소비자 문서 CSS 한 줄이면 된다 — 호스트는 문서 트리에 있으므로 이 규칙이
+shadow 를 이긴다.
+
+```css
+ns-nav-group + ns-nav-group { padding-top: 1.5rem }
 ```
 
 **`slot` 속성은 `ns-sidebar` 에서 동작하지 않는다.** 이 컴포넌트는 수동 슬롯 배정(`slotAssignment: "manual"`)을 쓰고 배정을 전부 스스로 한다. 그래서 레일 아이콘의 표시가 `slot=` 이 아니라 `data-ns-rail` 이다. 사이드바 직계 자식 중 `ns-nav-group` 이 아니고 `data-ns-rail` 도 없는 것은 어디에도 배정되지 않아 **렌더되지 않는다.**

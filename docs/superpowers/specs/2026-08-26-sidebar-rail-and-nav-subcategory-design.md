@@ -134,9 +134,16 @@ static override shadowRootOptions: ShadowRootInit = {
 this.#observer = new MutationObserver(() => this.#syncGroups());
 this.#observer.observe(this, {
   childList: true,
-  attributeFilter: ["name", "icon", "badge", "heading", "data-ns-rail"],
+  subtree: true,
+  attributes: true,
+  attributeFilter: ["name", "heading", "icon", "badge", "data-ns-rail"],
 });
 ```
+
+**`attributes: true` 와 `subtree: true` 가 둘 다 필요하다.** `attributeFilter` 만
+주는 것으로는 속성을 관찰하지 않고(`attributes` 가 켜져야 필터가 의미를 갖는다),
+`subtree` 가 없으면 `MutationObserver` 의 `attributes` 는 관찰 대상 노드 **자신의**
+속성만 보므로 호스트의 속성만 보고 자식 그룹의 `heading` 이 바뀌는 것을 놓친다.
 
 **`attributes` 를 켜지 않는다는 불변 규칙과 어긋나지 않는다.** 그 규칙이 막으려는 것은 "동기화가 `setAttribute` 를 쓰므로 자기 쓰기에 재발동해 루프가 된다" 인데, 여기서 하는 동기화는 `slot.assign()` 이고 **자식의 속성을 쓰지 않는다.** 재발동 경로가 없다. `attributeFilter` 가 관찰 대상을 우리가 쓰지 않는 이름들로 못박아 이 성질을 코드에 남긴다.
 
@@ -189,9 +196,13 @@ protected override willUpdate(changed: PropertyValues): void {
 ```ts
 warnPropertyOnlyAttributes(this, {
   open: "default-open",
-  activeGroup: "default-active-group",
+  "active-group": "default-active-group",
 });
 ```
+
+**키는 프로퍼티 이름이 아니라 속성 이름이다.** 헬퍼가 `el.hasAttribute(name)` 과
+`name.replaceAll("-", "")` 두 형태만 보므로, 카멜로 적은 `activeGroup` 은
+`activegroup` 만 두 번 확인하고 `active-group` 은 영영 잡히지 않는다.
 
 ### `default-open` 이 `default-collapsed` 가 아닌 이유
 

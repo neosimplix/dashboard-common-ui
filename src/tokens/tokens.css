@@ -170,9 +170,13 @@
   /* 레이아웃 상수 */
   --ns-header-height: 3.5rem;
   /*
-    열린 총폭이다. 레일(--ns-sidebar-width-collapsed)과 패널의 합이고, 패널 폭은
-    ns-sidebar 의 shadow 에서 이 둘의 차로 파생된다. 사용처가 하나인 파생값이라
-    토큰으로 뽑지 않는다.
+    열린 총폭이다. 레일(--ns-sidebar-width-collapsed)과 패널의 합이다.
+
+    **패널 폭은 이 둘의 차로 계산하지 않는다.** 레일과 패널 사이의 1px 경계선이
+    그 산수에 들어가지 않아 자식이 호스트 content box 를 1px 넘긴다. 실제
+    .panel 은 flex: 1; min-width: 0 으로 **남는 폭**을 받으므로 경계선이 몇
+    개든 맞는다(ns-sidebar.styles.ts 의 .panel 주석). 그래서 이 토큰이 정하는
+    것은 호스트 폭 하나뿐이고, 패널 폭이라는 파생값은 아예 존재하지 않는다.
   */
   --ns-sidebar-width: 19rem;
   /* 닫힌 총폭이자 레일 폭이다. 레일은 패널이 열려도 사라지지 않는다. */
