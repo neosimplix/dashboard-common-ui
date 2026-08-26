@@ -13,8 +13,40 @@ import "../icon/ns-icon.js";
 export class NsNavGroup extends LitElement {
   static override styles = styles;
 
-  /** 그룹 제목. 사이드바가 접히면 시각적으로 숨지만 aria-label 로는 남는다. */
-  @property({ type: String }) heading = "";
+  /**
+   * 그룹 제목. `ns-sidebar` 안에서는 이것이 그대로 패널 제목의 자리에 온다.
+   *
+   * 반영하는 이유는 사이드바가 이 값을 관찰하기 때문이다. `@lit/react` 의
+   * `createComponent` 는 반응형 프로퍼티를 **프로퍼티로만** 설정하므로, 반영이
+   * 없으면 React 소비자가 제목을 바꿔도 속성 변화가 일어나지 않아 사이드바의
+   * MutationObserver 가 보지 못한다. 소비자가 준 값을 되울리는 것이라
+   * "호스트의 속성을 쓰지 않는다" 가 겨냥하는 덮어쓰기가 아니다 —
+   * `ns-nav-item` 의 `active` 가 이미 같은 방식이다.
+   */
+  @property({ type: String, reflect: true }) heading = "";
+
+  /**
+   * 레일 키. `ns-sidebar` 의 `activeGroup` 이 이 값을 가리킨다.
+   *
+   * **이름이 `key` 가 아닌 이유는 React 다.** `key` 는 재조정 키로 소비되어
+   * 엘리먼트까지 도달하지 않고, shim 으로도 고칠 수 없다 — `title` 은 우리에게
+   * 도착한 뒤 이름을 바꿀 수 있었지만 `key` 는 도착하지 않는다.
+   *
+   * `heading` 을 키로 쓰지 않는 이유는 그것이 표시용 문자열이라는 것이다.
+   * `ns-group-toggle` 의 `detail` 에서 이미 한 판단이다.
+   *
+   * 비어 있으면 사이드바가 DOM 순서 인덱스를 키로 쓰고 경고한다.
+   */
+  @property({ type: String, reflect: true }) name = "";
+
+  /**
+   * 레일 타일에 보이는 짧은 글자. 1~2자를 넣는다.
+   *
+   * 타일의 슬롯(`data-ns-rail`)이 비었을 때만 보인다. 이것도 비어 있으면
+   * `heading` 의 첫 글자가 보인다. `ns-nav-item` 의 `badge` 와 같은 종류의
+   * 폴백이지만 **그쪽은 행 안에 늘 보이고 이것은 레일에만 보인다.**
+   */
+  @property({ type: String, reflect: true }) badge = "";
 
   /**
    * 헤딩 줄을 토글 버튼으로 만든다.
