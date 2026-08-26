@@ -8,40 +8,57 @@ import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js
 import type { NsPageChangeDetail } from "../../types.js";
 
 /**
+ * 기본 슬롯 수. `page-window` 프로퍼티의 초기값이자 잘못된 값이 들어왔을 때의
+ * 폴백이다. **두 자리가 같은 상수를 봐야 한다** — 따로 적으면 어긋나도 아무도
+ * 모른다.
+ */
+const DEFAULT_PAGE_WINDOW = 7;
+
+/** `from`..`to` 의 정수 배열. `to < from` 이면 빈 배열이다. */
+function range(from: number, to: number): number[] {
+  return Array.from({ length: Math.max(to - from + 1, 0) }, (_, i) => from + i);
+}
+
+/**
  * 번호 윈도우.
  *
- * - 페이지 수 ≤ 7 이면 전부
- * - 그 외에는 첫 페이지 · 현재±1 · 마지막 페이지, 빈 구간에 `"gap"`
+ * **슬롯 수는 언제나 `min(total, size)` 다.** 현재 페이지가 어디에 있든 달라지지
+ * 않는다 — 그것이 이전·다음 버튼을 제자리에 붙들어 두는 조건이다. 슬롯의 **폭**
+ * 까지 고정하는 것은 `controls.css` 의 `.ns-pagination-pages` 가 맡는다.
+ * **둘 다 필요하다** — 한쪽만으로는 진폭만 줄고 여전히 움직인다.
+ *
+ * - `total <= size` 면 전부
+ * - 앞쪽: `1 … size-2` · `gap` · `total`
+ * - 뒤쪽: `1` · `gap` · `total-(size-3) … total`
+ * - 가운데: `1` · `gap` · `현재±h` · `gap` · `total`  (`h = (size-5)/2`)
+ *
+ * `size` 는 **5 이상의 홀수**여야 한다. 가운데 배치의 번호 개수가 `size - 4` 이고
+ * 그것이 현재를 가운데 둔 `2h + 1` 이어야 하므로 `h = (size-5)/2` 다 — 짝수면
+ * `h` 가 정수가 아니고, 3이면 `h = -1` 이라 현재 페이지가 들어갈 자리가 없다.
+ * **검증은 이 함수가 하지 않는다.** 호출부의 `#window` 게터가 하고, 이 함수는
+ * 유효한 `size` 를 받는다고 전제한다.
+ *
+ * 앞 구현과 달리 `…` 이 감추는 페이지는 어느 배치에서든 최소 2개다. 근거는
+ * 설계 문서 §4.2 에 있다.
  *
  * 내보내는 이유는 규칙이 모호하지 않게 문서화되기 위해서다. 소비자가 쓸 API 는
  * 아니고 `src/index.ts` 에서 재export 하지 않는다.
  */
-export function pageWindow(current: number, total: number): (number | "gap")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+export function pageWindow(
+  current: number,
+  total: number,
+  size: number,
+): (number | "gap")[] {
+  if (total <= size) return range(1, total);
 
-  const wanted = [1, current - 1, current, current + 1, total]
-    .filter((page) => page >= 1 && page <= total)
-    .sort((a, b) => a - b);
+  // 앞·뒤 배치가 연속으로 내는 번호 개수. 남는 두 칸이 gap 과 반대쪽 끝이다.
+  const edge = size - 2;
+  // 가운데 배치에서 현재 좌우로 몇 개. size 가 5 이상의 홀수라 정수다.
+  const half = (size - 5) / 2;
 
-  const out: (number | "gap")[] = [];
-  // 아직 낸 페이지가 없다는 뜻의 sentinel — 0 은 유효한 페이지 번호가 아니므로
-  // 첫 항목 앞에는 gap 이 올 수 없다는 것을 아래 두 조건이 이 값으로 표현한다.
-  let previous = 0;
-  for (const page of wanted) {
-    /*
-      current-1·current·current+1 이 1 이나 total 과 겹칠 수 있다(예: current=1 이면
-      current-1=0 이 필터로 빠지고 current=1 이 첫 페이지와 같아진다, current=total
-      이면 current+1=total+1 이 필터로 빠지고 current=total 이 마지막 페이지와
-      같아진다). 정렬된 배열에 같은 값이 연속으로 남으므로 바로 앞 값과 같으면
-      건너뛴다 — 중복 버튼을 그리지 않기 위해서다.
-    */
-    if (page === previous) continue;
-    // 이전 값과의 간격이 1 을 넘으면 그 사이 페이지들을 생략한다는 표시로 gap 을 낸다.
-    if (previous !== 0 && page - previous > 1) out.push("gap");
-    out.push(page);
-    previous = page;
-  }
-  return out;
+  if (current <= edge) return [...range(1, edge), "gap", total];
+  if (current > total - edge) return [1, "gap", ...range(total - edge + 1, total)];
+  return [1, "gap", ...range(current - half, current + half), "gap", total];
 }
 
 /**
@@ -362,12 +379,14 @@ export class NsPagination extends LitElement {
           이전
         </button>
         ${repeat(
-          pageWindow(current, pages),
+          pageWindow(current, pages, DEFAULT_PAGE_WINDOW),
           /*
-            번호는 그 번호 자신이 정체성이다. 위치로 diff 하면 윈도우가
-            줄어들 때(pageWindow(6,12) 는 7개, pageWindow(12,12) 는 4개)
-            포커스가 있던 노드가 제거되고, 윈도우가 밀릴 때는 노드가 재사용되며
-            라벨만 5 에서 6 으로 바뀐다 — 화면낭독기가 엉뚱한 번호를 읽는다.
+            번호는 그 번호 자신이 정체성이다. 슬롯 수는 이제 고정이지만 윈도우가
+            밀리면 같은 자리에 다른 번호가 온다(`1 … 5 6 7 … 12` → `1 … 6 7 8 … 12`).
+            위치로 diff 하면 lit 이 노드를 재사용하며 라벨만 5에서 6으로 바꾸고,
+            화면낭독기가 엉뚱한 번호를 읽는다. 포커스가 있던 노드가 옮겨 갈 때
+            제거 후 삽입이 되는 것도 같다 — 그쪽은 updated() 가 되돌린다.
+
             gap 은 포커스를 받지 않고 위치가 곧 정체성이라 인덱스로 구분한다.
             문자열 키라 번호 키와 섞이지 않는다.
           */
