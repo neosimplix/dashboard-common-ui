@@ -120,9 +120,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   // ns-navigate 는 composed 라 그룹에서도, 항목에서도 들을 수 있다 — 아래는
   // 그 두 지점 모두에서 detail 을 실제로 읽어 NsNavGroup·NsNavItem 두 래퍼의
-  // 이벤트 타입을 검사한다. 같은 이벤트를 가진 세 번째 래퍼 NsSidebarBase 는
-  // 비공개라 이 파일이 닿을 수 없고, 그쪽은 src/react/tags/Sidebar.tsx 의 shim 이
-  // onNsNavigate={(e) => onNavigate?.(e.detail)} 로 같은 방어를 한다.
+  // 이벤트 타입을 검사한다. ns-group-toggle 도 여기서 검사된다. 같은 이벤트를 가진
+  // 세 번째 래퍼 NsSidebarBase 는 비공개라 이 파일이 닿을 수 없고, 그쪽은
+  // src/react/tags/Sidebar.tsx 의 shim 이 onNsNavigate={(e) => onNavigate?.(e.detail)}
+  // 로 같은 방어를 한다.
   // (사이드바에서 한 번만 듣는 것도 여전히 유효한 패턴이다. index.html 의 각
   // 컴포넌트 절 참고.)
   const log = (msg: string) => console.log(msg);
@@ -158,7 +159,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </NsHeader>
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
-          <NsNavGroup heading="프로젝트" onNsNavigate={(e) => log(e.detail.label)}>
+          <NsNavGroup
+            heading="프로젝트"
+            collapsible
+            onNsNavigate={(e) => log(e.detail.label)}
+            /*
+              detail 을 실제로 읽는다. 인자 0개짜리 핸들러는 EventName<> 캐스트
+              누락을 감추므로 e.detail.open 까지 내려가야 검사가 성립한다.
+            */
+            onNsGroupToggle={(e) => log(String(e.detail.open))}
+          >
             <NsNavItem
               href="/a"
               label="프로젝트 A"
