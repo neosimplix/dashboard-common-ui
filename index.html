@@ -3030,8 +3030,12 @@
       <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
       <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group heading="관리">
+    <ns-nav-group heading="관리" collapsible>
       <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
+      <ns-nav-item href="/roles" label="권한" badge="RL"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group heading="보관" collapsible default-collapsed>
+      <ns-nav-item href="/archive" label="지난 프로젝트" badge="AR"></ns-nav-item>
     </ns-nav-group>
   </template>
   <div class="demo block" style="width: var(--ns-sidebar-width)"></div>
@@ -3041,6 +3045,9 @@
   <table>
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
     <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td>그룹 제목. 접히면 시각적으로 숨지만 <code>aria-label</code> 로 남는다</td></tr>
+    <tr><td><code>collapsible</code></td><td><code>collapsible</code></td><td>boolean</td><td><code>false</code></td><td>헤딩 줄을 토글 버튼으로 만든다. 쓰지 않으면 렌더 결과가 이전과 같다</td></tr>
+    <tr><td><code>open</code></td><td>—</td><td>boolean</td><td><code>undefined</code></td><td><strong>프로퍼티 전용.</strong> 설정하면 제어 모드가 되어 컴포넌트가 스스로 접지 않는다. HTML 에서는 <code>default-collapsed</code> 를 쓴다</td></tr>
+    <tr><td><code>defaultCollapsed</code></td><td><code>default-collapsed</code></td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 나중에 바꾸면 <strong>아직 토글되지 않은 그룹에만</strong> 반영된다</td></tr>
   </table>
 
   <h3>slot</h3>
@@ -3050,7 +3057,28 @@
   </table>
 
   <h3>이벤트</h3>
-  <p>자체 이벤트가 없다. 하위 <code>ns-nav-item</code> 의 <code>ns-navigate</code> 가 통과해 올라간다.</p>
+  <table>
+    <tr><th>이벤트</th><th>React prop</th><th>detail</th><th>언제</th></tr>
+    <tr><td><code>ns-group-toggle</code></td><td><code>onNsGroupToggle</code></td><td><code>{ open }</code></td><td>헤딩 버튼을 눌렀을 때. <code>open</code> 은 <strong>요청되는 다음 상태</strong>다. 제어·비제어 양쪽에서 올라온다</td></tr>
+  </table>
+  <p>
+    하위 <code>ns-nav-item</code> 의 <code>ns-navigate</code> 도 통과해 올라간다.
+    어느 그룹의 토글인지는 <code>e.target</code> 이 준다 — <code>detail</code> 에
+    <code>heading</code> 을 싣지 않는 이유는 그것이 표시용 문자열이라 상태를 저장할
+    키로 나쁘고, 필드가 둘이 되면 필드를 하나 더하는 것이 breaking 이 되기 때문이다.
+  </p>
+
+  <h3>사이드바가 접히면</h3>
+  <p>
+    <code>ns-sidebar</code> 가 레일로 접히면 그룹 헤딩이 숨는데, 그 헤딩이 곧 토글
+    버튼이다. 그래서 <strong>레일에서는 접힘을 무시하고 항목을 전부 보여준다</strong> —
+    그러지 않으면 접힌 그룹의 항목에 도달할 경로가 없어진다. 접힘 상태는 그대로
+    기억되고, 사이드바를 다시 펼치면 접혀 있던 그룹은 접힌 채로 돌아온다.
+  </p>
+  <p>
+    <strong>직계 자식 <code>ns-nav-group</code> 에만 전해진다.</strong> 라벨 숨김과
+    같은 한계다.
+  </p>
 
   <h3>HTML</h3>
   <script type="text/plain">
@@ -3068,6 +3096,21 @@
         <NsNavItem key={p.href} href={p.href} label={p.label} badge={p.badge}
                    active={pathname === p.href} />
       ))}
+    </NsNavGroup>
+
+    {/* 접힘. 상태를 소비자가 갖고 싶으면 open 프로퍼티를 쓴다 */}
+    <NsNavGroup heading="관리" collapsible defaultCollapsed>
+      <NsNavItem href="/admin" label="사용자 관리" badge="UM" />
+    </NsNavGroup>
+
+    {/* 제어 모드 — 접힘 상태를 저장하고 싶을 때 */}
+    <NsNavGroup
+      heading="보관"
+      collapsible
+      open={openGroups.archive}
+      onNsGroupToggle={(e) => setOpenGroups((g) => ({ ...g, archive: e.detail.open }))}
+    >
+      <NsNavItem href="/archive" label="지난 프로젝트" badge="AR" />
     </NsNavGroup>
   </script>
 
