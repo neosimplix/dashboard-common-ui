@@ -18,7 +18,7 @@
 
 토큰 미로드는 폴백이 아니라 `warnIfTokensMissing()` 경고로 잡는다. 그 함수는 프로브 **뒤에** 래치를 세운다 — 앞에 세우면 가장 먼저 연결되는 컴포넌트 하나의 판정이 영구 확정되고, `tokens.css` 가 JS 와 별도로 로드되므로 정상 페이지에 취소할 수 없는 거짓 경고가 남는다.
 
-예외는 `--ns-label-display` 하나다. 패키지 내부 배선이고, 사이드바 밖에서 단독으로 쓰일 때를 위한 기본값이 필요하다.
+예외는 **신호 프로퍼티**다. 지금은 둘 — `--ns-label-display` 와 `--ns-group-list-display`. 패키지 내부 배선이고, 사이드바 밖에서 단독으로 쓰일 때를 위한 기본값이 필요하다. 이름의 목록은 늘어날 수 있으므로 이 문단이 개수를 세는 근거가 아니다 — 출처는 `scripts/check-tokens.mjs` 의 `WIRING` 집합이다.
 
 ## Vite 의 `external` 은 문자열이면 정확히 일치해야 한다
 
@@ -497,7 +497,7 @@ esbuild 가 네이티브 `#private` 필드를 익명 `WeakMap`/`WeakSet` 헬퍼�
 
 없는 이름을 주면 `<ns-icon>` 은 아무것도 그리지 않고 콘솔 경고만 남긴다. 레이아웃은 멀쩡해 보이고 아이콘 자리만 빈다. 실제 소비자는 결국 `slot="leading"` 에 `<svg>` 를 직접 넣어 우회했다 — **동작하는 우회가 있었기 때문에 갭이 갭으로 보고되지 않았다.**
 
-→ `registerIcons(defs)` 를 진입점 둘 다에서 내보낸다. 스프라이트를 `Object.assign` 으로 덮으므로 기본 셋을 교체하는 것도 같은 함수다.
+→ `registerIcons(defs)` 를 진입점 둘 다에서 내보낸다. 스프라이트를 `Object.assign` 으로 덮으므로 기본 넷을 교체하는 것도 같은 함수다.
 
 → **`svg` 도 함께 내보낸다.** `IconDef.content` 는 lit 의 `svg` 태그드 템플릿인데, `lit` 은 이 패키지의 `dependencies` 이지 `peerDependencies` 가 아니다. 소비자 `package.json` 에는 lit 이 없으므로 `import { svg } from "lit"` 은 호이스팅에 기대는 코드가 된다 — npm 에서는 우연히 되고 pnpm 에서는 해석되지 않는다. **소비자가 우리 타입을 만들려면 우리가 그 생성자까지 줘야 한다.**
 
@@ -507,7 +507,7 @@ esbuild 가 네이티브 `#private` 필드를 익명 `WeakMap`/`WeakSet` 헬퍼�
 
 `registerIcons()` 를 내면서 문서에 "앱 진입점 모듈에서 한 번 부른다" 고 적었다. 소비자가 그대로 따랐는데 아이콘이 하나도 나오지 않았다.
 
-`app/lib/icons.ts` 를 만들어 `registerIcons(...)` 를 최상위에서 부르고 루트 레이아웃이 `import "./icons"` 했다. **루트 레이아웃은 서버 컴포넌트다.** 부수효과만 있고 export 를 쓰지 않는 모듈은 클라이언트 참조가 만들어지지 않아 브라우저 번들에 들어가지 않는다 — 그 파일은 서버에서만 실행되고, 브라우저의 스프라이트는 기본 셋 그대로 남는다. **`"use client"` 를 붙여도 같다.** 그 지시어는 경계를 표시할 뿐이고, 경계를 넘는 참조는 실제로 쓰이는 export 에서 만들어진다.
+`app/lib/icons.ts` 를 만들어 `registerIcons(...)` 를 최상위에서 부르고 루트 레이아웃이 `import "./icons"` 했다. **루트 레이아웃은 서버 컴포넌트다.** 부수효과만 있고 export 를 쓰지 않는 모듈은 클라이언트 참조가 만들어지지 않아 브라우저 번들에 들어가지 않는다 — 그 파일은 서버에서만 실행되고, 브라우저의 스프라이트는 기본 넷 그대로 남는다. **`"use client"` 를 붙여도 같다.** 그 지시어는 경계를 표시할 뿐이고, 경계를 넘는 참조는 실제로 쓰이는 export 에서 만들어진다.
 
 셸(이미 `"use client"` 인 컴포넌트)이 import 하게 바꾸니 동작했다.
 
@@ -698,6 +698,12 @@ boolean 속성은 **없으면 언제나 `false` 다.** Lit 은 속성이 없을 
 결과는 에러도 경고도 없이 **`default-collapsed` 가 React 소비자에게만 조용히 무시되는 것**이다. 순수 HTML 소비자는 upgrade 시점에 속성이 이미 마크업에 있으므로 이 구간 자체가 없어 증상이 나타나지 않는다 — React 소비자에서만, 그것도 초기 렌더에서만 재현된다.
 
 `willUpdate` 는 `changed.has("defaultCollapsed")` 를 볼 때마다(즉 그 프로퍼티가 바뀔 때마다) 실행되므로 언제 값이 도착하든 반영된다. `#toggled` 플래그로 사용자가 이미 한 번이라도 토글한 뒤에는 늦게 온 `defaultCollapsed` 가 그 조작을 덮지 않게 막는다 — 그러지 않으면 소비자가 그룹을 펼친 순간 뒤늦게 도착한 초기값이 다시 접어 버릴 수 있다.
+
+`willUpdate` 로 seed 하는 것 자체는 이 컴포넌트가 처음이 아니다. `ns-pagination.ts` 의 `willUpdate()` 가 이미 같은 자리에서 `default-page` 를 seed 한다 — `hasUpdated` 로 첫 업데이트에만 막는다는 점도 같다. 다만 그쪽은 `#toggled` 짝이 없다. 비제어 초기값이 **속성**(`default-page`)이라 upgrade 시점에 이미 마크업에 있고, 그 뒤로 값이 바뀌어 다시 도착할 일이 없기 때문이다 — 그룹의 `defaultCollapsed` 는 React 프로퍼티라 늦게 도착할 수 있으므로 사용자 조작과의 경합을 막을 플래그가 따로 필요하다.
+
+`ns-multi-select.ts` 의 `#innerValue`(105~116행)는 한 걸음 더 나가 **seed 를 아예 하지 않는다.** `#selected` getter 가 `this.value ?? this.#innerValue ?? this.defaultValue` 로 값을 그때그때 늦게(lazily) 구하므로, "아직 seed 되지 않은 시점" 이라는 것 자체가 없다 — `willUpdate`/`firstUpdated` 어느 쪽에도 타이밍 의존이 걸리지 않는다.
+
+`ns-nav-group` 이 이 lazy 패턴을 쓰지 못하는 이유는 비제어 진실이 **평범한 boolean**(`#innerCollapsed`)이기 때문이다. `??` 체인은 값이 "아직 없다"(`undefined`/`null`)와 "있는데 falsy 다"(`false`)를 구분해야 성립하는데, `boolean` 은 그 둘을 구분할 수 없다 — `#innerCollapsed` 를 `defaultCollapsed` 로 대체하면 펼침 상태(`false`)가 "아직 seed 안 됨" 과 구별되지 않아 사용자가 펼친 그룹도 다음 렌더에 `defaultCollapsed` 로 되돌아간다. 이 lazy 패턴을 쓰려면 필드를 `boolean | undefined` 로 바꿔야 하고, 그러면 `#controlled` 의 `open !== undefined` 판정과 같은 모양의 코드가 비제어 쪽에도 하나 더 생긴다 — 지금은 그 비용을 들이지 않고 `willUpdate` seed 를 택했다.
 
 `ns-dialog` 의 `default-open` 도 같은 성질을 잠재적으로 갖고 있지만 아직 드러나지 않았다 — 대화상자를 SSR 로 열어 둔 채 내려보내는 조합을 아직 아무도 쓰지 않았을 뿐이다.
 
