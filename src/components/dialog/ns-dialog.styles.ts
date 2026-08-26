@@ -101,8 +101,28 @@ export const styles = css`
     outline-offset: 2px;
   }
 
+  /*
+    **flex: 1 이 아니라 flex: 1 1 auto 다.** 축약형 flex: 1 은 flex-basis: 0% 이고,
+    그러면 본문의 flex base size 가 0 이다. 아래 min-height: 0 이 flex 항목의 자동
+    최소 크기(auto)마저 꺼 두므로, 내용이 높이를 주장할 통로가 하나도 남지 않는다.
+
+    <dialog> 는 UA 스타일시트의 height: fit-content 를 그대로 쓰는 고유 크기
+    컨테이너다. 그 높이를 구할 때 Blink 는 명세 §9.9.1(max-content flex fraction)을
+    구현해 항목의 내용 기여분을 더하지만, **WebKit 은 flex base size 만 더한다.**
+    그래서 Safari 에서만 본문의 content box 가 0 으로 붕괴하고, 한 줄짜리 문장에도
+    스크롤 막대가 생겼다. 같은 마크업을 두 엔진에서 재서 확인했다 — 본문 높이가
+    Blink 19px / WebKit 0px 였다.
+
+    auto 는 base size 를 내용 높이로 만들어 어느 엔진에서도 같은 값을 준다.
+    flex-shrink: 1 과 min-height: 0 은 그대로 두는 것이 중요하다 — 대화상자가
+    max-height 에 걸리면 그 둘이 본문을 내용보다 작게 줄여 주고, 그때 비로소
+    overflow-y 가 일한다. **그 축소가 이 요소가 스크롤되는 유일하게 의도된 경로다.**
+
+    주석에 백틱을 쓰지 않는 것도 이 파일에서는 규칙이다. css 태그드 템플릿 안이라
+    백틱 하나가 리터럴을 끊는다.
+  */
   .body {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     padding: var(--ns-space-6);
