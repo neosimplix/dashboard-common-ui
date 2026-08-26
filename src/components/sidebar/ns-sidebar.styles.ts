@@ -71,8 +71,20 @@ export const styles = css`
     --ns-label-display: block;
   }
 
-  /* 너비와 같은 구간을 겪는다. 여기서 [open] 만 보면 라벨이 깜빡인다. */
+  /*
+    너비와 같은 구간을 겪는다. 여기서 [open] 만 보면 라벨이 깜빡인다.
+
+    --ns-group-list-display 는 ns-nav-group 의 접힘을 레일에서만 무시하게 만든다.
+    레일에서는 위 --ns-label-display: none 이 그룹 헤딩을 지우는데, 그 헤딩이 곧
+    토글 버튼이라 접힌 그룹은 항목도 버튼도 없이 사라진다. 접힘 상태는 그대로
+    기억되고, 사이드바를 다시 펼치면 이 규칙이 매칭을 멈춰 값이 미정의로
+    돌아가면서 접힌 그룹이 다시 접힌다 — 되돌릴 코드가 따로 없다.
+
+    라벨 숨김과 같은 한계를 갖는다. ::slotted 는 결합자를 받지 않으므로 직계 자식
+    ns-nav-group 에만 닿는다.
+  */
   :host(:not([open]):not([data-ns-open])) ::slotted(ns-nav-group) {
     --ns-label-display: none;
+    --ns-group-list-display: block;
   }
 `;

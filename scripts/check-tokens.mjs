@@ -113,8 +113,15 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-/* tokens.css 에 정의하지 않는 내부 배선. 소비자가 덮는 값이 아니라 신호다. */
-const WIRING = new Set(["--ns-label-display"]);
+/*
+  tokens.css 에 정의하지 않는 내부 배선. 소비자가 덮는 값이 아니라 신호다.
+
+  ns-sidebar 가 ::slotted 로 자식에게 상태를 알리는 통로 둘이다. 색·치수 토큰과
+  달리 정의가 tokens.css 에 없고, 사이드바가 세워 주지 않는 상황(단독 사용,
+  사이드바 펼침)에서는 읽는 쪽의 var() 폴백이 곧 기본 동작이다. 그래서 이 둘만
+  "컴포넌트 스타일에 var() 폴백을 쓰지 않는다" 의 예외이기도 하다.
+*/
+const WIRING = new Set(["--ns-label-display", "--ns-group-list-display"]);
 
 const walk = (dir) =>
   readdirSync(dir).flatMap((name) => {

@@ -95,6 +95,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
+| (릴리스 전) | 변경 | 태그만 올린다. `ns-nav-group` 에 `collapsible` 이 생겼다 — **쓰지 않으면 아무것도 바뀌지 않는다.** 접힘 상태를 저장하려면 `open` 프로퍼티와 `onNsGroupToggle` 을 쓴다 |
 | `v0.4.0` | 변경 | **breaking 둘.** 액센트 토큰 `--ns-color-accent-hover`·`--ns-color-accent-fg` 가 없어졌다(`--ns-color-accent-fill-hover`·`--ns-color-accent-fill-fg` 로 옮겨간다). `nsToast()` 기본 자리가 상단 중앙 — 우하단을 유지하려면 시작 지점에서 `nsToastPosition("bottom-right")` |
 | `v0.3.0` | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
 | `v0.2.5` | 변경 | 태그만 올린다. `ns-icon` 슬롯 자식이 하이드레이션 때 튀지 않는다. 프로퍼티 전용 이름을 속성으로 쓰면 경고가 나온다 |

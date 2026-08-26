@@ -8,7 +8,7 @@
 |---|---|
 | `ns-header` | 좌측 토글 버튼과 프로젝트 이름, 우측 `actions` slot |
 | `ns-sidebar` | 네비게이션 컨테이너. 접으면 좌측에 4rem 레일이 남는다 |
-| `ns-nav-group` | 제목이 붙은 네비게이션 그룹 |
+| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다 |
 | `ns-nav-item` | 그룹 하위 항목. 행 좌측에 `leading` slot(비우면 `badge` 폴백), 우측에 `trailing` slot |
 | `ns-icon` | 이름으로 꺼내는 인라인 SVG |
 | `ns-page-heading` | `h1` + 설명 `p` |
@@ -37,7 +37,7 @@
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 여덟이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 아홉이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 

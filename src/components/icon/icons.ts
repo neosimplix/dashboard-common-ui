@@ -10,7 +10,7 @@ export interface IconDef {
 /*
   아이콘 스프라이트.
 
-  전부 이 모듈에 있으므로 트리 셰이킹되지 않는다. 셋이면 무시할 수준이고,
+  전부 이 모듈에 있으므로 트리 셰이킹되지 않는다. 넷이면 무시할 수준이고,
   늘어나면 서브패스 분리를 검토한다.
 
   stroke/fill 에 currentColor 를 쓴다. color 는 shadow 경계를 넘어 상속되므로
@@ -26,6 +26,25 @@ export const icons: Record<string, IconDef> = {
         stroke="currentColor"
         stroke-width="1.6"
         stroke-linecap="round"
+      />
+    `,
+  },
+
+  /*
+    ns-nav-group 의 접힘 caret. 아래를 가리키는 것이 펼침이고, 접히면
+    그 컴포넌트가 -90deg 로 돌린다. 회전은 여기서 하지 않는다 — 이 스프라이트는
+    방향을 모르는 채로 하나만 갖고, 쓰는 쪽이 돌린다.
+  */
+  "chevron-down": {
+    viewBox: "0 0 20 20",
+    content: svg`
+      <path
+        d="M5 7.5l5 5 5-5"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
       />
     `,
   },
@@ -69,8 +88,9 @@ export const icons: Record<string, IconDef> = {
 /**
  * 스프라이트에 아이콘을 더한다. 같은 키를 다시 주면 덮는다.
  *
- * 이 셋은 라이브러리 자신이 쓰는 것뿐이라(`ns-header` 의 토글, `ns-dialog` 의
- * 닫기, 로그인 예시) 소비자 도메인의 아이콘은 여기 들어올 수 없다. 그래서
+ * 이 넷은 라이브러리 자신이 쓰는 것뿐이라(`ns-header` 의 토글, `ns-dialog` 의
+ * 닫기, 로그인 예시, `ns-nav-group` 의 접힘 caret) 소비자 도메인의 아이콘은
+ * 여기 들어올 수 없다. 그래서
  * 스프라이트를 열어 둔다 — 이 함수가 없으면 `<ns-icon>` 은 소비자에게
  * 쓸모가 없고 `slot="leading"` 에 `<svg>` 를 직접 넣는 길밖에 남지 않는다.
  *
