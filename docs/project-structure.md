@@ -8,7 +8,7 @@
 |---|---|
 | `ns-header` | 좌측 토글 버튼과 프로젝트 이름, 우측 `actions` slot |
 | `ns-sidebar` | 레일 + 패널 두 칼럼. **레일은 항상 보이고** 최상위 `ns-nav-group` 마다 타일 하나를 그린다(`role="tablist"`). 패널은 선택된 그룹 **하나만** 보여준다 |
-| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다. `name` 이 레일의 키이고 `icon`·`badge` 가 타일 내용이다 |
+| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다. `name` 이 레일의 키이고 `icon`·`badge` 가 타일 내용이다. **`ns-nav-group` 안에 그냥 중첩하면 하위 카테고리다** — 새 태그·속성 없이 그룹이 자기 중첩을 스스로 판정한다. `name`·`badge` 는 레일용이라 최상위에서만 의미가 있고, `collapsible` 은 하위 그룹에 쓴다(최상위에 쓰면 패널에 그룹이 하나뿐이라 통째로 비어 보인다) |
 | `ns-nav-item` | 그룹 하위 항목. 행 좌측에 `leading` slot(비우면 `badge` 폴백), 우측에 `trailing` slot |
 | `ns-icon` | 이름으로 꺼내는 인라인 SVG |
 | `ns-page-heading` | `h1` + 설명 `p` |

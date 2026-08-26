@@ -204,8 +204,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </Sidebar>
         {/* 비제어. open 을 주지 않으면 레일 타일이 스스로 패널을 여닫는다. */}
         <Sidebar defaultOpen defaultActiveGroup="admin" onNavigate={(d) => router.push(d.href)}>
-          <NsNavGroup name="admin" heading="관리" badge="관">
-            <NsNavItem href="/users" label="사용자" badge="사" />
+          {/*
+            하위 카테고리. collapsible 은 최상위(admin)가 아니라 하위(사용자)에
+            쓴다. ns-group-toggle 은 composed 라 하위에서 올린 것도 이 핸들러에
+            도착한다 — e.detail.open 을 실제로 읽어 그 경로가 타입으로 성립하는지
+            검사하는 자리다.
+          */}
+          <NsNavGroup
+            name="admin"
+            heading="관리"
+            badge="관"
+            onNsGroupToggle={(e) => log(String(e.detail.open))}
+          >
+            <NsNavGroup heading="사용자" collapsible>
+              <NsNavItem href="/users" label="목록" badge="목" />
+            </NsNavGroup>
+            <NsNavItem href="/logs" label="로그" badge="로" />
           </NsNavGroup>
         </Sidebar>
         <main>

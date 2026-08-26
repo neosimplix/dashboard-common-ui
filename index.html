@@ -2987,7 +2987,7 @@
   <h2 id="ns-sidebar">ns-sidebar</h2>
   <p>
     네비게이션 그룹을 담는 사이드바. 접어도 완전히 사라지지 않고 좌측에 레일이 남아
-    배지로 항목을 계속 볼 수 있다.
+    최상위 그룹마다 타일 하나로 계속 오갈 수 있다.
   </p>
 
   <h3>데모</h3>
@@ -3124,16 +3124,67 @@
       <ns-nav-item href="/a" label="프로젝트 A" badge="PA" active></ns-nav-item>
       <ns-nav-item href="/b" label="프로젝트 B" badge="PB"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group heading="관리" collapsible>
-      <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
-      <ns-nav-item href="/roles" label="권한" badge="RL"></ns-nav-item>
-    </ns-nav-group>
-    <ns-nav-group heading="보관" collapsible default-collapsed>
-      <ns-nav-item href="/archive" label="지난 프로젝트" badge="AR"></ns-nav-item>
+    <ns-nav-group heading="관리">
+      <ns-nav-group heading="사용자 관리" collapsible>
+        <ns-nav-item href="/admin" label="사용자 관리" badge="UM"></ns-nav-item>
+        <ns-nav-item href="/roles" label="권한" badge="RL"></ns-nav-item>
+      </ns-nav-group>
+      <ns-nav-group heading="보관" collapsible default-collapsed>
+        <ns-nav-item href="/archive" label="지난 프로젝트" badge="AR"></ns-nav-item>
+      </ns-nav-group>
     </ns-nav-group>
   </template>
   <div class="demo block" style="width: var(--ns-sidebar-width)"></div>
   <pre></pre>
+  <p>
+    <code>collapsible</code> 은 최상위(「관리」)가 아니라 하위 그룹(「사용자 관리」·「보관」)에
+    붙어 있다 — 아래 "하위 카테고리" 절이 그 이유를 적는다.
+  </p>
+
+  <h3>하위 카테고리</h3>
+  <p>
+    <code>ns-nav-group</code> 을 <code>ns-nav-group</code> 안에 그냥 중첩하면 하위
+    카테고리가 된다. 새 태그도 새 속성도 없다 — 그룹이 <code>connectedCallback</code>
+    에서 자기 부모를 <code>closest("ns-nav-group")</code> 로 찾아 스스로 판정한다.
+  </p>
+  <div class="demo" style="height: 18rem">
+    <ns-sidebar default-open id="nav-group-nested-demo">
+      <ns-nav-group name="admin" heading="관리" badge="관">
+        <ns-nav-group heading="사용자" collapsible>
+          <ns-nav-item href="/users" label="목록" badge="목"></ns-nav-item>
+          <ns-nav-item href="/roles" label="권한" badge="권"></ns-nav-item>
+        </ns-nav-group>
+        <ns-nav-group heading="결제" collapsible default-collapsed>
+          <ns-nav-item href="/receipts" label="영수증" badge="영"></ns-nav-item>
+        </ns-nav-group>
+        <ns-nav-item href="/logs" label="로그" badge="로"></ns-nav-item>
+      </ns-nav-group>
+    </ns-sidebar>
+  </div>
+  <ol>
+    <li>
+      <strong>하위 그룹은 <code>ns-nav-group</code> 을 그냥 중첩하면 된다.</strong>
+      소비자가 더 쓸 속성이 없다 — 그룹이 자기 중첩을 판정한다.
+    </li>
+    <li>
+      <strong>하위 그룹과 직속 항목을 섞어도 된다.</strong> 순서는 마크업 순서다
+      (위 데모의 「로그」가 그렇다 — 「사용자」·「결제」 두 하위 그룹 다음, 마크업에
+      쓴 순서 그대로 나온다).
+    </li>
+    <li>
+      <strong>2단까지 시각적으로 구분된다.</strong> 3단 이상은 들여쓰기가 누적되지만
+      제목 자체는 2단과 같다.
+    </li>
+    <li>
+      <strong><code>collapsible</code> 은 하위 그룹에 쓴다.</strong> 최상위 그룹에
+      쓰면 패널이 통째로 비어 보인다 — 패널에는 그룹 하나만 오기 때문이다.
+    </li>
+    <li>
+      <strong>하위 그룹의 <code>ns-group-toggle</code>·<code>ns-navigate</code> 는
+      상위 그룹의 핸들러에도 도착한다.</strong> <code>composed</code> 라서다.
+      어느 그룹인지는 <code>e.target</code> 이 준다.
+    </li>
+  </ol>
 
   <h3>프로퍼티</h3>
   <table>
@@ -3197,19 +3248,22 @@
       ))}
     </NsNavGroup>
 
-    {/* 접힘. 상태를 소비자가 갖고 싶으면 open 프로퍼티를 쓴다 */}
-    <NsNavGroup heading="관리" collapsible defaultCollapsed>
-      <NsNavItem href="/admin" label="사용자 관리" badge="UM" />
-    </NsNavGroup>
+    {/* 하위 카테고리. collapsible 은 최상위가 아니라 하위 그룹에 쓴다 */}
+    <NsNavGroup heading="관리">
+      {/* 접힘. 상태를 소비자가 갖고 싶으면 open 프로퍼티를 쓴다 */}
+      <NsNavGroup heading="사용자 관리" collapsible defaultCollapsed>
+        <NsNavItem href="/admin" label="사용자 관리" badge="UM" />
+      </NsNavGroup>
 
-    {/* 제어 모드 — 접힘 상태를 저장하고 싶을 때 */}
-    <NsNavGroup
-      heading="보관"
-      collapsible
-      open={openGroups.archive}
-      onNsGroupToggle={(e) => setOpenGroups((g) => ({ ...g, archive: e.detail.open }))}
-    >
-      <NsNavItem href="/archive" label="지난 프로젝트" badge="AR" />
+      {/* 제어 모드 — 접힘 상태를 저장하고 싶을 때 */}
+      <NsNavGroup
+        heading="보관"
+        collapsible
+        open={openGroups.archive}
+        onNsGroupToggle={(e) => setOpenGroups((g) => ({ ...g, archive: e.detail.open }))}
+      >
+        <NsNavItem href="/archive" label="지난 프로젝트" badge="AR" />
+      </NsNavGroup>
     </NsNavGroup>
   </script>
 
