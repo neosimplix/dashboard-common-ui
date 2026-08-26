@@ -1931,15 +1931,21 @@ B 로 갈 것(소비자 프로젝트가 있어야 확인된다). **`npm run chec
 - **Next.js SSR 에서 `default-open`·`default-active-group` 이 첫 페인트부터 맞는지.** `willUpdate` 씨앗이 막으려는 것이 정확히 이것이고 `index.html` 은 순수 HTML 이라 이 경로를 재현하지 못한다.
 - **React 소비자가 `<UsersIcon data-ns-rail="admin" />` 로 자기 아이콘을 레일에 넣을 수 있는지.** 이 설계가 스프라이트 이름 방식을 버리고 슬롯을 고른 이유가 이것이다.
 
-- [ ] **Step 7: 검사를 돌린다**
+- [ ] **Step 7: `elements.ts` 의 SSR 주석을 보완한다**
+
+`src/react/elements.ts` 의 `NsSidebarBase` 위 주석이 `data-ns-open` 을 **유일한** SSR 통로로 서술한다. 틀린 말은 아니지만 불완전하다 — Task 4 가 `default-open` 을 같은 이유로 같은 처방을 받게 만들었다.
+
+그 문단에 한 줄을 더한다: 제어 경로는 `data-ns-open`, 비제어 경로와 제어의 upgrade~hydration 구간은 `default-open` 이 덮는다는 것. 두 이름이 각각 무엇을 덮는지는 `src/react/tags/Sidebar.tsx` 의 shim docstring 에 이미 적혀 있으므로 여기서는 그쪽을 가리키기만 해도 된다.
+
+- [ ] **Step 8: 검사를 돌린다**
 
 Run: `npm run check`
 Expected: 초록.
 
-- [ ] **Step 8: 커밋**
+- [ ] **Step 9: 커밋**
 
 ```bash
-git add .claude/rules/ docs/ README.md
+git add .claude/rules/ docs/ README.md src/react/elements.ts
 git commit -m "docs(sidebar): 레일 재설계의 규칙·경위·이주를 적는다"
 ```
 
