@@ -101,6 +101,22 @@ export class NsPagination extends LitElement {
   /** 비제어 초기 페이지. */
   @property({ type: Number, attribute: "default-page" }) defaultPage = 1;
 
+  /**
+   * 이전·다음 사이에 놓을 슬롯 수. **`…` 칸도 하나로 센다.**
+   *
+   * **5 이상의 홀수여야 한다.** 가운데 배치가 `1 · … · 현재±h · … · 마지막` 이고
+   * 그 번호 개수가 `size - 4 = 2h + 1` 이라 `h = (size-5)/2` 이기 때문이다 —
+   * 짝수면 현재 페이지 좌우가 비대칭이 되고, 3이면 `h = -1` 이라 현재 페이지가
+   * 들어갈 자리가 없다.
+   *
+   * 잘못된 값은 경고 한 번 뒤 기본값으로 그린다. **렌더를 멈추지 않는다** —
+   * `per-page` 와 달리 이것은 페이지 수 계산에 쓰이지 않는 표시 설정이라,
+   * 페이징을 통째로 죽이는 것은 과하다.
+   *
+   * `page` 와 달리 속성을 갖는다. 상태가 아니라 설정이라 제어 모드 문제가 없다.
+   */
+  @property({ type: Number, attribute: "page-window" }) pageWindow = DEFAULT_PAGE_WINDOW;
+
   #innerPage = 1;
 
   /*
@@ -117,6 +133,7 @@ export class NsPagination extends LitElement {
   #warnedPage = false;
   #warnedPerPage = false;
   #warnedTotal = false;
+  #warnedWindow = false;
 
   /*
     방금 활성화한 컨트롤과 그것이 **요청한 페이지**. 다음 업데이트 뒤에 같은
@@ -180,6 +197,24 @@ export class NsPagination extends LitElement {
     }
 
     return Math.ceil(this.total / this.perPage);
+  }
+
+  /** 검증을 통과한 슬롯 수. **언제나 5 이상의 홀수를 돌려준다.** */
+  get #window(): number {
+    const raw = this.pageWindow;
+    /*
+      Number.isInteger 가 NaN·Infinity·소수를 한 번에 걸러낸다. raw >= 5 를 먼저
+      보므로 음수의 나머지 연산을 걱정할 필요가 없다.
+    */
+    if (Number.isInteger(raw) && raw >= 5 && raw % 2 === 1) return raw;
+
+    if (!this.#warnedWindow) {
+      this.#warnedWindow = true;
+      console.warn(
+        `[ns-pagination] page-window=${raw} 는 5 이상의 홀수여야 합니다. ${DEFAULT_PAGE_WINDOW} 로 그립니다.`,
+      );
+    }
+    return DEFAULT_PAGE_WINDOW;
   }
 
   override connectedCallback(): void {
@@ -379,7 +414,7 @@ export class NsPagination extends LitElement {
           이전
         </button>
         ${repeat(
-          pageWindow(current, pages, DEFAULT_PAGE_WINDOW),
+          pageWindow(current, pages, this.#window),
           /*
             번호는 그 번호 자신이 정체성이다. 슬롯 수는 이제 고정이지만 윈도우가
             밀리면 같은 자리에 다른 번호가 온다(`1 … 5 6 7 … 12` → `1 … 6 7 8 … 12`).

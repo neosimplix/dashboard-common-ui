@@ -2330,6 +2330,22 @@
     (<strong>아무것도 렌더하지 않는다</strong>) 다.
   </p>
 
+  <h3>슬롯 수</h3>
+  <template class="ex">
+    <div style="display:grid;gap:var(--ns-space-4)">
+      <ns-pagination total="240" per-page="20" default-page="6" page-window="5"></ns-pagination>
+      <ns-pagination total="240" per-page="20" default-page="6"></ns-pagination>
+      <ns-pagination total="240" per-page="20" default-page="6" page-window="9"></ns-pagination>
+    </div>
+  </template>
+  <div class="demo block" id="pagination-window-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <p>
+    위에서부터 <code>page-window="5"</code> · 기본값 <code>7</code> · <code>page-window="9"</code> 다.
+    셋 다 12페이지이고, <strong>어느 것이든 끝까지 넘기는 동안 "다음" 버튼이 제자리에 있어야 한다</strong> —
+    슬롯 수가 달라지는 것은 세 컨트롤 <em>사이</em>지 한 컨트롤 <em>안</em>이 아니다.
+  </p>
+
   <h3>프로퍼티</h3>
   <table>
     <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
@@ -2337,6 +2353,7 @@
     <tr><td><code>perPage</code></td><td><code>per-page</code></td><td>number</td><td><code>20</code></td><td></td></tr>
     <tr><td><code>page</code></td><td>없음</td><td>number | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
     <tr><td><code>defaultPage</code></td><td><code>default-page</code></td><td>number</td><td><code>1</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>pageWindow</code></td><td><code>page-window</code></td><td>number</td><td><code>7</code></td><td>이전·다음 사이 슬롯 수. <code>…</code> 칸도 센다. <strong>5 이상의 홀수</strong> — 아니면 경고 후 <code>7</code></td></tr>
   </table>
 
   <h3>이벤트</h3>
