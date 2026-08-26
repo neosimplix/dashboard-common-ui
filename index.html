@@ -203,9 +203,27 @@
   <p>
     업그레이드도 이 한 줄에서 시작한다 —
     <code>dashboard-common-ui.git#v0.4.0</code> 의 태그 번호를 바꾸는 것이다.
-    <strong>다만 0.2.0 은 번호만 바꾸면 끝나지 않는다</strong> — 깨지는 변경이 둘이고
-    코드 변경 없이 화면이 바뀌는 것이 하나다.
-    <a href="#migration-0-2-0">0.1.5 → 0.2.0 이관</a> 을 함께 본다.
+    <strong>번호만 바꾸면 끝나지 않는 태그가 둘이다 — 0.2.0 과 0.4.0.</strong>
+    나머지는 태그만 올린다.
+  </p>
+  <ul>
+    <li>
+      <strong>0.2.0</strong> — 깨지는 변경이 둘이고 코드 변경 없이 화면이 바뀌는 것이 하나다.
+      <a href="#migration-0-2-0">0.1.5 → 0.2.0 이관</a> 을 함께 본다.
+    </li>
+    <li>
+      <strong>0.4.0</strong> — 깨지는 변경이 둘인데 <strong>둘 다 오류 없이 조용히 어긋난다.</strong>
+      ① <code>--ns-color-accent-hover</code>·<code>--ns-color-accent-fg</code> 가 없어져,
+      그 이름을 덮어 쓰고 있었다면 그 선언이 아무것도 하지 않는다 —
+      <a href="#tokens">디자인 토큰</a> 의 액센트 문단을 본다.
+      ② <code>nsToast()</code> 의 기본 자리가 상단 중앙으로 바뀌었다 —
+      <a href="#overlays">toast · alert · confirm</a> 의 <strong>이관</strong> 절을 본다.
+    </li>
+  </ul>
+  <p>
+    <strong>태그별 이관 원장은 <code>README.md</code> 에 있다</strong> — <code>## 릴리스</code> 표와
+    그 아래 <code>X → Y 이관</code> 절들이다. 이 페이지는 0.2.2 까지만 이관 절을 따로 두고,
+    그 이후의 변경은 위처럼 <strong>해당 기능 절 안</strong>에 적는다.
   </p>
 
   <h3>CSS 두 개를 모두 불러온다</h3>
