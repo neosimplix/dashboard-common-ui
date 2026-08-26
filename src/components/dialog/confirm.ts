@@ -154,8 +154,18 @@ function open(
     );
   };
 
+  /*
+    **버튼을 슬롯에 직접 넣는다.** <div> 로 감싸면 ns-dialog 의 .footer 가 가진
+    flex 항목이 래퍼 하나뿐이 되어, 가운데 정렬은 래퍼에 걸리고 gap 은 버튼
+    사이에 닿지 못한다 — 취소와 확인이 서로 맞붙어 그려진다. 감싸지 않으면
+    .footer 의 배치가 버튼에 그대로 적용된다.
+
+    이름 있는 슬롯은 slot 속성을 가진 요소만 배정받으므로, 사이의 공백 텍스트
+    노드가 flex 항목으로 끼어들 걱정도 없다.
+  */
   const confirm = document.createElement("button");
   confirm.type = "button";
+  confirm.slot = "footer";
   confirm.className =
     options.tone === "danger"
       ? "ns-button ns-button--danger ns-button--sm"
@@ -163,24 +173,22 @@ function open(
   confirm.textContent = options.confirmLabel ?? "확인";
   confirm.addEventListener("click", () => finish(true));
 
-  const footer = document.createElement("div");
-  footer.slot = "footer";
-
   /** 파괴적 확인에서는 초기 포커스가 취소에 간다. */
   let initialFocus: HTMLButtonElement | null = null;
 
   if (withCancel) {
     const cancel = document.createElement("button");
     cancel.type = "button";
+    cancel.slot = "footer";
     cancel.className = "ns-button ns-button--outline ns-button--sm";
     cancel.textContent = options.cancelLabel ?? "취소";
     cancel.addEventListener("click", () => finish(false));
     if (options.tone === "danger") initialFocus = cancel;
-    footer.append(cancel);
+    /* 취소가 확인보다 먼저 배정되도록 먼저 붙인다. 슬롯 안의 순서는 문서 순서다. */
+    el.append(cancel);
   }
 
-  footer.append(confirm);
-  el.append(footer);
+  el.append(confirm);
 
   /* ESC · 백드롭 · 닫기 버튼. alert 은 이 경로도 resolve 다. */
   el.addEventListener("ns-dialog-close", () => finish(false));

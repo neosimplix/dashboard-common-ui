@@ -1865,10 +1865,8 @@
       <button class="ns-button ns-button--outline ns-button--md" type="button" data-open>대화상자 열기</button>
       <ns-dialog heading="사용자 승인">
         <p style="margin:0">홍길동 님의 가입 신청을 승인하시겠습니까?</p>
-        <div slot="footer">
-          <button class="ns-button ns-button--outline ns-button--sm" type="button" data-close>취소</button>
-          <button class="ns-button ns-button--solid ns-button--sm" type="button" data-close>승인</button>
-        </div>
+        <button class="ns-button ns-button--outline ns-button--sm" type="button" slot="footer" data-close>취소</button>
+        <button class="ns-button ns-button--solid ns-button--sm" type="button" slot="footer" data-close>승인</button>
       </ns-dialog>
     </div>
   </template>
@@ -1920,8 +1918,16 @@
   <table>
     <tr><th>이름</th><th>위치</th><th>용도</th></tr>
     <tr><td>(기본)</td><td>본문</td><td>내용이 길면 이 영역만 스크롤된다</td></tr>
-    <tr><td><code>footer</code></td><td>하단</td><td><strong>우측 정렬과 간격이 내장</strong>이다. 비어 있으면 영역 자체가 사라진다</td></tr>
+    <tr><td><code>footer</code></td><td>하단</td><td><strong>가운데 정렬과 간격이 내장</strong>이다. 비어 있으면 영역 자체가 사라진다</td></tr>
   </table>
+  <p>
+    <strong>버튼을 <code>&lt;div&gt;</code> 로 감싸지 않는다.</strong> 정렬과 간격은 슬롯에
+    배정된 것에 걸리므로, 감싸면 항목이 래퍼 하나뿐이 되어 가운데로 오는 것은 래퍼이고
+    <code>gap</code> 은 버튼 사이에 닿지 못한다 — 버튼끼리 맞붙어 그려진다.
+    각 버튼에 <code>slot="footer"</code> 를 직접 준다. React 는 임의의
+    <code>ReactNode</code> 에 <code>slot</code> 을 붙일 수 없어 래퍼가 불가피하고,
+    <code>Dialog</code> shim 이 그 래퍼에 <code>display: contents</code> 를 줘서 비켜선다.
+  </p>
 
   <h3>이벤트</h3>
   <table>
@@ -1947,10 +1953,8 @@
     </button>
     <ns-dialog heading="사용자 승인" id="approve">
       <p>홍길동 님의 가입 신청을 승인하시겠습니까?</p>
-      <div slot="footer">
-        <button class="ns-button ns-button--outline ns-button--sm" type="button" data-close>취소</button>
-        <button class="ns-button ns-button--solid ns-button--sm" type="button">승인</button>
-      </div>
+      <button class="ns-button ns-button--outline ns-button--sm" type="button" slot="footer" data-close>취소</button>
+      <button class="ns-button ns-button--solid ns-button--sm" type="button" slot="footer">승인</button>
     </ns-dialog>
   </script>
 

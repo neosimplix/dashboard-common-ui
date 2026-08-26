@@ -112,11 +112,16 @@ export const styles = css`
     footer 는 내용이 있을 때만 보인다. slot 에 배정된 노드가 있는지는 CSS 로
     알 수 없어 slotchange 로 판정하고 hidden 속성을 건다.
     display: flex 가 UA 의 [hidden] 규칙을 이기므로 명시적으로 되돌린다.
+
+    **이 규칙이 배치의 유일한 자리다.** 정렬과 gap 이 여기 있으므로 슬롯에 들어온
+    것이 곧 flex 항목이어야 한다 — 버튼을 <div> 로 감싸면 항목이 래퍼 하나뿐이라
+    가운데 정렬은 래퍼에 걸리고 gap 은 버튼 사이에 닿지 못한다. 감싸는 것 말고는
+    방법이 없는 React shim 은 그 래퍼에 display: contents 를 줘서 비켜선다.
   */
   .footer {
     flex: none;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: var(--ns-space-2);
     padding: 0 var(--ns-space-6) var(--ns-space-6);
   }

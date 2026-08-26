@@ -9,7 +9,7 @@ export type DialogProps = {
   title: string;
   onClose: (reason: NsDialogCloseReason) => void;
   children: ReactNode;
-  /** 하단 우측 정렬 영역. 지정하면 `slot="footer"` 로 들어간다. */
+  /** 하단 가운데 정렬 영역. 지정하면 `slot="footer"` 로 들어간다. */
   footer?: ReactNode;
   noBackdropClose?: boolean;
   className?: string;
@@ -43,7 +43,24 @@ export function Dialog({
       onNsDialogClose={(e) => onClose(e.detail.reason)}
     >
       {children}
-      {footer != null && <div slot="footer">{footer}</div>}
+      {/*
+        래퍼는 피할 수 없다 — footer 는 임의의 ReactNode 라 각 노드에 slot 속성을
+        붙일 수 없고, 이름 있는 슬롯은 slot 을 가진 요소만 배정받는다.
+
+        display: contents 로 그 래퍼가 배치에서 비켜선다. 없으면 ns-dialog 의
+        .footer 가 보는 flex 항목이 이 <div> 하나뿐이라 가운데 정렬은 래퍼에
+        걸리고 gap 은 버튼 사이에 닿지 못한다.
+
+        인라인 스타일인 것은 confirm.ts 가 <p> 의 여백을 지우는 것과 같은 이유다 —
+        이 <div> 는 shim 만 만들고 소비자가 선택자를 걸 수 없으므로 덮을 수 있어야
+        할 값이 아니다. 래퍼 자신에 여백이나 배경을 주고 싶으면 footer 로 넘기는
+        노드 쪽에 준다.
+      */}
+      {footer != null && (
+        <div slot="footer" style={{ display: "contents" }}>
+          {footer}
+        </div>
+      )}
     </NsDialogBase>
   );
 }
