@@ -72,13 +72,18 @@
 
 그래서 타일은 사이드바의 shadow 가 그리고, **타일에 들어갈 것은 사이드바가 읽을 수 있는 데이터여야 한다.**
 
-### 왜 아이콘이 슬롯이고, 그 슬롯이 사이드바 자식인가
+### 아이콘 경로가 둘인 이유
 
-슬롯 배정은 **자기 shadow root 안에서만** 일어난다. `<ns-nav-group>` 안에 넣은 `<ns-icon slot="rail">` 은 `ns-nav-group` 의 슬롯에만 배정될 수 있고, 사이드바의 레일 칼럼에 도달할 방법이 없다. 위로 올리는 슬롯 전달은 존재하지 않는다.
+**`icon` — 스프라이트 이름.** `<ns-nav-group icon="users">` 를 주면 사이드바가 타일에 `<ns-icon name="users">` 를 그린다. **스프라이트는 열려 있다** — `registerIcons()` 가 공개 API 이고, `README.md` 가 `name` 을 "내장 셋과 `registerIcons()` 로 등록한 것" 에 쓰라고 안내한다. 그룹의 정의가 마크업 한 자리에 모이므로 이것이 기본 경로다.
 
-스프라이트 이름 방식(`icon="users"`)도 반쪽이다. 스프라이트에는 아이콘이 넷뿐이고(`menu`·`chevron-down`·`close`·`google`) `index.html` 에 "앱 아이콘은 여기 없다" 고 적혀 있다. 그리고 결정적으로 **React 소비자가 이미 가진 `<UsersIcon />` 컴포넌트를 쓸 방법이 없다.** 슬롯이면 그것이 된다.
+**`data-ns-rail` — 슬롯.** `icon` 만으로 부족한 경우가 둘 있다.
 
-SVG 문자열을 프로퍼티로 받는 길은 쓰지 않는다. `unsafeSVG` 가 들어오고, 이 저장소가 명령형 API 셋을 "문자열만 받으므로 HTML 주입 경로가 없다" 로 정당화한 것과 어긋난다.
+- **React 아이콘 컴포넌트.** 소비자가 이미 가진 `<UsersIcon />` 은 등록할 수 없다. `registerIcons` 는 lit `svg` 템플릿을 받으므로 아이콘마다 SVG 를 다시 적어야 한다.
+- **`registerIcons` 의 배치 함정.** 부수효과만 있는 모듈은 클라이언트 참조가 만들어지지 않아 Next 브라우저 번들에 들어가지 않는다(`docs/gotchas.md` 의 그 절). 등록이 조용히 실패하면 타일이 폴백 글자로 떨어진다.
+
+**슬롯이 그룹 안이 아니라 사이드바 자식인 이유**는 슬롯 배정이 **자기 shadow root 안에서만** 일어나기 때문이다. `<ns-nav-group>` 안에 넣은 것은 그 그룹의 슬롯에만 배정될 수 있고, 사이드바의 레일 칼럼에 도달할 방법이 없다. 위로 올리는 슬롯 전달은 존재하지 않는다.
+
+SVG 문자열을 프로퍼티로 받는 길은 쓰지 않는다. `unsafeSVG` 가 들어오고, 이 저장소가 명령형 API 셋을 "문자열만 받으므로 HTML 주입 경로가 없다" 로 정당화한 것과 어긋난다. **`registerIcons` 가 이미 그 자리를 정당한 방식으로 채우고 있다.**
 
 ### 수동 슬롯 배정
 
@@ -122,13 +127,13 @@ static override shadowRootOptions: ShadowRootInit = {
 this.#observer = new MutationObserver(() => this.#syncGroups());
 this.#observer.observe(this, {
   childList: true,
-  attributeFilter: ["name", "badge", "heading", "data-ns-rail"],
+  attributeFilter: ["name", "icon", "badge", "heading", "data-ns-rail"],
 });
 ```
 
 **`attributes` 를 켜지 않는다는 불변 규칙과 어긋나지 않는다.** 그 규칙이 막으려는 것은 "동기화가 `setAttribute` 를 쓰므로 자기 쓰기에 재발동해 루프가 된다" 인데, 여기서 하는 동기화는 `slot.assign()` 이고 **자식의 속성을 쓰지 않는다.** 재발동 경로가 없다. `attributeFilter` 가 관찰 대상을 우리가 쓰지 않는 이름들로 못박아 이 성질을 코드에 남긴다.
 
-`ns-nav-group` 의 `name`·`badge`·`heading` 에 `reflect: true` 를 붙인다. `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 **프로퍼티로** 설정하므로 반영이 없으면 React 소비자가 `heading` 을 바꿔도 속성 변화가 일어나지 않아 관찰자가 보지 못한다. 반영은 소비자가 준 값을 되울리는 것이라 "호스트의 속성을 쓰지 않는다" 가 겨냥하는 덮어쓰기가 아니다 — `ns-nav-item` 의 `active` 가 이미 같은 방식이다.
+`ns-nav-group` 의 `name`·`icon`·`badge`·`heading` 에 `reflect: true` 를 붙인다. `@lit/react` 의 `createComponent` 는 반응형 프로퍼티를 **프로퍼티로** 설정하므로 반영이 없으면 React 소비자가 `heading` 을 바꿔도 속성 변화가 일어나지 않아 관찰자가 보지 못한다. 반영은 소비자가 준 값을 되울리는 것이라 "호스트의 속성을 쓰지 않는다" 가 겨냥하는 덮어쓰기가 아니다 — `ns-nav-item` 의 `active` 가 이미 같은 방식이다.
 
 `slotchange` 로는 부족하다. 수동 배정에서는 자식이 추가·제거돼도 배정이 자동으로 바뀌지 않으므로 `slotchange` 가 발생하지 않는다. 관찰자가 유일한 신호다.
 
@@ -246,18 +251,24 @@ export interface NsGroupSelectDetail {
 
 ## 6. 레일 타일
 
-내용은 **슬롯 폴백 하나**다.
+내용은 **슬롯 폴백 하나**다. 폴백 안에서 세 단계로 떨어진다.
 
 ```html
-<slot data-name="admin">관</slot>
+<slot data-name="admin"><ns-icon name="users"></ns-icon></slot>
 ```
+
+| 우선순위 | 조건 | 타일에 보이는 것 |
+|---|---|---|
+| 1 | `data-ns-rail="<name>"` 인 사이드바 자식이 있다 | 그 요소 (슬롯 배정) |
+| 2 | 그룹에 `icon` 이 있다 | `<ns-icon name="<icon>">` |
+| 3 | 그룹에 `badge` 가 있다 | 그 글자 |
+| 4 | 아무것도 없다 | `heading` 의 첫 글자 |
+
+**4단이 있는 이유는 이주다.** 0.4.0 소비자는 그룹에 `heading` 만 갖고 있으므로, 아무 것도 더하지 않아도 레일이 빈 타일이 되지 않는다.
 
 **슬롯에 `name` 을 주지 않는다.** 수동 배정에서는 슬롯 이름 매칭이 일어나지 않으므로 `name="rail-admin"` 은 동작하지 않는 장식이 된다. 배정 대상을 찾을 때 쓰는 표시는 `data-name` 이고, 그것은 shadow 안이라 문서 이름공간과 충돌하지 않는다.
 
-- `data-ns-rail="admin"` 인 요소가 있으면 그것을 이 슬롯에 배정한다.
-- 없으면 폴백이 보인다. 폴백은 `badge` 가 있으면 `badge`, 없으면 `heading` 의 첫 글자다.
-
-"둘 중 하나만 보여야 하는 자리는 슬롯 폴백으로 만든다" 규칙 그대로다. **명명 슬롯이라 `ns-icon` 이 겪은 문제가 없다** — 기본 슬롯에 폴백을 두면 공백 텍스트 노드가 배정받아 폴백을 죽이는데, 명명 슬롯은 수동 배정에서 우리가 배정한 것만 받는다.
+"둘 중 하나만 보여야 하는 자리는 슬롯 폴백으로 만든다" 규칙 그대로다 — 프로퍼티 넷으로 소비자가 분기하게 하지 않고 슬롯 하나에 폴백을 쌓는다. **수동 배정이라 `ns-icon` 이 겪은 문제가 없다** — 기본 슬롯에 폴백을 두면 공백 텍스트 노드가 배정받아 폴백을 죽이는데, 여기서는 우리가 배정한 것만 받는다.
 
 `name` 이 없는 그룹은 DOM 순서 인덱스를 키로 쓰고 `connectedCallback` 에서 한 번 경고한다. 인덱스는 마크업 순서가 바뀌면 상태가 엉뚱한 그룹을 가리키게 되므로 **키로 쓰기 나쁘지만 화면이 죽는 것보다 낫다.** 경고 문구가 `name` 을 요구한다.
 
@@ -362,11 +373,12 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 | 이름 | 속성 | 뜻 |
 |---|---|---|
 | `name` | `name` (reflect) | 레일 키. `activeGroup` 이 이 값을 가리킨다 |
+| `icon` | `icon` (reflect) | 레일 타일에 그릴 `ns-icon` 이름. 스프라이트는 `registerIcons()` 로 열려 있다 |
 | `badge` | `badge` (reflect) | 레일 타일의 텍스트 폴백 |
 
 **`key` 를 쓸 수 없다.** React 가 `key` 를 재조정 키로 소비해 엘리먼트까지 전달하지 않고, **shim 으로도 고칠 수 없다** — `title` 은 우리에게 도착한 뒤 이름을 바꿀 수 있었지만 `key` 는 도착하지 않는다. `name` 은 전역 속성이 아니고 `HTMLElement.name` 도 없으므로 안전하다. 이 함정을 `docs/gotchas.md` 에 적는다.
 
-`heading` 에도 `reflect: true` 를 더한다(§3 의 관찰 때문에).
+`heading` 에도 `reflect: true` 를 더한다(§3 의 관찰 때문에). 네 이름 모두 반영한다.
 
 ## 8. React
 
@@ -403,7 +415,7 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 |---|---|
 | `<ns-sidebar open>` | `<ns-sidebar default-open>` |
 | `<NsSidebar open={x}>` | 그대로 (제어) |
-| `<ns-nav-group heading="관리">` | `<ns-nav-group name="admin" heading="관리" badge="관">` |
+| `<ns-nav-group heading="관리">` | `<ns-nav-group name="admin" heading="관리" icon="users">` (또는 `badge="관"`) |
 | 열린 총폭 15rem | 19rem |
 | 접힘 = 모든 항목의 배지 목록 | 접힘 = 최상위 그룹 타일 |
 | `collapsible` 을 최상위에 | 하위 그룹에 |
@@ -418,7 +430,7 @@ html`<div role="group" aria-label=${this.heading} class=${this.#nested ? "nested
 |---|---|
 | `src/components/sidebar/ns-sidebar.ts` | 재작성. 수동 슬롯·레일 렌더·관찰자·선택 상태·비제어 `open`·키보드 |
 | `src/components/sidebar/ns-sidebar.styles.ts` | 재작성. `.shell`·`.rail`·`.tile`·`.panel` |
-| `src/components/nav-group/ns-nav-group.ts` | `name`·`badge`·`heading` reflect, `#nested` 감지, 래퍼 클래스 |
+| `src/components/nav-group/ns-nav-group.ts` | `name`·`icon`·`badge`·`heading` reflect, `#nested` 감지, 래퍼 클래스 |
 | `src/components/nav-group/ns-nav-group.styles.ts` | `.nested` 규칙 셋, 신호 둘 제거 |
 | `src/components/nav-item/ns-nav-item.styles.ts` | `--ns-label-display` 제거, "접힌 레일에서 유일하게 남는 자리" 주석 갱신 |
 | `src/components/nav-item/ns-nav-item.ts` | `badge` 의 doc 주석에서 레일 근거 갱신 |

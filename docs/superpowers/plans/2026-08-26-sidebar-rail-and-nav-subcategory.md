@@ -58,7 +58,7 @@
 
 **Interfaces:**
 - Consumes: 없음
-- Produces: `NsNavGroup` 의 공개 프로퍼티 `name: string`, `badge: string`, 그리고 `heading`·`name`·`badge` 세 속성의 반영. Task 2 의 `#syncGroups()` 가 `group.name`·`group.badge`·`group.heading` 을 프로퍼티로 읽고 같은 이름의 속성으로 폴백한다.
+- Produces: `NsNavGroup` 의 공개 프로퍼티 `name: string`, `icon: string`, `badge: string`, 그리고 `heading`·`name`·`icon`·`badge` 네 속성의 반영. Task 2 의 `#syncGroups()` 가 네 값을 프로퍼티로 읽고 같은 이름의 속성으로 폴백한다.
 
 - [ ] **Step 1: `heading` 에 반영을 켜고 `name`·`badge` 를 더한다**
 
@@ -99,11 +99,27 @@
   @property({ type: String, reflect: true }) name = "";
 
   /**
+   * 레일 타일에 그릴 아이콘의 이름. `<ns-icon name="…">` 에 그대로 넘어간다.
+   *
+   * **스프라이트는 열려 있다** — 내장 셋에 없는 이름은 `registerIcons()` 로
+   * 더한다. 그룹의 정의가 마크업 한 자리에 모이므로 이것이 기본 경로다.
+   *
+   * 이것으로 부족한 경우가 둘 있고 그때는 사이드바의 직계 자식에
+   * `data-ns-rail="<name>"` 로 요소를 직접 넣는다 — React 아이콘 컴포넌트를
+   * 쓸 때, 그리고 `registerIcons` 가 Next 번들에 들어가지 않는 배치일 때다.
+   */
+  @property({ type: String, reflect: true }) icon = "";
+
+  /**
    * 레일 타일에 보이는 짧은 글자. 1~2자를 넣는다.
    *
-   * 타일의 슬롯(`data-ns-rail`)이 비었을 때만 보인다. 이것도 비어 있으면
-   * `heading` 의 첫 글자가 보인다. `ns-nav-item` 의 `badge` 와 같은 종류의
-   * 폴백이지만 **그쪽은 행 안에 늘 보이고 이것은 레일에만 보인다.**
+   * 타일 내용은 네 단계로 떨어진다 — `data-ns-rail` 슬롯 → `icon` → 이
+   * `badge` → `heading` 의 첫 글자. 마지막 단이 있는 이유는 이주다: 0.4.0
+   * 소비자는 `heading` 만 갖고 있으므로 아무것도 더하지 않아도 레일이 빈
+   * 타일이 되지 않는다.
+   *
+   * `ns-nav-item` 의 `badge` 와 같은 종류의 폴백이지만 **그쪽은 행 안에 늘
+   * 보이고 이것은 레일에만 보인다.**
    */
   @property({ type: String, reflect: true }) badge = "";
 ```
@@ -123,7 +139,8 @@ Run: `grep -n 'id="ns-nav-group"' index.html`
 
 ```html
     <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td><code>ns-sidebar</code> 레일의 키. <strong><code>key</code> 는 React 가 먹으므로 쓸 수 없다</strong></td></tr>
-    <tr><td><code>badge</code></td><td><code>badge</code></td><td>string</td><td><code>""</code></td><td>레일 타일의 글자 폴백. 1~2자</td></tr>
+    <tr><td><code>icon</code></td><td><code>icon</code></td><td>string</td><td><code>""</code></td><td>레일 타일에 그릴 <code>ns-icon</code> 이름. 내장 셋에 없으면 <code>registerIcons()</code> 로 더한다</td></tr>
+    <tr><td><code>badge</code></td><td><code>badge</code></td><td>string</td><td><code>""</code></td><td>레일 타일의 글자 폴백. 1~2자. <code>icon</code> 이 없을 때 보인다</td></tr>
 ```
 
 - [ ] **Step 4: `index.html` 구조 검사 넷을 돌린다**
@@ -141,7 +158,7 @@ Expected: 첫 줄은 `1`. 나머지 셋은 출력이 없다.
 
 ```bash
 git add src/components/nav-group/ns-nav-group.ts index.html
-git commit -m "feat(nav-group): 레일이 읽을 name·badge 를 더하고 heading 을 반영한다"
+git commit -m "feat(nav-group): 레일이 읽을 name·icon·badge 를 더하고 heading 을 반영한다"
 ```
 
 ---
@@ -164,7 +181,7 @@ git commit -m "feat(nav-group): 레일이 읽을 name·badge 를 더하고 headi
 - Modify: `docs/consumer-example.tsx`
 
 **Interfaces:**
-- Consumes: Task 1 의 `NsNavGroup.name`·`badge`·`heading`(반영됨)
+- Consumes: Task 1 의 `NsNavGroup.name`·`icon`·`badge`·`heading`(반영됨)
 - Produces:
   - `NsSidebar.activeGroup?: string` (프로퍼티 전용), `NsSidebar.defaultActiveGroup: string` (속성 `default-active-group`)
   - `NsGroupSelectDetail { name: string }` 와 이벤트 `ns-group-select`
@@ -208,6 +225,9 @@ import { property } from "lit/decorators.js";
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
 import type { NsNavGroup } from "../nav-group/ns-nav-group.js";
+
+// 타일 폴백이 <ns-icon> 을 쓴다. 등록 부수효과가 필요하다.
+import "../icon/ns-icon.js";
 import type { NsGroupSelectDetail, NsToggleDetail } from "../../types.js";
 import { styles } from "./ns-sidebar.styles.js";
 
@@ -222,8 +242,8 @@ interface RailEntry {
   key: string;
   /** 타일의 aria-label 과 title. */
   heading: string;
-  /** 타일 슬롯이 비었을 때 보이는 글자. */
-  fallback: string;
+  /** 타일 슬롯이 비었을 때 보이는 것. ns-icon 템플릿이거나 글자다. */
+  fallback: unknown;
   /** 패널 슬롯에 배정할 그룹. */
   group: Element;
   /** 타일 슬롯에 배정할 아이콘. 없으면 undefined 다. */
@@ -359,7 +379,7 @@ export class NsSidebar extends LitElement {
     this.#observer.observe(this, {
       childList: true,
       attributes: true,
-      attributeFilter: ["name", "heading", "badge", "data-ns-rail"],
+      attributeFilter: ["name", "heading", "icon", "badge", "data-ns-rail"],
     });
   }
 
@@ -468,7 +488,7 @@ export class NsSidebar extends LitElement {
       React 는 프로퍼티로 설정하고 반영은 다음 업데이트에서 일어나므로 그 사이
       속성이 낡아 있고, upgrade 전에는 프로퍼티가 없어 속성만 있다.
     */
-    const read = (el: Element, prop: "name" | "heading" | "badge"): string => {
+    const read = (el: Element, prop: "name" | "heading" | "icon" | "badge"): string => {
       const own = (el as Partial<NsNavGroup>)[prop];
       return own ?? el.getAttribute(prop) ?? "";
     };
@@ -476,6 +496,7 @@ export class NsSidebar extends LitElement {
     this.#entries = groups.map((group, i) => {
       const name = read(group, "name");
       const heading = read(group, "heading");
+      const icon = read(group, "icon");
       const badge = read(group, "badge");
 
       /*
@@ -491,14 +512,19 @@ export class NsSidebar extends LitElement {
 
       const key = name === "" ? String(i) : name;
 
-      return {
-        key,
-        heading,
-        // 코드 포인트 단위로 자른다. 서로게이트 페어를 반으로 쪼개지 않는다.
-        fallback: badge !== "" ? badge : ([...heading][0] ?? ""),
-        group,
-        icon: icons.get(key),
-      };
+      /*
+        타일 내용의 폴백 세 단. 슬롯에 배정된 것이 있으면 이것은 보이지 않는다.
+        코드 포인트 단위로 자르는 이유는 서로게이트 페어를 반으로 쪼개지 않는
+        것이다.
+      */
+      const fallback =
+        icon !== ""
+          ? html`<ns-icon name=${icon}></ns-icon>`
+          : badge !== ""
+            ? badge
+            : ([...heading][0] ?? "");
+
+      return { key, heading, fallback, group, icon: icons.get(key) };
     });
 
     this.requestUpdate();
