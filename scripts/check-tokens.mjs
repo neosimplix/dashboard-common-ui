@@ -11,7 +11,7 @@
     ② 이름이 리터럴이면 tokens.css 에 정의돼 있거나 WIRING 에 있어야 한다.
     ③ data-ns-* 훅 이름은 세 곳에서 일치한다.
     ④ :host 블록에 border·margin·padding 을 두지 않는다.
-    ⑤ index.html 의 <style> 에 리터럴 색을 두지 않는다.
+    ⑤ 문서 페이지의 <style> 에 리터럴 색을 두지 않는다.
 
   ②를 건너뛰는 경우가 하나 있다. ns-skeleton.ts 는 `var(--ns-radius-${this.radius})`
   로 이름을 조립하므로 정적으로 확인할 수 없다. 이름에 ${ 가 있으면 ①만 본다.
@@ -56,11 +56,19 @@
   요소가 갖게 하면 문서 규칙이 닿지 못한다 — ns-header 가 처음부터 그 모양이라
   같은 사고를 겪지 않았다.
 
-  ⑤ 는 위의 "index.html 은 검사 대상이 아니다" 를 한 군데만 뚫은 것이다. 규칙 ①을
-  그 파일에 켤 수 없는 이유는 산문이 옛 무접두사 이름을 일부러 적기 때문인데,
+  ⑤ 는 위의 "문서 페이지는 검사 대상이 아니다" 를 한 군데만 뚫은 것이다. 규칙 ①을
+  그 파일들에 켤 수 없는 이유는 산문이 옛 무접두사 이름을 일부러 적기 때문인데,
   <style> 블록 안은 산문이 아니다. 그 안의 선언만 보면 오탐이 없고, 실제로 거기
   하나 있던 리터럴 색(pre 의 `color: #fff`)이 다크모드에서 흰 바탕에 흰 글씨를
   만들었다. 리터럴 색은 정의상 두 모드를 함께 뒤집을 수 없다.
+
+  **대상은 DOC_PAGES 의 문서 페이지 전부다.** 둘 다 <style> 안에서 같은
+  light-dark(var(--ns-…), var(--ns-…)) 짝을 쓰고, 둘 다 산문에서는 옛 무접두사
+  이름을 일부러 적는다(changelog.html 의 v0.2.0 절이 접두사 도입을
+  `var(--space-3)` → `var(--ns-space-3)` 로 설명한다). 그러니 "산문이라 ①을 켤 수
+  없고, <style> 안은 산문이 아니라 ⑤를 켤 수 있다" 는 판단이 두 파일에 똑같이
+  성립한다 — 범위를 넓혀도 이 규칙이 <style> 블록에 갇혀 있는 이유는 그대로다.
+  루트에 문서 HTML 을 더하면 이 목록에 넣는다.
 
   선언 안만 보는 것이 중요하다. 선택자까지 훑으면 #icon-demo 같은 id 선택자가
   16진수 색으로 읽힌다.
@@ -68,14 +76,14 @@
   한계:
     - 참조가 규칙을 지키는지만 본다. 그 토큰이 화면에서 옳은 값인지는
       index.html 육안 확인의 몫이다.
-    - index.html 은 검사 대상이 아니다. 그 파일은 배포되고(README 가 소비자에게
-      열라고 안내한다) 자체 스타일에 살아 있는 var(--ns-*) 참조를 77 개 갖고 있으므로
-      이것은 진짜 사각지대다 — 거기서 접두사를 빠뜨리면 육안 확인의 매개체 자신이
-      조용히 깨진다. 그런데도 넣을 수 없는 이유는 같은 파일이 0.1.5 를 설명하는
-      산문에서 옛 무접두사 이름을 일부러 적기 때문이다("var(--space-3) →
-      var(--ns-space-3)" 같은 이관 안내). 규칙 ①은 코드와 산문을 구분하지 못하므로
-      넣는 즉시 그 문장들이 실패한다. 산문만 걸러내려면 결국 HTML 을 파싱해야 하고,
-      그것은 이 저장소가 검증 하네스에 대해 정한 선을 넘는다.
+    - 문서 페이지(DOC_PAGES)는 ①②의 검사 대상이 아니다. 두 파일 다 배포되고(README 가
+      소비자에게 열라고 안내한다) 자체 스타일에 살아 있는 var(--ns-*) 참조를 백서른
+      개 넘게 갖고 있으므로 이것은 진짜 사각지대다 — 거기서 접두사를 빠뜨리면 육안
+      확인의 매개체 자신이 조용히 깨진다. 그런데도 넣을 수 없는 이유는 같은 파일들이
+      접두사 도입을 설명하는 산문에서 옛 무접두사 이름을 일부러 적기 때문이다
+      ("var(--space-3) → var(--ns-space-3)" 같은 이관 안내). 규칙 ①은 코드와 산문을
+      구분하지 못하므로 넣는 즉시 그 문장들이 실패한다. 산문만 걸러내려면 결국 HTML 을
+      파싱해야 하고, 그것은 이 저장소가 검증 하네스에 대해 정한 선을 넘는다.
     - ③ 은 이름의 짝만 본다. 그 선택자가 옳은 엘리먼트에 붙었는지, 옳은
       선언을 담았는지, 하이드레이션 전후로 실제 효과가 있는지는 보지 못한다.
       그것은 브라우저와 실제 Next.js 소비자의 몫이다.
@@ -324,7 +332,13 @@ if (hostBoxes.length > 0) {
   process.exit(1);
 }
 
-/* ⑤ index.html 의 <style> 블록에 리터럴 색이 없는지 본다. */
+/* ⑤ 문서 페이지의 <style> 블록에 리터럴 색이 없는지 본다. */
+
+/*
+  루트의 문서 HTML 전부. 둘 다 package.json 의 files 에 들어 배포되고, 둘 다
+  자기 <style> 에서 토큰을 참조한다. 파일을 더하면 여기에 넣는다.
+*/
+const DOC_PAGES = ["index.html", "changelog.html"];
 
 /*
   색 함수와 16진수, 그리고 흔한 색 이름. transparent · currentColor · none ·
@@ -336,24 +350,26 @@ const LITERAL_COLOR =
 const DECL = /(?:^|;)\s*([a-z-]+)\s*:\s*([^;]+)/g;
 
 const literals = [];
-for (const [, css] of readFileSync("index.html", "utf8").matchAll(
-  /<style[^>]*>([\s\S]*?)<\/style>/g,
-)) {
-  /*
-    선언 안만 본다. 선택자까지 훑으면 #icon-demo 같은 id 선택자가 16진수로 읽힌다.
-    ④ 가 쓰는 blocks() 를 그대로 재사용하므로 중첩 at-rule 도 함께 처리된다.
-  */
-  for (const { selector, body } of blocks(strip(css, { line: false }))) {
-    for (const [, prop, value] of body.matchAll(DECL)) {
-      if (!LITERAL_COLOR.test(value)) continue;
-      literals.push(`index.html: ${selector} { ${prop}: ${value.trim()} }`);
+for (const page of DOC_PAGES) {
+  for (const [, css] of readFileSync(page, "utf8").matchAll(
+    /<style[^>]*>([\s\S]*?)<\/style>/g,
+  )) {
+    /*
+      선언 안만 본다. 선택자까지 훑으면 #icon-demo 같은 id 선택자가 16진수로 읽힌다.
+      ④ 가 쓰는 blocks() 를 그대로 재사용하므로 중첩 at-rule 도 함께 처리된다.
+    */
+    for (const { selector, body } of blocks(strip(css, { line: false }))) {
+      for (const [, prop, value] of body.matchAll(DECL)) {
+        if (!LITERAL_COLOR.test(value)) continue;
+        literals.push(`${page}: ${selector} { ${prop}: ${value.trim()} }`);
+      }
     }
   }
 }
 
 if (literals.length > 0) {
   console.error(
-    "index.html 의 <style> 에 리터럴 색이 있습니다. 두 모드를 함께 뒤집을 수 없으므로\n" +
+    "문서 페이지의 <style> 에 리터럴 색이 있습니다. 두 모드를 함께 뒤집을 수 없으므로\n" +
       "tokens.css 의 토큰이나 light-dark() 를 쓰세요:\n  " +
       literals.sort().join("\n  "),
   );
@@ -363,5 +379,5 @@ if (literals.length > 0) {
 console.log(
   `토큰 참조 확인 완료: ${defined.size} 개 정의, ${targets.length} 개 파일 검사, ` +
     `data-ns-* 훅 ${groups[0].found.size} 개 세 곳 일치, :host 박스 없음, ` +
-    `index.html 리터럴 색 없음`,
+    `문서 페이지 ${DOC_PAGES.length} 개 리터럴 색 없음`,
 );
