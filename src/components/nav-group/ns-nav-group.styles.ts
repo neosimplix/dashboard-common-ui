@@ -14,6 +14,25 @@ export const styles = css`
     얹을 수 있게 됐다. 그러나 이 구조가 아래 button.heading 의 UA 되돌림과
     얽혀 있어 바꾸는 것이 이 변경의 목표가 아니다.
   */
+  /*
+    white-space: nowrap 이 없으면 사이드바가 접히는 200ms 동안 헤딩이 줄어드는
+    폭을 따라 줄바꿈한다 — ns-nav-item 의 .label 은 이미 nowrap 이라
+    말줄임표로 잘리는데, 이쪽만 여러 줄로 접히며 "찢어지는" 것처럼 보였다.
+    사이드바보다 긴 헤딩은 평상시에도 마찬가지다: nowrap 없이는 행이 늘어나
+    아래 항목을 밀어내린다. white-space 는 상속되므로 아래 .text 에도
+    닿는다.
+
+    overflow: hidden; text-overflow: ellipsis 도 함께 둔다 — 비collapsible
+    마크업(<div class="heading">텍스트)은 텍스트가 .heading 의 직접 인라인
+    자식이라 여기서 바로 잘려야 한다. collapsible 쪽(<button class="heading">
+    <span class="row"><span class="text">…)은 실제로 넘치는 것이 .heading
+    자신이 아니라 .row 안의 .text 이므로 이 두 선언은 거기서는 아무 일도
+    하지 않는다 — button 의 자식은 .row 하나뿐이고 .row 자체는 flex 폭이
+    button 을 넘지 않아 button 수준에서는 넘칠 것이 없다. 그래서 .text 에
+    같은 클리핑을 따로 둔다. 결과가 ns-nav-item 의 .label 과 같아진다 —
+    같은 세 선언이 텍스트를 직접 감싸는 요소에 있다는 점에서, 그 요소가
+    div.heading 이냐 span.text 이냐만 마크업에 따라 다를 뿐이다.
+  */
   .heading {
     display: block;
     padding: var(--ns-space-4) var(--ns-space-4) var(--ns-space-2);
@@ -22,6 +41,9 @@ export const styles = css`
     font-weight: var(--ns-weight-semibold);
     letter-spacing: 0.05em;
     color: var(--ns-color-fg-subtle);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /*
@@ -68,6 +90,22 @@ export const styles = css`
     align-items: center;
     justify-content: space-between;
     gap: var(--ns-space-2);
+  }
+
+  /*
+    .row 안에서 실제로 넘치는 요소. flex 아이템의 min-width 기본값은 auto 라
+    콘텐츠 고유 폭 밑으로 줄지 않는다 — flex: 1 만으로는 이 span 이 줄어들지
+    않고 .row 를 밀어 넘친다. min-width: 0 으로 그 하한을 없애야 아래
+    overflow: hidden; text-overflow: ellipsis 가 실제로 자를 폭을 갖는다.
+    white-space: nowrap 은 위 .heading 에서 상속받으므로 여기서 다시 쓰지
+    않는다. ns-nav-item 의 .label 과 같은 세 선언(overflow·text-overflow·
+    white-space) + flex 아이템이라 필요한 flex·min-width 가 더해진 모양이다.
+  */
+  .text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /*

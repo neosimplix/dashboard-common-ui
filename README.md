@@ -102,6 +102,8 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 **열린 폭은 15rem 그대로다.** `--ns-sidebar-width` 의 뜻도 값도 바뀌지 않았으므로 이주 항목이 아니다. 바뀐 것은 **닫힌 폭**이다 — `--ns-sidebar-width-collapsed` 가 `4rem` 에서 `0` 으로 내려가, 접은 사이드바가 좁은 띠를 남기지 않고 통째로 사라진다.
 
+**폭을 조절하는 공식 통로는 `--ns-sidebar-width` 토큰이다.** 안쪽 `nav` 가 이 토큰에 `min-width` 로 고정돼 있어, `ns-sidebar { width: … }` 만 따로 override 하는 것은 그 값이 토큰보다 좁지 않을 때만 안전하다 — 더 좁게 주면 내용은 여전히 토큰 폭 기준으로 배치된 채 그 좁은 폭에서 잘린다.
+
 **이 토큰을 덮어 좁은 레일을 되살릴 수는 없다.** 값을 올리면 그만큼의 **빈 자리**가 예약될 뿐 그 안에는 아무것도 그려지지 않는다 — `nav` 가 통째로 숨으므로 항목도, 제목도, 그 오른쪽 경계선조차 없고 `ns-sidebar` 의 배경색만 남는다. 이유가 둘이고 서로 독립이다.
 
 1. **닫힌 사이드바의 내용을 감추는 것은 폭이 아니라 상태다.** shadow 안에 `:host(:not([data-ns-open])) nav { visibility: hidden }` 가 있고, 이 규칙은 닫힘 폭이 얼마든 그대로 걸린다.

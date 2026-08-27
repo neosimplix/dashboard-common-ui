@@ -3088,6 +3088,12 @@
       사이드바가 그만큼의 <strong>빈 자리</strong>를 예약한다 — 항목도 제목도 경계선도
       없이 배경색만 남는다.
       <br>
+      <strong>폭을 조절하는 공식 통로는 이 토큰이다.</strong> 안의 <code>&lt;nav&gt;</code>
+      가 <code>--ns-sidebar-width</code> 에 <code>min-width</code> 로 고정돼 있어,
+      <code>ns-sidebar { width: … }</code> 만 따로 덮는 것은 그 값이 토큰보다 좁지
+      않을 때만 안전하다 — 더 좁게 주면 내용은 여전히 토큰 폭 기준으로 배치된 채
+      그 좁은 폭에서 잘린다.
+      <br>
       <strong>이 토큰으로 좁은 레일을 만들 수는 없다.</strong> 감추는 것이 폭이 아니라
       상태여서(위 ①) 넓혀도 안이 비고, 0.4.0 에서 좁은 띠를 읽히게 만들던 신호
       프로퍼티 둘(<code>--ns-label-display</code>·<code>--ns-group-list-display</code>)은

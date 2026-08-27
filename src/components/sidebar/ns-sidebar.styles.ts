@@ -63,18 +63,38 @@ export const styles = css`
     스크롤바가 호스트 것이라 경계선 오른쪽에 생긴다. 같은 요소가 둘을 가져야
     스크롤바가 경계선 안쪽에 남는다.
 
-    min-width 를 두지 않는다. 닫힐 때 폭이 줄어드는 동안 내용이 찌그러지지
-    않게 하려던 것이었지만, 그러려면 :host { width: … } override 가 깨진다 —
-    소비자가 ns-sidebar { width: 12rem } 처럼 토큰보다 좁은 값을 주면 min-width
-    가 여전히 --ns-sidebar-width(15rem)를 붙들어 nav 가 호스트 밖으로 3rem
-    삐져나온다. 대신 :host 가 이제 양방향을 자르므로 삐져나올 걱정이 없고,
-    안의 .label 이 이미 white-space: nowrap; overflow: hidden; text-overflow:
-    ellipsis 라 폭이 줄어드는 동안 글자가 말줄임표로 점진적으로 줄어들 뿐
-    레이아웃이 깨지지 않는다.
+    min-width: var(--ns-sidebar-width) 를 nav 에 둔다. 이게 없으면 :host 의
+    width 전이 200ms 동안 nav 자체가 실제로 좁아져 안의 내용이 그 폭을 따라
+    리플로우한다. 예전에는 여기에 "안의 .label 이 white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis 라 글자가 말줄임표로 점진적으로
+    줄어들 뿐 레이아웃이 깨지지 않는다" 고 적혀 있었다 — 그 주장은 틀렸다.
+    사용자가 실제로 접히는 것을 보고 신고했다: 글자 사이 간격이 줄고 아이콘·
+    라벨이 서로 밀리며 찌그러지다 사라지는 것으로 보이고, ns-nav-group 의
+    heading 은 white-space: nowrap 조차 없어 여러 줄로 줄바꿈까지 됐다(그건
+    ns-nav-group.styles.ts 에서 따로 고친다). min-width 로 nav 를
+    --ns-sidebar-width 에 고정하면 전이 내내 내용이 그대로 있고, :host 의
+    overflow: hidden 이 넘치는 부분만 자른다 — 전이가 "잘려 사라짐"으로
+    보이지 "찌그러져 사라짐"으로 보이지 않는다.
+
+    전에는 이걸 뺐다 — :host { width: … } 를 토큰보다 좁게 override 하는
+    소비자에게서 min-width 가 여전히 --ns-sidebar-width 를 붙들어 nav 가
+    호스트 밖으로 삐져나왔기 때문이다. 그 사고는 지금 안 난다 — :host 가
+    그새 양방향 overflow: hidden 을 얻었다(위 참조, 여는 동안 페인트가
+    <main> 위로 새는 것을 막으려고 나중에 추가됐다). nav 가 호스트보다
+    넓어도 이제 호스트 경계에서 잘리기만 하지 삐져나오지 않는다.
+
+    남는 대가는 하나, 없애지는 못했다. width override 가 토큰보다 좁으면
+    내용은 여전히 --ns-sidebar-width 기준으로 배치된 채 그 좁은 폭에서
+    잘린다 — 레이아웃이 깨지진 않지만 내용이 다 보이지도 않는다. 그래서
+    폭을 조절하는 공식 통로는 --ns-sidebar-width 토큰이고, ns-sidebar
+    { width } 만 override 하는 것은 토큰보다 좁지 않을 때만 안전하다. 같은
+    문구가 README.md 의 0.5.0 이주 절과 index.html 의 ns-sidebar 절에도
+    있다.
   */
   nav {
     box-sizing: border-box;
     height: 100%;
+    min-width: var(--ns-sidebar-width);
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid var(--ns-color-line);
