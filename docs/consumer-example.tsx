@@ -161,7 +161,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
           <NsNavGroup
             heading="프로젝트"
-            collapsible
             onNsNavigate={(e) => log(e.detail.label)}
             /*
               detail 을 실제로 읽는다. 인자 0개짜리 핸들러는 EventName<> 캐스트
@@ -172,7 +171,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <NsNavItem
               href="/a"
               label="프로젝트 A"
-              badge="PA"
               active={pathname === "/a"}
               onNsNavigate={(e) => log(e.detail.href)}
             />
@@ -193,6 +191,32 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 </svg>
               </NsIcon>
             </NsNavItem>
+          </NsNavGroup>
+        </Sidebar>
+        {/*
+          비제어. defaultOpen 은 **초깃값 전용**이다 — ns-sidebar 는 자기를 여닫는
+          버튼을 갖지 않으므로 그 뒤로 상태를 바꾸는 것은 소비자다. 여닫게 하려면
+          위 제어 모드처럼 ns-header 의 onNsToggle 을 받아 open 에 내려준다.
+        */}
+        <Sidebar defaultOpen onNavigate={(d) => router.push(d.href)}>
+          {/*
+            하위 카테고리. collapsible 은 **단을 가리지 않는다** — 최상위 그룹에
+            쓰면 그 그룹이 통째로 접혀 긴 네비게이션을 가장 크게 줄이고(이 저장소
+            index.html 의 좌측 네비게이션이 그렇게 돼 있다), 하위 그룹에 쓰면 그
+            카테고리만 접힌다. 0.5.0 개발 중에 한동안 "최상위가 아니라 하위에
+            쓴다" 고 안내했으나 그것은 패널에 그룹 하나만 보이던 레일 시절의
+            것이고, 지금은 최상위가 오히려 주 용도다.
+
+            여기서 하위에만 붙인 것은 아래 핸들러가 composed 경로를 검사하기
+            때문이다 — ns-group-toggle 은 하위에서 올린 것도 최상위 그룹의 이
+            핸들러에 도착하고, e.detail.open 을 실제로 읽어 그 경로가 타입으로
+            성립하는지 확인하는 자리다.
+          */}
+          <NsNavGroup heading="관리" onNsGroupToggle={(e) => log(String(e.detail.open))}>
+            <NsNavGroup heading="사용자" collapsible>
+              <NsNavItem href="/users" label="목록" />
+            </NsNavGroup>
+            <NsNavItem href="/logs" label="로그" />
           </NsNavGroup>
         </Sidebar>
         <main>

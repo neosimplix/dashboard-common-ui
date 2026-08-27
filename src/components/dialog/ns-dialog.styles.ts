@@ -126,6 +126,41 @@ export const styles = css`
     min-height: 0;
     overflow-y: auto;
     padding: var(--ns-space-6);
+    /*
+      ns-sidebar.styles.ts 의 nav 와 같은 가는 스크롤바. 감춘 적이 없어
+      "감추지 않고 가늘게" 절이 여기는 겨냥하지 않지만, 결정이 이미 서
+      있으므로 이 저장소의 세 스크롤 영역이 같은 모양이어야 한다. 표준
+      경로와 WebKit 경로가 나뉘는 이유·값의 근거는 ns-sidebar.styles.ts
+      의 주석과 tokens.css 의 --ns-scrollbar-width · --ns-scrollbar-thumb-inset
+      정의 옆에 있다 — 여기서는 반복하지 않는다. shadow 안이라 controls.css
+      가 닿지 않으므로 이 블록을 다시 적는다.
+    */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ns-color-line-strong) transparent;
+  }
+
+  .body:hover {
+    scrollbar-color: var(--ns-color-fg-subtle) transparent;
+  }
+
+  .body::-webkit-scrollbar {
+    width: var(--ns-scrollbar-width);
+  }
+
+  .body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .body::-webkit-scrollbar-thumb {
+    background-color: var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-pill);
+    border: var(--ns-scrollbar-thumb-inset) solid transparent;
+    background-clip: padding-box;
+  }
+
+  .body::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ns-color-fg-subtle);
+    background-clip: padding-box;
   }
 
   /*

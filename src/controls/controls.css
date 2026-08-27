@@ -685,8 +685,11 @@
     사라지지는 않지만, 배지 하나만 놓고 보면 실제로 나빠진 것이 맞다.
     docs/pending-human-checks.md 에 판정 항목으로 적어 두었다.
 
-    **같은 값 짝이 활성 ns-nav-item 배지에도 걸린다** — 27.4% 행 위의 37% 배지라
-    수치까지 같다. 알고 넣은 저하라는 판정도 같다(ns-nav-item.styles.ts 의 주석).
+    **0.4.0 에는 같은 값 짝이 활성 ns-nav-item 배지에도 걸렸다** — 27.4% 행 위의
+    37% 배지라 수치까지 같았고, 알고 넣은 저하라는 판정도 같았다. 0.5.0 이 그 배지
+    사각형을 지우면서(ns-nav-item.styles.ts 의 .badge 블록이 통째로 없어졌다) 이
+    짝이 남은 자리는 여기 하나다. 채움면이 넷에서 셋으로 줄어든 경위는
+    src/tokens/tokens.css 의 --ns-color-accent-fill 주석에 있다.
   */
   ns-tabs [data-ns-tab][aria-selected="true"] .ns-tabs__count {
     background: var(--ns-color-accent-fill);
@@ -721,6 +724,40 @@
     border: 1px solid var(--ns-color-line);
     border-radius: var(--ns-radius-control);
     padding: var(--ns-space-1) var(--ns-space-3);
+    /*
+      ns-sidebar.styles.ts 의 nav 와 같은 가는 스크롤바. Light DOM 이라
+      shadow 경계가 없지만, 표준 경로가 이 저장소 하한의 Safari(17.5)를
+      못 덮는 것은 여기서도 같으므로 WebKit 짝을 그대로 붙인다. 근거는
+      ns-sidebar.styles.ts 의 주석에 있고, 값은 tokens.css 의
+      --ns-scrollbar-width · --ns-scrollbar-thumb-inset 에서 온다 —
+      shadow 안이 아니라 여기서는 클래스를 직접 겨냥해서 쓸 뿐이다.
+    */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ns-color-line-strong) transparent;
+  }
+
+  .ns-multi-select__list:hover {
+    scrollbar-color: var(--ns-color-fg-subtle) transparent;
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar {
+    width: var(--ns-scrollbar-width);
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar-thumb {
+    background-color: var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-pill);
+    border: var(--ns-scrollbar-thumb-inset) solid transparent;
+    background-clip: padding-box;
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ns-color-fg-subtle);
+    background-clip: padding-box;
   }
 
   .ns-multi-select__empty {

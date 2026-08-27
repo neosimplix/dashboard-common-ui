@@ -63,6 +63,12 @@ export const NsIcon = createComponent({
   소비자에게 직접 노출하지 않는다. tags/Sidebar.tsx 가 감싸서 SSR 마크업에
   data-ns-open 을 싣는다 — createComponent 는 반응형 프로퍼티인 open 을
   useLayoutEffect 에서만 설정하므로 서버 HTML 에 남지 않는다.
+
+  통로는 하나가 아니라 둘이고 서로 다른 구간을 덮는다. data-ns-open 은 제어
+  경로(open 을 준 경우)의 upgrade 전 폭을 잡고, default-open 은 비제어 경로와
+  제어 경로의 upgrade~hydration 구간을 덮는다 — defaultOpen 도 반응형
+  프로퍼티라 같은 처방을 받는다. 어느 이름이 무엇을 덮는지는 tags/Sidebar.tsx
+  의 shim docstring 에 있다.
 */
 export const NsSidebarBase = createComponent({
   react: React,

@@ -47,8 +47,9 @@
   /*
     액센트 — **선과 링의 색이다. 채움면은 여기 없다.**
 
-    채움면 넷(solid 버튼 · 선택된 칩 · 탭 건수 배지 · 활성 nav-item 배지)은
-    이 파일 끝쪽 별칭 제외 구간의 --ns-color-accent-fill 세 토큰이 칠한다.
+    채움면 셋(solid 버튼 · 선택된 칩 · 탭 건수 배지)은 이 파일 끝쪽 별칭 제외
+    구간의 --ns-color-accent-fill 세 토큰이 칠한다. 0.5.0 까지는 넷이었다 —
+    ns-nav-item 의 활성 배지가 있었고, 배지 사각형과 함께 없어졌다.
     나뉜 경위는 거기 적혀 있다 — 요약하면 채움면을 어둡게 하려고 이 값을
     내리면 포커스 링이 함께 사라지기 때문이다.
 
@@ -95,11 +96,10 @@
     페이지 배경 위에 놓여 surface(21%)에 11.99:1, surface-sunken(14.1%)에
     13.46:1 이다. **안쪽에 그리는 셋**(ns-tabs 와 .ns-accordion summary,
     그리고 ns-nav-group 의 헤딩 버튼은 outline-offset 이 음수다)은 요소 자신의
-    배경 위에 놓이므로 그 두 숫자가 그대로 적용되지 않는다 — ns-tabs 는 자기
-    배경이 없어 surface 로 떨어지고, ns-nav-group 의 헤딩 버튼도 배경을 스스로
-    갖지 않고 --ns-color-surface 위에 얹히므로 마찬가지로 surface 의 11.99:1
-    이다. 유일하게 다른 값이 hover 중인 accordion summary 의
-    surface-hover(27.4%)로 10.08:1 이다. 넷 다 비텍스트 기준 3:1 을 크게 넘는다.
+    배경 위에 놓이므로 그 두 숫자가 그대로 적용되지 않는다 — 셋 다 자기 배경이
+    없어 --ns-color-surface 로 떨어져 11.99:1 이다. 유일하게 다른 값이 hover
+    중인 accordion summary 의 surface-hover(27.4%)로 10.08:1 이다. 넷 다
+    비텍스트 기준 3:1 을 크게 넘는다.
 
     **밝기를 낮출 때 링이 먼저 사라진다** — 이 값들이 하한을 정하는 근거이고,
     채움면을 따로 떼어낸 이유이기도 하다.
@@ -168,13 +168,43 @@
 
   /* 레이아웃 상수 */
   --ns-header-height: 3.5rem;
+  /*
+    열린 폭이다. 닫히면 --ns-sidebar-width-collapsed 로 줄어든다.
+
+    0.5.0 개발 중에 이 값이 잠시 19rem 이었다 — 레일 4rem + 패널 15rem 을 합친
+    "열린 총폭" 이던 시절이다. 레일을 물리면서 뜻과 값이 함께 돌아왔다.
+  */
   --ns-sidebar-width: 15rem;
-  --ns-sidebar-width-collapsed: 4rem;
+  /*
+    닫힌 폭. 0 이라 사이드바가 통째로 사라진다.
+
+    **이것을 덮어도 레일이 되지 않는다.** 값을 올리면 그 폭이 예약될 뿐 안은 빈
+    채로 남는다. 이유가 둘이고 서로 독립이다 — ① 닫힘의 내용을 감추는 것이 폭이
+    아니라 상태다(ns-sidebar.styles.ts 의 nav 에 걸리는 visibility: hidden 은
+    닫힘 폭이 얼마든 그대로 걸린다), ② 그 규칙이 없더라도 좁은 띠에 라벨을 숨기고
+    항목을 남기던 신호 프로퍼티 둘(--ns-label-display · --ns-group-list-display)을
+    0.5.0 이 지웠고 되살리지 않으므로 띠에는 15rem 레이아웃의 잘린 왼쪽 끝이
+    보일 뿐이다. 레일을 만들어 보고 무른 경위는 docs/gotchas.md 에 있다.
+
+    이름을 지우지 않는 이유는 남은 쓸모가 하나 있기 때문이다 — "닫혔을 때 본문을
+    얼마나 밀어 둘 것인가" 는 여전히 소비자가 정할 값이다.
+  */
+  --ns-sidebar-width-collapsed: 0;
   --ns-page-padding-x: var(--ns-space-6);
   --ns-page-padding-y: var(--ns-space-6);
   --ns-card-padding: var(--ns-space-8);
   --ns-control-height-sm: 1.75rem;
   --ns-control-height-md: 2.5rem;
+
+  /*
+    가는 스크롤바(WebKit 경로)의 트랙 폭과 인셋. ns-sidebar 의 nav ·
+    ns-dialog 의 .body · .ns-multi-select__list 셋이 shadow 경계 때문에
+    같은 규칙 블록을 각자 다시 적는다 — 값이 세 곳에 나타나므로 여기서
+    한 번만 정의한다. 표준 scrollbar-width: thin 경로는 두께를 숫자로
+    고를 수 없어 이 값들의 대상이 아니다.
+  */
+  --ns-scrollbar-width: 8px;
+  --ns-scrollbar-thumb-inset: 2px;
 
   /* 기타 */
   --ns-elevation-card:
@@ -270,15 +300,16 @@
     액센트로 칠하는 **채움면**. 선·링과 값을 나눈 것이다.
 
     --ns-color-accent 를 더 내릴 수 없어서 생긴 토큰이다. 그 토큰은 채움면
-    넷만 칠하는 것이 아니라 **포커스 링 일곱 · .ns-input 계열의 포커스 테두리 ·
+    셋만 칠하는 것이 아니라 **포커스 링 일곱 · .ns-input 계열의 포커스 테두리 ·
     탭 활성 밑줄 · 체크박스 accent-color** 를 함께 칠한다. 채움면을 어둡게
     하려고 그 값을 내리면 링이 어두운 배경 위의 어두운 선이 되어 사라진다 —
     **버튼이 밝은 것보다 나쁜 결함이다.** 그래서 면은 이 세 토큰이 갖고,
     accent 는 선과 링을 위해 밝게 남는다.
 
-    이름을 --solid 로 짓지 않는다. 이 값을 읽는 자리가 넷이고 그중 셋은
-    버튼이 아니다 — 칩의 선택 상태, 탭 건수 배지, ns-nav-item 의 활성 배지다.
-    변형 이름을 붙이면 나머지 셋이 남의 토큰을 빌려 쓰는 모양이 된다.
+    이름을 --solid 로 짓지 않는다. 이 값을 읽는 자리가 셋이고 그중 둘은
+    버튼이 아니다 — 칩의 선택 상태와 탭 건수 배지다. 변형 이름을 붙이면 나머지
+    둘이 남의 토큰을 빌려 쓰는 모양이 된다. (0.5.0 까지는 넷이었다. ns-nav-item
+    의 활성 배지가 없어져 하나 줄었을 뿐 판단은 그대로다.)
 
     **밝은 모드는 나눌 때 한 글자도 바뀌지 않았다.** 세 값이 나누기 전 액센트
     세 토큰의 밝은 절반(21% · 27.4% · #fff)과 동일했기 때문이다. 흰 표면 위의
@@ -307,7 +338,7 @@
     **다크 채움면 37% 는 한때 --ns-color-disabled 의 다크값과 같았다.** 그래서
     다크에서 비활성 solid 버튼과 보통 solid 버튼이 배경도 글자색도 같아졌고,
     남는 차이가 cursor: not-allowed 하나뿐이었다. **고친 자리는 이쪽이 아니라
-    --ns-color-disabled 쪽이다** — 37% 는 지시받은 값이고 채움면 넷이 공유하므로
+    --ns-color-disabled 쪽이다** — 37% 는 지시받은 값이고 채움면 셋이 공유하므로
     여기서 비틀지 않는다. 비활성은 배경을 27.4% 로 내리고 --ns-color-disabled-fg
     를 새로 두어 갈라졌다. 경위는 그 두 토큰의 주석에 있다.
 
@@ -327,28 +358,53 @@
   크기가 0 이다. SSR HTML 에는 셸이 없으므로 JS 로드 시점에 화면이 튄다.
   light DOM 선택자라 upgrade 전에도 적용된다.
 
-  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 [open] 을 보면
-  정의 이후까지 계속 걸리는데, @lit/react 는 open 을 useLayoutEffect 에서
-  프로퍼티로만 설정하므로 서버 마크업에 그 속성이 없다. 그래서 하이드레이션
-  전까지 4rem 레일로 그려지다 15rem 으로 벌어졌다. upgrade 이후의 너비는
+  :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 정의 이후까지
+  계속 걸리면, @lit/react 는 반응형 프로퍼티(open·defaultOpen)를
+  useLayoutEffect 에서만 설정하므로 서버 마크업에 그 속성이 없어 하이드레이션
+  전까지 폭 0 으로 그려지다 15rem 으로 벌어진다. upgrade 이후의 너비는
   ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
 
-  data-ns-open 은 React 소비자를 위한 통로다. createComponent 가 반응형
-  프로퍼티만 가로채므로, 반응형이 아닌 이 이름은 서버 마크업에 그대로 실린다.
-  src/react/tags/Sidebar.tsx 가 채운다. 순수 HTML 소비자는 마크업에 open 을
-  직접 쓰므로 첫 짝이 걸린다.
+  data-ns-open 은 제어 모드 React 소비자를 위한 통로다. createComponent 가
+  반응형 프로퍼티만 가로채므로, 반응형이 아닌 이 이름은 서버 마크업에 그대로
+  실린다. src/react/tags/Sidebar.tsx 가 채운다. 순수 HTML 소비자는 이제
+  default-open 을 쓰므로 그 첫 짝이 걸린다.
+
+  비제어 React 경로(defaultOpen 만 준 경우)는 data-ns-open 이 덮지 않는다 —
+  그 이름은 open 이 제어 중일 때만 채워지고, 채우면 React 가 소유자가 되어
+  엘리먼트 자신의 toggleAttribute 와 다툰다. 대신 Sidebar.tsx 가 하이픈 든
+  default-open 을 원시 속성으로 함께 렌더한다. 하이픈 든 이름은 반응형
+  프로퍼티가 아니라 createComponent 가 가로채지 않으므로 서버 마크업에 실리고,
+  upgrade 시점에 Lit 의 속성 컨버터가 그것을 읽어 defaultOpen 을 즉시 세운다.
+  하이드레이션을 기다리지 않으므로 이 경로의 튐도 막힌다.
 
   이 예약만으로는 튐이 좁아질 뿐 사라지지 않는다. customElements.define 이
   hydrateRoot 보다 먼저 실행되므로, upgrade 와 hydration 사이에는 :not(:defined)
   가 이미 떨어져 나갔는데 open 은 아직 설정되지 않은 구간이 남는다. 그 구간을
-  덮는 것은 ns-sidebar.styles.ts 의 :host(:not([open]):not([data-ns-open])) 다.
+  덮는 것은 ns-sidebar.styles.ts 의 :host(:not([data-ns-open])) 다.
   두 파일을 함께 고쳐야 타임라인에 구멍이 안 생긴다.
 */
 ns-header { display: block; height: var(--ns-header-height); }
 
 ns-sidebar                             { display: block; }
-ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); }
-ns-sidebar:not(:defined)[open],
+/*
+  overflow 를 함께 예약한다. ns-sidebar.styles.ts 의 :host 가 상태와 무관하게
+  overflow: hidden 을 갖는데 그 규칙은 upgrade 전 구간에 없으므로, 그 사이에
+  사이드바는 width: 0; overflow: visible 이다. ns-nav-group·ns-nav-item 은 내용을
+  자기 shadow 에 그려 upgrade 전에 아무것도 페인트하지 않지만, 소비자가 사이드바에
+  평범한 마크업(제목·a·구분선)을 직접 넣으면 그것이 폭 0 짜리 상자 밖으로, 곧
+  <main> 위로 흐른다.
+
+  :not(:defined) 로 묶는 이유는 upgrade 뒤의 소유자를 :host 하나로 두는 것이다.
+  이 예약은 폭 예약과 한 몸이고(폭이 0 이 아니면 흐를 것도 없다), 조건 없이 두면
+  문서 규칙이 :host 를 이겨 나중에 :host 쪽을 고쳐도 화면이 안 바뀌게 된다.
+*/
+ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); overflow: hidden; }
+/*
+  [open] 이 아니라 [default-open] 이다. 0.5.0 부터 open 은 프로퍼티 전용이고
+  순수 HTML 이 쓰는 이름은 default-open 이다. data-ns-open 은 React shim 이
+  SSR 마크업에 싣는 통로이고 그 뒤로는 컴포넌트가 쓴다.
+*/
+ns-sidebar:not(:defined)[default-open],
 ns-sidebar:not(:defined)[data-ns-open] { width: var(--ns-sidebar-width); }
 
 /*

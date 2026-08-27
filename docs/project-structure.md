@@ -7,9 +7,9 @@
 | 태그 | 역할 |
 |---|---|
 | `ns-header` | 좌측 토글 버튼과 프로젝트 이름, 우측 `actions` slot |
-| `ns-sidebar` | 네비게이션 컨테이너. 접으면 좌측에 4rem 레일이 남는다 |
-| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다 |
-| `ns-nav-item` | 그룹 하위 항목. 행 좌측에 `leading` slot(비우면 `badge` 폴백), 우측에 `trailing` slot |
+| `ns-sidebar` | 네비게이션 한 칼럼. **열리면 최상위 `ns-nav-group` 이 마크업 순서대로 이어지고 닫히면 폭이 0 이 되어 통째로 사라진다.** 자기를 여닫는 버튼은 갖지 않는다 |
+| `ns-nav-group` | 제목이 붙은 네비게이션 그룹. `collapsible` 을 쓰면 헤딩이 토글 버튼이 된다. **`ns-nav-group` 안에 그냥 중첩하면 하위 카테고리다** — 새 태그·속성 없이 그룹이 `connectedCallback` 에서 자기 중첩을 스스로 판정한다. `collapsible` 은 **단을 가리지 않는다** — 목록이 길면 최상위 그룹에 쓰는 것이 가장 크게 줄이고, 하위 그룹에 쓰면 그 카테고리만 접힌다 |
+| `ns-nav-item` | 그룹 하위 항목. 행 좌측에 `leading` slot(**비우면 그 자리가 접혀 라벨이 왼쪽 끝에 붙는다** — 폴백이 없다), 우측에 `trailing` slot |
 | `ns-icon` | 이름으로 꺼내는 인라인 SVG |
 | `ns-page-heading` | `h1` + 설명 `p` |
 | `ns-skeleton` | 로딩 자리표시자. 크기를 프로퍼티로 받는다 |
@@ -37,7 +37,7 @@
 
 **태그와 클래스를 가르는 기준은 두 줄이다.** 캡슐화할 행동이 있으면 태그, 만들어 줄 마크업이 있으면 태그, 둘 다 아니면 클래스다. 폼 컨트롤과 버튼이 클래스인 이유는 `docs/gotchas.md` 의 "FACE 를 쓰지 않은 이유" 에 있다.
 
-이벤트는 아홉이다. `ns-toggle`(`{ open }`), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
+이벤트는 아홉이다. `ns-toggle`(`{ open }`, `ns-header` 만 올린다 — 사이드바는 자기를 여닫는 버튼이 없어 이 이벤트를 내지 않는다), `ns-navigate`(`{ href, label }`), `ns-group-toggle`(`{ open }`), `ns-dialog-close`(`{ reason }`, 위 태그 표 참고), `ns-sort`(`{ key, direction }`), `ns-select-change`(`{ ids }`), `ns-page-change`(`{ page }`), `ns-tab-change`(`{ id }`), `ns-multi-select-change`(`{ values }`). 전부 `bubbles: true, composed: true` 라 shadow 경계를 넘어 소비자에게 도달한다. **이 개수의 출처는 `src/types.ts` 의 `HTMLElementEventMap` 확장이다** — 목록이 자기 자신을 세는 문장은 늘어난 이름을 놓친다. `.claude/rules/verification.md` 가 세는 것은 이것과 다르다(래퍼 수와 `EventName<>` 캐스트 수). **세 숫자가 서로 다른 것을 세므로 출처를 각각 적어 둔다** — 그 구분이 없어서 두 문서의 "아홉" 이 한동안 서로 다른 것을 뜻했다. **라우팅은 하지 않는다** — 이벤트만 올리고 각 프로젝트가 처리한다.
 
 ## 왜 이런 구조인가
 
@@ -80,7 +80,7 @@ common-ui/
 │   │   ├── cx.ts                      조건부 클래스 합치기(내부 전용)
 │   │   ├── controls/*.tsx             네이티브 요소에 클래스를 붙이는 컴포넌트 7종
 │   │   ├── tags/*.tsx                 커스텀 엘리먼트 래퍼의 프롭 이름을 맞추는 shim
-│   │   │   └── Sidebar.tsx            open 을 data-ns-open 으로도 내보내는 SSR shim
+│   │   │   └── Sidebar.tsx            open·defaultOpen 을 data-ns-open · default-open 으로도 내보내는 SSR shim
 │   │   ├── elements.ts                @lit/react 래퍼. 이벤트 매핑의 단일 출처
 │   │   └── index.ts                   재export 허브
 ├── scripts/
@@ -174,5 +174,5 @@ grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
 
 ## 남은 일
 
-- **`ns-header`·`ns-sidebar` 의 비제어 지원.** 토글을 소비자 코드 없이 동작시키는 것. 지금 소비자 코드가 필요한 이유는 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다는 것이다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다. (0.2.0 이 해결한 것은 **SSR 너비 튐**이다 — `Sidebar` shim 의 `data-ns-open` 과 `:not(:defined)` 예약으로 소비자 래퍼 `div` 가 필요 없어졌다. 상태를 누가 들고 있느냐는 그대로 남았다.)
+- **`ns-header` 토글의 배선.** 두 컴포넌트가 서로 남남이어서, 이벤트를 받아 *다른* 엘리먼트에 내려주는 일을 소비자밖에 할 수 없다. 0.5.0 이 사이드바에 `open`/`default-open` 짝을 만들어 **비제어로 쓰는 길**은 열었지만, 여닫는 버튼은 여전히 `ns-header` 에만 있고 헤더는 자기가 누구를 여는지 모른다 — `ns-toggle` 을 받아 사이드바의 `open` 에 내려주는 한 줄이 소비자 코드로 남는다. 둘을 감싸는 것을 도입할지가 논의의 핵심이다. (0.2.0 이 해결한 것은 **SSR 너비 튐**이다 — `Sidebar` shim 의 `data-ns-open`·`default-open` 과 `:not(:defined)` 예약으로 소비자 래퍼 `div` 가 필요 없어졌다.)
 - **`dashboard-shell` 이관.** 별도 계획이 필요하다. `globals.css` 의 토큰 블록 정리(0.2.0 부터는 이름이 겹치지 않으므로 **삭제가 강제되지 않는다** — 그대로 두거나 `--ns-` 로 옮긴다), Tailwind 커스텀 색 유틸 2곳 수정, `SidebarSection[]` 데이터를 JSX 로 변환, loading/error/empty 상태를 slot 으로 이동, `linkComponent={Link}` → `ns-navigate` 전환.

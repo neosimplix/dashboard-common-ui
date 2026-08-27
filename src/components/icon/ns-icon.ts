@@ -30,7 +30,13 @@ export class NsIcon extends LitElement {
 
       자식이 있으면 브라우저가 폴백을 렌더하지 않는다 — 분기가 CSS 도 JS 도 아닌
       슬롯 배정 규칙이므로 우리가 셀 것이 없고, 소비자도 "아이콘을 넣었으면 name 을
-      비워라" 같은 조건을 지킬 필요가 없다. ns-nav-item 의 leading/badge 와 같은 형태다.
+      비워라" 같은 조건을 지킬 필요가 없다.
+
+      0.5.0 전까지는 ns-nav-item 의 leading/badge 가 같은 짝이었으나 badge 가
+      없어졌다 — 지금 leading 은 폴백 없는 슬롯이고, 이 라이브러리에서 폴백을 가진
+      슬롯은 여기 하나뿐이다. 짝지어 볼 자리가 없으므로 이 주석이 그 패턴의 유일한
+      기록이다. 규칙 자체는 .claude/rules/library-invariants.md 에 있고, 기본 슬롯
+      특유의 함정(공백 텍스트 노드가 폴백을 죽인다)은 아래 updated() 가 막는다.
 
       크기는 여기서 정해지지 않는다. ::slotted 규칙이 --ns-icon-size 로 정규화하므로
       lucide-react 처럼 자기 width/height 를 갖고 오는 것도 이 상자에 맞춰진다.
