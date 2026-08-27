@@ -13,7 +13,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.5.0"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.5.1"
 }
 ```
 
