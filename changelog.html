@@ -121,20 +121,6 @@
       <ns-nav-item href="#v0-5-1" label="v0.5.1" active></ns-nav-item>
       <ns-nav-item href="#v0-5-0" label="v0.5.0"></ns-nav-item>
     </ns-nav-group>
-    <ns-nav-group collapsible heading="0.4.x">
-      <ns-nav-item href="#v0-4-0" label="v0.4.0"></ns-nav-item>
-    </ns-nav-group>
-    <ns-nav-group collapsible heading="0.3.x">
-      <ns-nav-item href="#v0-3-0" label="v0.3.0"></ns-nav-item>
-    </ns-nav-group>
-    <ns-nav-group collapsible heading="0.2.x">
-      <ns-nav-item href="#v0-2-5" label="v0.2.5"></ns-nav-item>
-      <ns-nav-item href="#v0-2-4" label="v0.2.4"></ns-nav-item>
-      <ns-nav-item href="#v0-2-3" label="v0.2.3"></ns-nav-item>
-      <ns-nav-item href="#v0-2-2" label="v0.2.2"></ns-nav-item>
-      <ns-nav-item href="#v0-2-1" label="v0.2.1"></ns-nav-item>
-      <ns-nav-item href="#v0-2-0" label="v0.2.0"></ns-nav-item>
-    </ns-nav-group>
   </ns-sidebar>
 
   <main>
@@ -159,8 +145,9 @@
     배포되기 때문이다.
   </p>
   <p>
-    <strong>0.1.x 는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의 릴리스 표와
-    같은 범위이고, 그 표는 <code>v0.2.0</code> 부터 담는다.
+    <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
+    릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
+    태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
   </p>
 
   <h2 id="v0-5-1">v0.5.1</h2>
@@ -326,164 +313,6 @@
     <strong>새 이벤트는 없다.</strong> <code>ns-sidebar</code> 는 자기를 여닫는 버튼을
     갖지 않으므로 <code>ns-toggle</code> 을 올리지 않는다 — 헤더의 토글을 받아 사이드바의
     <code>open</code> 에 내려주는 배선은 0.4.0 과 같다.
-  </p>
-
-  <h2 id="v0-4-0">v0.4.0</h2>
-  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
-  <p>
-    <strong>액센트 토큰 둘이 없어졌다.</strong> <code>--ns-color-accent-hover</code> ·
-    <code>--ns-color-accent-fg</code> 를 참조하던 자리는
-    <code>--ns-color-accent-fill-hover</code> · <code>--ns-color-accent-fill-fg</code> 로
-    옮긴다. 이름이 갈린 이유는 <strong>채움면과 선이 갈렸기</strong> 때문이다 — 브랜드
-    색으로 <em>칠하는</em> 면(기본 버튼 배경 등)은 <code>--ns-color-accent-fill</code>
-    세 토큰이 갖고, <code>--ns-color-accent</code> 는 선과 링(포커스 테두리 · 탭 활성
-    밑줄 · 체크박스 <code>accent-color</code>)에 남았다. <strong>그래서 옛 이름을 그냥
-    <code>--ns-color-accent</code> 로 바꿔 적으면 안 된다</strong> — hover 와 글자색은
-    <code>-fill-</code> 쪽에 있다.
-  </p>
-  <p>
-    <strong><code>nsToast()</code> 의 기본 자리가 우하단에서 상단 중앙으로 바뀌었다.</strong>
-    옛 자리를 유지하려면 시작 지점에서 한 번 세운다.
-  </p>
-  <script type="text/plain">
-    nsToastPosition("bottom-right");
-  </script>
-  <p>
-    <code>nsToastPosition()</code> 이 이 릴리스에서 함께 나갔다. 네 값
-    (<code>top-center</code> · <code>bottom-center</code> · <code>top-right</code> ·
-    <code>bottom-right</code>) 중 하나를 받고, 이미 떠 있는 리전까지 함께 옮긴다.
-  </p>
-
-  <h2 id="v0-3-0">v0.3.0</h2>
-  <p class="dist"><code>dist/</code> 변경</p>
-  <p>
-    <strong>태그만 올린다.</strong> 더해진 것만 있고 기존 마크업이 뜻을 바꾸는 곳은 없다.
-  </p>
-  <ul>
-    <li>
-      <strong>컴포넌트 둘</strong> — <code>ns-tabs</code> · <code>ns-multi-select</code>.
-      (<code>ns-toast</code> 리전도 이때 들어왔지만 소비자가 직접 쓰지 않는다 —
-      <code>nsToast()</code> 가 만든다.)
-    </li>
-    <li>
-      <strong>클래스 여섯</strong> — <code>.ns-accordion</code> · <code>.ns-message</code> ·
-      <code>.ns-chip</code> · <code>.ns-button--danger</code> ·
-      <code>.ns-table__row-button</code> · <code>.ns-table--rows-clickable</code>.
-      (<code>.ns-tabs__count</code> 와 <code>.ns-multi-select__*</code> 는 위 두 컴포넌트에
-      딸린 것이라 따로 세지 않는다.)
-    </li>
-    <li>
-      <strong>명령형 API 셋</strong> — <code>nsToast</code> · <code>nsAlert</code> ·
-      <code>nsConfirm</code>. 함수로 부르고 Promise 를 돌려받는다.
-    </li>
-  </ul>
-
-  <h2 id="v0-2-5">v0.2.5</h2>
-  <p class="dist"><code>dist/</code> 변경</p>
-  <p>
-    <strong>태그만 올린다.</strong> 소비자 코드를 고칠 것은 없고, 잘못 쓰고 있었다면
-    이 릴리스부터 그것이 드러난다.
-  </p>
-  <ul>
-    <li>
-      <code>ns-icon</code> 의 슬롯 자식이 하이드레이션 때 튀지 않는다.
-      <code>::slotted()</code> 는 upgrade 전에 존재하지 않으므로 슬롯 자식의 크기를
-      shadow 쪽 규칙만으로는 예약할 수 없었다 — <code>tokens.css</code> 에 문서 트리
-      짝(<code>ns-icon &gt; *</code>)을 함께 두어 그 구간을 덮는다.
-    </li>
-    <li>
-      <strong>프로퍼티 전용 이름을 속성으로 쓰면 콘솔 경고가 나온다.</strong>
-      <code>&lt;ns-dialog open&gt;</code> 처럼 관찰되지 않는 이름을 마크업에 쓰면
-      이전에는 아무 신호 없이 무시됐다. 라이브러리는 그 이름들을 호스트에 쓰지
-      않으므로 <strong>그 속성이 발견되면 언제나 소비자의 실수다.</strong>
-      경고를 내는 곳은 셋이다 — <code>ns-dialog</code> 의 <code>open</code>(→
-      <code>default-open</code>), <code>ns-pagination</code> 의 <code>page</code>(→
-      <code>default-page</code>), <code>ns-table</code> 의 상태 프로퍼티들.
-    </li>
-  </ul>
-
-  <h2 id="v0-2-4">v0.2.4</h2>
-  <p class="dist"><code>dist/</code> <strong>동일</strong> (<code>v0.2.2</code> 와 바이트 일치)</p>
-  <p>
-    <strong>소비자가 할 일은 없다.</strong> <code>guide.html</code> 의 다크모드 코드 블록을
-    고친 문서 전용 릴리스다.
-  </p>
-
-  <h2 id="v0-2-3">v0.2.3</h2>
-  <p class="dist"><code>dist/</code> <strong>동일</strong> (<code>v0.2.2</code> 와 바이트 일치)</p>
-  <p>
-    <strong>소비자가 할 일은 없다.</strong> 예시를 <code>name</code> 대신 슬롯 우선으로
-    개편한 문서 전용 릴리스다.
-  </p>
-
-  <h2 id="v0-2-2">v0.2.2</h2>
-  <p class="dist"><code>dist/</code> 변경</p>
-  <p>
-    <strong>태그만 올린다.</strong> <code>ns-icon</code> 이 기본 슬롯을 갖는다 —
-    아무 아이콘이나 자식으로 넣어 크기·색만 통일할 수 있고,
-    <code>name</code> 은 내장 스프라이트와 <code>registerIcons()</code> 로 등록한 것에만 쓴다.
-  </p>
-
-  <h2 id="v0-2-1">v0.2.1</h2>
-  <p class="dist"><code>dist/</code> 변경</p>
-  <p>
-    <strong>태그만 올린다.</strong> 다만 0.2.0 을 쓰면서 손으로 메워 둔 것이 있으면
-    지운다 — <code>globals.css</code> 에 사이드바 오른쪽 경계선을 되살려 둔 규칙이 그것이다.
-  </p>
-  <p>
-    <strong>왜 메워야 했나.</strong> 0.2.0 까지 그 경계선은
-    <code>:host { border-right: … }</code> 였다. 호스트 요소는 문서 트리에 있으므로
-    Tailwind preflight 의 <code>*, ::before, ::after, ::backdrop { border: 0 solid }</code> 가
-    그것을 잡고, shadow 트리의 <code>:host</code> 규칙은 특정도와 무관하게 문서 트리
-    규칙에 진다 — Tailwind 를 쓰는 소비자에게만 경계선이 사라졌다. 0.2.1 이 박스를
-    shadow 안의 <code>nav</code> 로 내려 문서 규칙이 닿지 못하게 했으므로, 메워 둔
-    규칙을 남기면 이제 선이 둘이 된다. 전말은
-    <code>docs/gotchas.md</code> 의 <strong><code>:host</code> 는 소비자 문서 규칙에 진다</strong> 에 있다.
-  </p>
-  <p>
-    <strong><code>exports</code> 에 <code>./package.json</code> 이 생겼다.</strong> 설치된
-    버전을 <code>node -p</code> 한 줄로 확인하는 것이 <strong>0.2.1 부터만</strong> 동작하는
-    이유가 이것이다. 그 명령과 옛 태그에서 나는 오류는 <code>README.md</code> 의
-    <strong>설치</strong> 절에 있다.
-  </p>
-
-  <h2 id="v0-2-0">v0.2.0</h2>
-  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
-  <p>
-    <strong>공개 토큰 이름 전부에 <code>--ns-</code> 접두사가 붙었다.</strong>
-    <code>var(--space-3)</code> 는 <code>var(--ns-space-3)</code> 다. 옛 이름을 직접
-    참조하는 CSS 가 이미 있는 프로젝트는 <code>aliases.css</code> 를
-    <strong>선택적으로</strong> 함께 불러와 시간을 벌 수 있다 — 임포트 한 줄과, 새
-    프로젝트가 그것을 쓰지 않는 이유는 <code>README.md</code> 의 <strong>설치</strong>
-    절에 있다.
-  </p>
-  <p>
-    <strong>왜 접두사를 붙였나.</strong> 이름을 소비자와 공유하면 라이브러리가 소비자
-    CSS 의 임포트 순서에 종속된다 — 같은 이름을 다른 뜻으로 쓰던 프로젝트에서
-    <code>tokens.css</code> 를 어디에 두느냐가 셸 색을 정했다. 전말은
-    <code>docs/gotchas.md</code> 의 <strong>토큰 이름을 소비자와 공유하면 라이브러리가
-    캐스케이드에 종속된다</strong> 에 있다.
-  </p>
-  <p>
-    <strong>React 의 <code>NsSidebar</code> 가 <code>Sidebar</code> 가 됐다.</strong>
-    이름만 바뀐 것이 아니라 프롭 모양이 바뀐다 — 이벤트 <code>detail</code> 을 벗긴
-    shim 이라 핸들러가 레코드를 직접 받는다.
-  </p>
-  <script type="text/plain">
-    // 0.1.5
-    <NsSidebar onNsNavigate={(e) => go(e.detail)} />
-
-    // 0.2.0
-    <Sidebar onNavigate={(d) => go(d)} />
-  </script>
-  <p>
-    <strong>소비자 코드를 고치지 않아도 화면이 바뀌는 부분이 하나 있다 — 다크모드다.</strong>
-    <code>tokens.css</code> 를 불러오는 것만으로 켜지므로, 라이트 전용으로 만든 앱도
-    사용자의 OS 가 다크면 셸·폼 컨트롤·스크롤바가 어두워진다. 모양을 고정하는
-    옵트아웃(<code>&lt;html data-theme="light"&gt;</code>)과 자기 CSS 에서
-    <code>color-scheme</code> 을 세우고 있을 때 할 일은 <code>README.md</code> 의
-    <strong>다크모드</strong> 절에 있다 — 이 릴리스에 국한된 이야기가 아니라 지금도
-    유효한 설정이라 그쪽에 둔다.
   </p>
   </main>
 </div>

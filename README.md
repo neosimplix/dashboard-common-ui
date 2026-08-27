@@ -101,14 +101,6 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 |---|---|---|
 | [`v0.5.1`](./changelog.html#v0-5-1) | 변경 | 접히는 사이드바가 글자를 찌그러뜨리지 않는다. 폭 손잡이는 `--ns-sidebar-width` 하나다 |
 | [`v0.5.0`](./changelog.html#v0-5-0) | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`, `ns-nav-item` 의 `badge` 삭제. 닫힌 사이드바가 0 이 된다 |
-| [`v0.4.0`](./changelog.html#v0-4-0) | 변경 | **breaking 둘.** 액센트 토큰 둘이 `--ns-color-accent-fill-*` 로 옮겨갔다. `nsToast()` 기본 자리가 상단 중앙 |
-| [`v0.3.0`](./changelog.html#v0-3-0) | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
-| [`v0.2.5`](./changelog.html#v0-2-5) | 변경 | 태그만 올린다. 프로퍼티 전용 이름을 속성으로 쓰고 있었다면 경고가 나온다 |
-| [`v0.2.4`](./changelog.html#v0-2-4) | **동일** | 없음. 문서만 고친 릴리스다 |
-| [`v0.2.3`](./changelog.html#v0-2-3) | **동일** | 없음. 문서만 고친 릴리스다 |
-| [`v0.2.2`](./changelog.html#v0-2-2) | 변경 | 태그만 올린다. `ns-icon` 이 기본 슬롯을 갖는다 |
-| [`v0.2.1`](./changelog.html#v0-2-1) | 변경 | 태그만 올린다. `globals.css` 에 사이드바 경계선을 되살려 둔 것이 있으면 지운다 |
-| [`v0.2.0`](./changelog.html#v0-2-0) | 변경 | **breaking 둘.** 공개 토큰 이름에 `--ns-` 접두사. React 의 `NsSidebar` → `Sidebar` |
 
 ## 문서 보기
 
