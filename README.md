@@ -89,126 +89,37 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 **자기 CSS 에서 `color-scheme` 을 세우고 있다면 지우고 `data-theme` 으로 옮긴다.** 소비자의 `:root { color-scheme: … }` 와 `tokens.css` 의 `:root` 는 특정도가 같아 승자를 임포트 순서가 정한다 — 토큰 이름에서 없앤 그 종속이 이 한 프로퍼티에는 그대로 남아 있다. `color-scheme` 은 이름을 바꿀 수 없는 표준 프로퍼티라 `--ns-` 같은 이름공간을 줄 수 없기 때문이다. 근거는 `docs/gotchas.md` 의 "`color-scheme` 에는 이름공간이 없어 접두사로 막을 수 없다" 에 있다.
 
-## 0.5.0 이주
-
-**소비자가 마크업을 고쳐야 하는 것은 하나다.**
-
-| 지금 (0.4.0) | 바뀐 뒤 (0.5.0) |
-|---|---|
-| `<ns-sidebar open>` | `<ns-sidebar default-open>` |
-| `<NsSidebar open={x}>` | 그대로 (제어 모드) |
-
-**`<ns-sidebar open>` 은 조용히 무시되고 콘솔 경고가 뜬다.** `open` 이 프로퍼티 전용이 되어 관찰되지 않으므로 제어 모드로 들어가지도 않는다 — HTML 에서 초기 상태를 열어 두려면 `default-open` 이다. React 의 제어 모드(`open={x}`)는 그대로다.
-
-**열린 폭은 15rem 그대로다.** `--ns-sidebar-width` 의 뜻도 값도 바뀌지 않았으므로 이주 항목이 아니다. 바뀐 것은 **닫힌 폭**이다 — `--ns-sidebar-width-collapsed` 가 `4rem` 에서 `0` 으로 내려가, 접은 사이드바가 좁은 띠를 남기지 않고 통째로 사라진다.
-
-**폭을 조절하는 공식 통로는 `--ns-sidebar-width` 토큰이다.** 안쪽 `nav` 가 이 토큰에 `min-width` 로 고정돼 있어, `ns-sidebar { width: … }` 만 따로 override 하는 것은 그 값이 토큰보다 좁지 않을 때만 안전하다 — 더 좁게 주면 내용은 여전히 토큰 폭 기준으로 배치된 채 그 좁은 폭에서 잘린다.
-
-**이 토큰을 덮어 좁은 레일을 되살릴 수는 없다.** 값을 올리면 그만큼의 **빈 자리**가 예약될 뿐 그 안에는 아무것도 그려지지 않는다 — `nav` 가 통째로 숨으므로 항목도, 제목도, 그 오른쪽 경계선조차 없고 `ns-sidebar` 의 배경색만 남는다. 이유가 둘이고 서로 독립이다.
-
-1. **닫힌 사이드바의 내용을 감추는 것은 폭이 아니라 상태다.** shadow 안에 `:host(:not([data-ns-open])) nav { visibility: hidden }` 가 있고, 이 규칙은 닫힘 폭이 얼마든 그대로 걸린다.
-2. **그 규칙이 없더라도 읽히는 띠가 되지 않는다.** 0.4.0 에서 좁은 띠에 라벨을 숨기고 항목을 남기던 신호 프로퍼티 둘(`--ns-label-display`·`--ns-group-list-display`)이 0.5.0 에 없어졌고 **되살리지 않는다.** 둘이 없으면 띠에 보이는 것은 15rem 짜리 레이아웃의 왼쪽 끝을 자른 조각 — 잘린 제목과 잘린 라벨 — 이다.
-
-**라이브러리가 레일을 다시 주지 않는 이유**는 그것을 만들어 보고 물렀기 때문이다. 근거는 `docs/gotchas.md` 의 "레일을 만들었다가 물렀다" 에 있다. 레일이 필요한 프로젝트는 사이드바 밖에 자기 칼럼을 두고 이 컴포넌트를 그 오른쪽에 놓는다.
-
-**그래서 이 토큰이 정하는 것은 "닫혔을 때 본문을 얼마나 밀어 둘 것인가" 하나다.** 접힌 상태에서도 본문이 화면 왼쪽 끝까지 오지 않게 하려면 값을 준다.
-
-```css
-:root { --ns-sidebar-width-collapsed: 1rem }   /* 접으면 빈 1rem 이 남는다 */
-```
-
-**닫힌 사이드바는 탭 순서에서도 빠진다.** 폭 0 과 `overflow: hidden` 은 **자르는** 것이라 그것만으로는 보이지 않는 링크에 Tab 이 내려앉는다. 그래서 폭 전환이 끝나는 200ms 뒤에 안쪽 `nav` 를 `visibility: hidden` 으로 숨긴다 — 링크가 탭 순서와 접근성 트리에서 함께 빠지고, 여는 쪽에는 지연이 없어 즉시 보인다. **기대도 되는 보장이다.** 딸려 오는 성질이 둘 있다: 닫는 200ms 안에는 아직 Tab 이 닿고, 닫는 순간 사이드바 안에 있던 포커스는 숨김이 도착할 때 `<body>` 로 떨어진다. 둘 다 "애니메이션 뒤에 숨긴다" 에 내재하는 절충이다.
-
-### breaking — `ns-nav-item` 의 `badge` 가 없어졌다
-
-배지 사각형은 "접힌 사이드바에서 유일하게 남는 요소" 라는 이유로 있었고, 사이드바가 닫히면 통째로 사라지게 되면서 그 이유가 없어졌다. **속성을 그대로 두면 조용히 무시된다** — 라벨 왼쪽이 비고 그 자리가 접힌다.
-
-**대안은 `leading` 슬롯이다.** 원하는 요소를 그대로 넣는다 — 폴백이 아니라 그 자리의 유일한 내용이므로 분기할 것이 없다.
-
-```html
-<!-- 0.4.0 -->
-<ns-nav-item href="/users" label="사용자" badge="사"></ns-nav-item>
-
-<!-- 0.5.0 — 아이콘 -->
-<ns-nav-item href="/users" label="사용자">
-  <ns-icon slot="leading"><svg>…</svg></ns-icon>
-</ns-nav-item>
-
-<!-- 0.5.0 — 옛 배지와 같은 모양을 원하면 소비자가 그 상자를 만든다 -->
-<ns-nav-item href="/users" label="사용자">
-  <span slot="leading" class="my-badge" aria-hidden="true">사</span>
-</ns-nav-item>
-```
-
-React 도 같다 — `badge` 프롭 대신 `slot="leading"` 을 붙인 자식을 넘긴다.
-
-```tsx
-<NsNavItem href="/users" label="사용자">
-  <NsIcon slot="leading"><Users /></NsIcon>
-</NsNavItem>
-```
-
-**아무것도 넣지 않는 것이 기본이다.** 빈 슬롯은 상자도 `gap` 도 만들지 않으므로 라벨이 왼쪽 끝에 붙는다. **일부 항목에만 `leading` 을 주면 줄이 들쭉날쭉해 보일 수 있다** — 0.4.0 은 배지가 늘 자리를 차지해 정렬이 강제됐고, 0.5.0 은 그 강제를 놓았다. 한 목록 안에서는 전부 주거나 전부 비우는 쪽을 권한다.
-
-### 그 밖에
-
-**`ns-sidebar` 밖에서 최상위 `ns-nav-group` 을 세로로 쌓으면 사이가 24px 좁아진다.**
-0.4.0 은 첫 형제가 아닌 그룹의 wrapper 에 `padding-top: var(--ns-space-6)`(24px)을
-얹었다. 그 규칙의 `:first-child` 가 화면과 어긋나게 세는 경우가 있어 지웠고, 남는
-것은 헤딩 자신의 `padding-top: var(--ns-space-4)`(16px)뿐이다. 사이드바 안에서는
-보이지 않는 차이지만, 그룹을 평범한 컨테이너에 쌓아 쓰던 소비자는 화면이 좁아진
-것을 본다. 되돌리려면 소비자 문서 CSS 한 줄이면 된다 — 호스트는 문서 트리에 있으므로
-이 규칙이 shadow 를 이긴다.
-
-```css
-ns-nav-group + ns-nav-group { padding-top: 1.5rem }
-```
-
-**`ns-nav-group` 을 `ns-nav-group` 안에 중첩하면 하위 카테고리가 된다.** 이번 릴리스가
-더한 기능이고 breaking 이 아니다 — 새 태그도 새 속성도 없이 그룹이 자기 중첩을 스스로
-판정한다. `collapsible` 은 **단을 가리지 않는다** — 최상위 그룹에 붙이면 그 그룹이
-통째로 접히고(긴 네비게이션을 줄이는 데는 이쪽이 가장 크다), 하위 그룹에 붙이면 그
-카테고리만 접힌다. **0.4.0 마크업에 이미 있는 `collapsible` 은 옮길 필요가 없다.**
-
-```html
-<ns-sidebar default-open>
-  <ns-nav-group heading="관리">
-    <ns-nav-group heading="사용자" collapsible>
-      <ns-nav-item href="/users" label="목록"></ns-nav-item>
-    </ns-nav-group>
-    <ns-nav-item href="/logs" label="로그"></ns-nav-item>
-  </ns-nav-group>
-</ns-sidebar>
-```
-
-**새 이벤트는 없다.** `ns-sidebar` 는 자기를 여닫는 버튼을 갖지 않으므로 `ns-toggle` 을 올리지 않는다 — 헤더의 토글을 받아 사이드바의 `open` 에 내려주는 배선은 0.4.0 과 같다.
-
 ## 릴리스
 
-**`dist/` 가 바뀌었는지**를 태그마다 적는다. 안 바뀐 릴리스는 설치해도 화면이 그대로이므로, 소비자가 태그별로 받아 `diff -rq` 하기 전에는 알 수 없다.
+**여기 두는 것은 태그와 `dist/` 변경 여부, 그리고 소비자가 할 일 한 줄이다.**
+무엇이 왜 바뀌었는지와 이주 코드는 [`changelog.html`](./changelog.html) 에 있다 —
+아래 태그를 누르면 그 절로 간다.
+
+`dist/` 칸은 그 태그가 산출물을 바꿨는지다. 안 바뀐 릴리스는 설치해도 화면이 그대로다.
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
-| `v0.5.1` | 변경 | 사이드바를 접을 때 글자가 찌그러지며 리플로우되던 것을 고쳤다 — `nav` 가 열린 폭을 붙들고 `:host` 가 자르므로 내용이 그대로 잘려 사라진다. 그룹 헤딩도 이제 줄바꿈 대신 말줄임표로 잘린다. **폭을 바꾸는 손잡이는 `--ns-sidebar-width` 다** — `ns-sidebar { width: … }` 만 토큰보다 좁게 주면 내용이 토큰 폭으로 잡힌 채 잘린다 |
-| `v0.5.0` | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`(`open` 이 프로퍼티 전용이 됐다), `ns-nav-item` 의 `badge` 삭제(`leading` 슬롯으로 옮긴다). 닫힌 사이드바가 4rem 이 아니라 0 이 된다. `ns-nav-group` 의 `collapsible` 과 **하위 카테고리 중첩**이 함께 나간다. 위 **0.5.0 이주** 절을 본다 |
-| `v0.4.0` | 변경 | **breaking 둘.** 액센트 토큰 `--ns-color-accent-hover`·`--ns-color-accent-fg` 가 없어졌다(`--ns-color-accent-fill-hover`·`--ns-color-accent-fill-fg` 로 옮겨간다). `nsToast()` 기본 자리가 상단 중앙 — 우하단을 유지하려면 시작 지점에서 `nsToastPosition("bottom-right")` |
-| `v0.3.0` | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
-| `v0.2.5` | 변경 | 태그만 올린다. `ns-icon` 슬롯 자식이 하이드레이션 때 튀지 않는다. 프로퍼티 전용 이름을 속성으로 쓰면 경고가 나온다 |
-| `v0.2.4` | **동일** (`v0.2.2` 와 바이트 일치) | 없음. `index.html` 다크모드 코드 블록 수정 — 문서만 |
-| `v0.2.3` | **동일** (`v0.2.2` 와 바이트 일치) | 없음. 예시를 `name` 대신 슬롯 우선으로 개편 — 문서만 |
-| `v0.2.2` | 변경 | 태그만 올린다. `ns-icon` 이 기본 슬롯을 갖는다 |
-| `v0.2.1` | 변경 | 태그만 올린다. `globals.css` 에 사이드바 경계선을 되살려 둔 것이 있으면 지운다 |
-| `v0.2.0` | 변경 | **breaking 둘.** 공개 토큰 이름에 `--ns-` 접두사(옛 이름을 계속 쓰려면 `aliases.css` 를 임포트한다). React 의 `NsSidebar` → `Sidebar` — 프롭이 `onNsNavigate={(e) => …e.detail}` 대신 `onNavigate={(d) => …d}` 다 |
+| [`v0.5.1`](./changelog.html#v0-5-1) | 변경 | 접히는 사이드바가 글자를 찌그러뜨리지 않는다. 폭 손잡이는 `--ns-sidebar-width` 하나다 |
+| [`v0.5.0`](./changelog.html#v0-5-0) | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`, `ns-nav-item` 의 `badge` 삭제. 닫힌 사이드바가 0 이 된다 |
+| [`v0.4.0`](./changelog.html#v0-4-0) | 변경 | **breaking 둘.** 액센트 토큰 둘이 `--ns-color-accent-fill-*` 로 옮겨갔다. `nsToast()` 기본 자리가 상단 중앙 |
+| [`v0.3.0`](./changelog.html#v0-3-0) | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
+| [`v0.2.5`](./changelog.html#v0-2-5) | 변경 | 태그만 올린다. 프로퍼티 전용 이름을 속성으로 쓰고 있었다면 경고가 나온다 |
+| [`v0.2.4`](./changelog.html#v0-2-4) | **동일** | 없음. 문서만 고친 릴리스다 |
+| [`v0.2.3`](./changelog.html#v0-2-3) | **동일** | 없음. 문서만 고친 릴리스다 |
+| [`v0.2.2`](./changelog.html#v0-2-2) | 변경 | 태그만 올린다. `ns-icon` 이 기본 슬롯을 갖는다 |
+| [`v0.2.1`](./changelog.html#v0-2-1) | 변경 | 태그만 올린다. `globals.css` 에 사이드바 경계선을 되살려 둔 것이 있으면 지운다 |
+| [`v0.2.0`](./changelog.html#v0-2-0) | 변경 | **breaking 둘.** 공개 토큰 이름에 `--ns-` 접두사. React 의 `NsSidebar` → `Sidebar` |
 
 ## 문서 보기
 
-사용법·프로퍼티·이벤트·라이브 데모는 `index.html` 에 있다. **패키지에 함께 설치되므로 설치한 뒤 바로 열면 된다.** 옆에 `dist/` 가 있어 라이브 데모까지 그대로 동작한다.
+**문서는 두 파일이고 둘 다 패키지에 함께 설치된다.** 설치한 뒤 바로 열면 되고, 옆에 `dist/` 가 있어 라이브 데모까지 그대로 동작한다.
 
 ```sh
-open node_modules/@neosimplix/common-ui/index.html
+open node_modules/@neosimplix/common-ui/index.html      # 사용법·프로퍼티·이벤트·라이브 데모
+open node_modules/@neosimplix/common-ui/changelog.html  # 태그별 변경 내역과 이주 코드
 ```
 
-이 파일은 설치된 버전과 정확히 같은 시점의 문서다. 저장소를 따로 보러 가면 다른 버전의 문서를 읽게 될 수 있다.
+두 파일은 설치된 버전과 정확히 같은 시점의 문서다. 저장소를 따로 보러 가면 다른 버전의 문서를 읽게 될 수 있다 — **특히 `changelog.html` 은 지금 설치한 태그보다 뒤의 항목은 담고 있지 않다.**
 
 이 저장소에서 직접 작업할 때는 `main` 에 `dist/` 가 없으므로 빌드가 필요하다.
 
@@ -225,13 +136,14 @@ npm run demo
 |---|---|
 | `npm run check` | 타입 검사 + 이벤트 매핑 · 클래스 ↔ 문서 · 토큰 참조 검사 |
 | `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css · aliases.css 생성 |
-| `npm run demo` | 빌드 후 `index.html` 열기 |
+| `npm run demo` | 빌드 후 `index.html` 열기. `changelog.html` 은 같은 `dist/` 를 읽으므로 빌드 뒤 그냥 열면 된다 |
 | `npm run release -- 0.1.0` | 빌드 산출물을 포함한 `v0.1.0` 태그 생성·푸시 |
 
-테스트 러너가 없다. `npm run check` 와 `index.html` 육안 확인이 회귀 확인
-수단이다. 문서 페이지의 헤더와 네비게이션 자체가 이 패키지의 컴포넌트라,
-깨지면 문서가 열리지 않는 것으로 드러난다. 컴포넌트를 추가하면
-`index.html` 에도 섹션을 추가한다.
+테스트 러너가 없다. `npm run check` 와 육안 확인이 회귀 확인 수단이다.
+`index.html` 과 `changelog.html` 두 페이지의 헤더와 네비게이션 자체가 이 패키지의
+컴포넌트라, 깨지면 문서가 열리지 않는 것으로 드러난다. 컴포넌트를 추가하면
+`index.html` 에도 섹션을 추가하고, 태그를 자르면 `changelog.html` 에도 절을
+추가한다 — 후자는 `npm run check` 가 릴리스 표와 대조해 강제한다.
 
 ## 설계
 

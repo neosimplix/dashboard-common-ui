@@ -24,7 +24,8 @@
   },
   "files": [
     "dist",
-    "index.html"
+    "index.html",
+    "changelog.html"
   ],
   "scripts": {
     "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-css.mjs",

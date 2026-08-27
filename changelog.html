@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>common-ui 버전 기록</title>
+<link rel="stylesheet" href="./dist/tokens.css">
+<link rel="stylesheet" href="./dist/controls.css">
+<style>
+  /*
+    이 페이지의 <style> 은 index.html 의 것을 줄여 옮긴 것이다. 두 파일이
+    같은 셸(ns-header + ns-sidebar)을 세우므로 높이 체인과 셸 레이아웃 규칙은
+    같아야 한다.
+
+    index.html 의 타이포그래피 규칙에는 :not(:where(.demo *, ns-dialog *))
+    가드가 붙어 있는데 여기에는 없다. 그 가드는 **이 페이지의 산문 규칙이
+    라이브러리가 그리는 영역을 덮는 것**을 막는 것이고, 그 영역은 index.html
+    에서 .demo 컨테이너와 명령형 대화상자 둘이었다. 이 페이지에는 데모도
+    대화상자도 없다 — 라이브러리가 문서 트리에 그리는 것은 헤더 actions slot 에
+    넣은 <a class="ns-button"> 하나뿐이고, 여기에는 a 규칙이 없다. 지켜 줄
+    상대가 없는 가드는 보호가 아니라 잡음이므로 붙이지 않는다. **데모를 이
+    페이지에 더하면 그 판단이 바뀐다** — index.html 의 그 주석을 먼저 읽는다.
+  */
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    color: var(--ns-color-fg);
+    background: var(--ns-color-surface-sunken);
+  }
+  h1 { font-size: var(--ns-font-size-xl); line-height: var(--ns-line-height-xl); }
+  h2 {
+    margin-top: var(--ns-space-8);
+    padding-top: var(--ns-space-6);
+    border-top: 1px solid var(--ns-color-line);
+    font-size: var(--ns-font-size-lg);
+    line-height: var(--ns-line-height-lg);
+  }
+  h3 { font-size: var(--ns-font-size-sm); color: var(--ns-color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  p, li { font-size: var(--ns-font-size-sm); line-height: 1.7; color: var(--ns-color-fg-body); }
+  code { font-size: var(--ns-font-size-xs); background: var(--ns-color-surface-hover); padding: 0 .25em; border-radius: var(--ns-radius-badge); }
+
+  table { width: 100%; border-collapse: collapse; margin: var(--ns-space-4) 0; }
+  th, td {
+    border-bottom: 1px solid var(--ns-color-line);
+    padding: var(--ns-space-2) var(--ns-space-3);
+    text-align: left;
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-sm);
+    vertical-align: top;
+  }
+  th { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
+  td code { background: none; padding: 0; }
+
+  /* 각 절 머리의 dist/ 표시. 값이 둘뿐이라 색을 나누지 않고 굵기로만 가른다. */
+  .dist {
+    margin: 0;
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    color: var(--ns-color-fg-muted);
+  }
+
+  /*
+    dist 가 없을 때 띄우는 경고. index.html 은 이것을 인라인 style 로 넣지만
+    여기서는 클래스로 둔다 — check-tokens.mjs 의 규칙 ⑤ 는 <style> 안만 보므로
+    인라인으로 두면 리터럴 색이 검사를 통과한다. 클래스로 두면 그 방어 안에 든다.
+  */
+  .missing-dist {
+    margin: 0;
+    padding: var(--ns-space-3);
+    background: var(--ns-color-danger-surface);
+    color: var(--ns-color-danger);
+    font-size: var(--ns-font-size-sm);
+  }
+
+  /*
+    코드 블록의 두 값은 index.html 과 같은 이유로 light-dark() 한 쌍이다 —
+    --ns-color-fg 를 배경으로 쓰면 다크에서 뒤집히는데 짝인 글자색을 리터럴로
+    못박으면 흰 바탕에 흰 글씨가 된다.
+  */
+  pre {
+    margin: var(--ns-space-2) 0 0;
+    padding: var(--ns-space-3);
+    overflow-x: auto;
+    border-radius: var(--ns-radius-panel);
+    background: light-dark(var(--ns-color-fg), var(--ns-color-surface-hover));
+    color: light-dark(var(--ns-color-surface), var(--ns-color-fg));
+    font-size: var(--ns-font-size-xs);
+    line-height: 1.6;
+  }
+
+  /* 사이드바의 overflow-y 가 동작하려면 높이 체인이 끊기지 않아야 한다. */
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; }
+  .shell { display: flex; flex: 1; min-height: 0; }
+  main { flex: 1; overflow-y: auto; padding: var(--ns-space-8) var(--ns-space-6) 6rem; }
+  main > * { max-width: 56rem; }
+</style>
+</head>
+<body>
+
+<ns-header project-name="common-ui 버전 기록" sidebar-open id="changelog-header">
+  <a class="ns-button ns-button--ghost ns-button--sm" slot="actions" href="./index.html">문서로</a>
+</ns-header>
+
+<div class="shell">
+  <!--
+    셸의 모양과 이유는 index.html 과 같다. default-open 과 data-ns-open 을
+    함께 두는 까닭도 같다 — data-ns-open 은 tokens.css 의 :not(:defined) 예약이
+    읽어 upgrade 전 폭을 잡고, default-open 은 upgrade 시점에 Lit 의 속성
+    컨버터가 내부 상태를 세우게 해서 첫 updated() 가 data-ns-open 을 지우지
+    않게 한다. 둘 중 하나만 두면 그 구간에 폭이 튄다.
+  -->
+  <ns-sidebar default-open data-ns-open id="changelog-nav">
+    <ns-nav-group collapsible heading="0.5.x">
+      <ns-nav-item href="#v0-5-1" label="v0.5.1" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-0" label="v0.5.0"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group collapsible heading="0.4.x">
+      <ns-nav-item href="#v0-4-0" label="v0.4.0"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group collapsible heading="0.3.x">
+      <ns-nav-item href="#v0-3-0" label="v0.3.0"></ns-nav-item>
+    </ns-nav-group>
+    <ns-nav-group collapsible heading="0.2.x">
+      <ns-nav-item href="#v0-2-5" label="v0.2.5"></ns-nav-item>
+      <ns-nav-item href="#v0-2-4" label="v0.2.4"></ns-nav-item>
+      <ns-nav-item href="#v0-2-3" label="v0.2.3"></ns-nav-item>
+      <ns-nav-item href="#v0-2-2" label="v0.2.2"></ns-nav-item>
+      <ns-nav-item href="#v0-2-1" label="v0.2.1"></ns-nav-item>
+      <ns-nav-item href="#v0-2-0" label="v0.2.0"></ns-nav-item>
+    </ns-nav-group>
+  </ns-sidebar>
+
+  <main>
+  <h1>버전 기록</h1>
+  <p>
+    태그마다 <strong>무엇이 바뀌었는지 · 왜 그랬는지 · 이주 코드</strong>를 담는다.
+    새 버전이 위에 온다.
+  </p>
+  <p>
+    <code>README.md</code> 의 <strong>릴리스</strong> 표는 태그와 한 줄 요약만 갖고,
+    그보다 긴 것은 전부 이 페이지에 있다. <strong>같은 사실을 두 곳에 적지 않는다</strong> —
+    두 곳에 함께 있는 것은 <strong>태그 목록</strong> 하나이고, 그 둘이 어긋나지 않는지는
+    <code>scripts/check-controls.mjs</code> 가 양방향으로 대조한다.
+  </p>
+  <p>
+    <strong><code>dist/</code> 가 바뀌었는지를 태그마다 적는 이유.</strong>
+    안 바뀐 릴리스는 설치해도 화면이 그대로다. 그런데 소비자가 그것을 알 방법은
+    태그를 둘 받아 <code>diff -rq</code> 하는 것밖에 없다 — 버전 번호만 보고는
+    산출물이 그대로인지 알 수 없으므로 여기 적는다. 문서만 고친 릴리스도 태그를
+    다시 잘라야 하는 까닭은 <code>index.html</code> 과 이 파일이
+    <code>package.json</code> 의 <code>files</code> 에 들어 있어 패키지와 함께
+    배포되기 때문이다.
+  </p>
+  <p>
+    <strong>0.1.x 는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의 릴리스 표와
+    같은 범위이고, 그 표는 <code>v0.2.0</code> 부터 담는다.
+  </p>
+
+  <h2 id="v0-5-1">v0.5.1</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    사이드바를 접을 때 글자가 찌그러지며 리플로우되던 것을 고쳤다. 안쪽
+    <code>nav</code> 가 <code>--ns-sidebar-width</code> 를 <code>min-width</code> 로
+    붙들고 <code>:host</code> 가 자르므로, 접히는 동안 내용이 열린 폭 그대로
+    잘려 사라진다 — 글자가 다시 배치되지 않는다. 그룹 헤딩도 줄바꿈 대신
+    말줄임표로 잘린다.
+  </p>
+  <p>
+    <strong>그래서 폭을 바꾸는 손잡이는 <code>--ns-sidebar-width</code> 토큰
+    하나다.</strong> <code>ns-sidebar { width: … }</code> 만 따로 덮는 것은 그 값이
+    토큰보다 좁지 않을 때만 안전하다 — 더 좁게 주면 내용은 여전히 토큰 폭
+    기준으로 배치된 채 그 좁은 폭에서 잘린다. 이 성질은 위의 <code>min-width</code>
+    고정에서 그대로 따라 나온다.
+  </p>
+
+  <h2 id="v0-5-0">v0.5.0</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
+  <p><strong>소비자가 마크업을 고쳐야 하는 것은 하나다.</strong></p>
+
+  <table>
+    <thead>
+      <tr><th>지금 (0.4.0)</th><th>바뀐 뒤 (0.5.0)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>&lt;ns-sidebar open&gt;</code></td><td><code>&lt;ns-sidebar default-open&gt;</code></td></tr>
+      <tr><td><code>&lt;NsSidebar open={x}&gt;</code></td><td>그대로 (제어 모드)</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong><code>&lt;ns-sidebar open&gt;</code> 은 조용히 무시되고 콘솔 경고가 뜬다.</strong>
+    <code>open</code> 이 프로퍼티 전용이 되어 관찰되지 않으므로 제어 모드로 들어가지도
+    않는다 — HTML 에서 초기 상태를 열어 두려면 <code>default-open</code> 이다.
+    React 의 제어 모드(<code>open={x}</code>)는 그대로다.
+  </p>
+  <p>
+    <strong>열린 폭은 15rem 그대로다.</strong> <code>--ns-sidebar-width</code> 의 뜻도
+    값도 바뀌지 않았으므로 이주 항목이 아니다(그 토큰이 <em>유일한</em> 손잡이가 된
+    경위는 <a href="#v0-5-1">v0.5.1</a> 에 있다). 바뀐 것은 <strong>닫힌 폭</strong>이다 —
+    <code>--ns-sidebar-width-collapsed</code> 가 <code>4rem</code> 에서 <code>0</code> 으로
+    내려가, 접은 사이드바가 좁은 띠를 남기지 않고 통째로 사라진다.
+  </p>
+  <p>
+    <strong>이 토큰을 덮어 좁은 레일을 되살릴 수는 없다.</strong> 값을 올리면 그만큼의
+    <strong>빈 자리</strong>가 예약될 뿐 그 안에는 아무것도 그려지지 않는다 —
+    <code>nav</code> 가 통째로 숨으므로 항목도, 제목도, 그 오른쪽 경계선조차 없고
+    <code>ns-sidebar</code> 의 배경색만 남는다. 이유가 둘이고 서로 독립이다.
+  </p>
+  <ol>
+    <li>
+      <strong>닫힌 사이드바의 내용을 감추는 것은 폭이 아니라 상태다.</strong> shadow 안에
+      <code>:host(:not([data-ns-open])) nav { visibility: hidden }</code> 가 있고, 이 규칙은
+      닫힘 폭이 얼마든 그대로 걸린다.
+    </li>
+    <li>
+      <strong>그 규칙이 없더라도 읽히는 띠가 되지 않는다.</strong> 0.4.0 에서 좁은 띠에
+      라벨을 숨기고 항목을 남기던 신호 프로퍼티 둘(<code>--ns-label-display</code> ·
+      <code>--ns-group-list-display</code>)이 0.5.0 에 없어졌고 <strong>되살리지 않는다.</strong>
+      둘이 없으면 띠에 보이는 것은 15rem 짜리 레이아웃의 왼쪽 끝을 자른 조각 —
+      잘린 제목과 잘린 라벨 — 이다.
+    </li>
+  </ol>
+  <p>
+    <strong>라이브러리가 레일을 다시 주지 않는 이유</strong>는 그것을 만들어 보고
+    물렀기 때문이다. 근거는 <code>docs/gotchas.md</code> 의 <strong>레일을 만들었다가
+    물렀다</strong> 에 있다. 레일이 필요한 프로젝트는 사이드바 밖에 자기 칼럼을 두고
+    이 컴포넌트를 그 오른쪽에 놓는다.
+  </p>
+  <p>
+    <strong>그래서 이 토큰이 정하는 것은 "닫혔을 때 본문을 얼마나 밀어 둘 것인가"
+    하나다.</strong> 접힌 상태에서도 본문이 화면 왼쪽 끝까지 오지 않게 하려면 값을 준다.
+  </p>
+  <script type="text/plain">
+    :root { --ns-sidebar-width-collapsed: 1rem }   /* 접으면 빈 1rem 이 남는다 */
+  </script>
+  <p>
+    <strong>닫힌 사이드바는 탭 순서에서도 빠진다.</strong> 폭 0 과
+    <code>overflow: hidden</code> 은 <strong>자르는</strong> 것이라 그것만으로는 보이지
+    않는 링크에 Tab 이 내려앉는다. 그래서 폭 전환이 끝나는 200ms 뒤에 안쪽
+    <code>nav</code> 를 <code>visibility: hidden</code> 으로 숨긴다 — 링크가 탭 순서와
+    접근성 트리에서 함께 빠지고, 여는 쪽에는 지연이 없어 즉시 보인다.
+    <strong>기대도 되는 보장이다.</strong> 딸려 오는 성질이 둘 있다: 닫는 200ms 안에는
+    아직 Tab 이 닿고, 닫는 순간 사이드바 안에 있던 포커스는 숨김이 도착할 때
+    <code>&lt;body&gt;</code> 로 떨어진다. 둘 다 "애니메이션 뒤에 숨긴다" 에 내재하는
+    절충이다.
+  </p>
+
+  <h3>breaking — <code>ns-nav-item</code> 의 <code>badge</code> 가 없어졌다</h3>
+  <p>
+    배지 사각형은 "접힌 사이드바에서 유일하게 남는 요소" 라는 이유로 있었고,
+    사이드바가 닫히면 통째로 사라지게 되면서 그 이유가 없어졌다.
+    <strong>속성을 그대로 두면 조용히 무시된다</strong> — 라벨 왼쪽이 비고 그 자리가 접힌다.
+  </p>
+  <p>
+    <strong>대안은 <code>leading</code> 슬롯이다.</strong> 원하는 요소를 그대로 넣는다 —
+    폴백이 아니라 그 자리의 유일한 내용이므로 분기할 것이 없다.
+  </p>
+  <script type="text/plain">
+    <!-- 0.4.0 -->
+    <ns-nav-item href="/users" label="사용자" badge="사"></ns-nav-item>
+
+    <!-- 0.5.0 — 아이콘 -->
+    <ns-nav-item href="/users" label="사용자">
+      <ns-icon slot="leading"><svg>…</svg></ns-icon>
+    </ns-nav-item>
+
+    <!-- 0.5.0 — 옛 배지와 같은 모양을 원하면 소비자가 그 상자를 만든다 -->
+    <ns-nav-item href="/users" label="사용자">
+      <span slot="leading" class="my-badge" aria-hidden="true">사</span>
+    </ns-nav-item>
+  </script>
+  <p>React 도 같다 — <code>badge</code> 프롭 대신 <code>slot="leading"</code> 을 붙인 자식을 넘긴다.</p>
+  <script type="text/plain">
+    <NsNavItem href="/users" label="사용자">
+      <NsIcon slot="leading"><Users /></NsIcon>
+    </NsNavItem>
+  </script>
+  <p>
+    <strong>아무것도 넣지 않는 것이 기본이다.</strong> 빈 슬롯은 상자도 <code>gap</code> 도
+    만들지 않으므로 라벨이 왼쪽 끝에 붙는다. <strong>일부 항목에만 <code>leading</code> 을
+    주면 줄이 들쭉날쭉해 보일 수 있다</strong> — 0.4.0 은 배지가 늘 자리를 차지해 정렬이
+    강제됐고, 0.5.0 은 그 강제를 놓았다. 한 목록 안에서는 전부 주거나 전부 비우는
+    쪽을 권한다.
+  </p>
+
+  <h3>그 밖에</h3>
+  <p>
+    <strong><code>ns-sidebar</code> 밖에서 최상위 <code>ns-nav-group</code> 을 세로로 쌓으면
+    사이가 24px 좁아진다.</strong> 0.4.0 은 첫 형제가 아닌 그룹의 wrapper 에
+    <code>padding-top: var(--ns-space-6)</code>(24px)을 얹었다. 그 규칙의
+    <code>:first-child</code> 가 화면과 어긋나게 세는 경우가 있어 지웠고, 남는 것은
+    헤딩 자신의 <code>padding-top: var(--ns-space-4)</code>(16px)뿐이다. 사이드바 안에서는
+    보이지 않는 차이지만, 그룹을 평범한 컨테이너에 쌓아 쓰던 소비자는 화면이 좁아진
+    것을 본다. 되돌리려면 소비자 문서 CSS 한 줄이면 된다 — 호스트는 문서 트리에
+    있으므로 이 규칙이 shadow 를 이긴다.
+  </p>
+  <script type="text/plain">
+    ns-nav-group + ns-nav-group { padding-top: 1.5rem }
+  </script>
+  <p>
+    <strong><code>ns-nav-group</code> 을 <code>ns-nav-group</code> 안에 중첩하면 하위
+    카테고리가 된다.</strong> 이번 릴리스가 더한 기능이고 breaking 이 아니다 — 새 태그도
+    새 속성도 없이 그룹이 자기 중첩을 스스로 판정한다. <code>collapsible</code> 은
+    <strong>단을 가리지 않는다</strong> — 최상위 그룹에 붙이면 그 그룹이 통째로 접히고(긴
+    네비게이션을 줄이는 데는 이쪽이 가장 크다), 하위 그룹에 붙이면 그 카테고리만
+    접힌다. <strong>0.4.0 마크업에 이미 있는 <code>collapsible</code> 은 옮길 필요가 없다.</strong>
+  </p>
+  <script type="text/plain">
+    <ns-sidebar default-open>
+      <ns-nav-group heading="관리">
+        <ns-nav-group heading="사용자" collapsible>
+          <ns-nav-item href="/users" label="목록"></ns-nav-item>
+        </ns-nav-group>
+        <ns-nav-item href="/logs" label="로그"></ns-nav-item>
+      </ns-nav-group>
+    </ns-sidebar>
+  </script>
+  <p>
+    <strong>새 이벤트는 없다.</strong> <code>ns-sidebar</code> 는 자기를 여닫는 버튼을
+    갖지 않으므로 <code>ns-toggle</code> 을 올리지 않는다 — 헤더의 토글을 받아 사이드바의
+    <code>open</code> 에 내려주는 배선은 0.4.0 과 같다.
+  </p>
+
+  <h2 id="v0-4-0">v0.4.0</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
+  <p>
+    <strong>액센트 토큰 둘이 없어졌다.</strong> <code>--ns-color-accent-hover</code> ·
+    <code>--ns-color-accent-fg</code> 를 참조하던 자리는
+    <code>--ns-color-accent-fill-hover</code> · <code>--ns-color-accent-fill-fg</code> 로
+    옮긴다. 이름이 갈린 이유는 <strong>채움면과 선이 갈렸기</strong> 때문이다 — 브랜드
+    색으로 <em>칠하는</em> 면(기본 버튼 배경 등)은 <code>--ns-color-accent-fill</code>
+    세 토큰이 갖고, <code>--ns-color-accent</code> 는 선과 링(포커스 테두리 · 탭 활성
+    밑줄 · 체크박스 <code>accent-color</code>)에 남았다. <strong>그래서 옛 이름을 그냥
+    <code>--ns-color-accent</code> 로 바꿔 적으면 안 된다</strong> — hover 와 글자색은
+    <code>-fill-</code> 쪽에 있다.
+  </p>
+  <p>
+    <strong><code>nsToast()</code> 의 기본 자리가 우하단에서 상단 중앙으로 바뀌었다.</strong>
+    옛 자리를 유지하려면 시작 지점에서 한 번 세운다.
+  </p>
+  <script type="text/plain">
+    nsToastPosition("bottom-right");
+  </script>
+  <p>
+    <code>nsToastPosition()</code> 이 이 릴리스에서 함께 나갔다. 네 값
+    (<code>top-center</code> · <code>bottom-center</code> · <code>top-right</code> ·
+    <code>bottom-right</code>) 중 하나를 받고, 이미 떠 있는 리전까지 함께 옮긴다.
+  </p>
+
+  <h2 id="v0-3-0">v0.3.0</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>태그만 올린다.</strong> 더해진 것만 있고 기존 마크업이 뜻을 바꾸는 곳은 없다.
+  </p>
+  <ul>
+    <li>
+      <strong>컴포넌트 둘</strong> — <code>ns-tabs</code> · <code>ns-multi-select</code>.
+      (<code>ns-toast</code> 리전도 이때 들어왔지만 소비자가 직접 쓰지 않는다 —
+      <code>nsToast()</code> 가 만든다.)
+    </li>
+    <li>
+      <strong>클래스 여섯</strong> — <code>.ns-accordion</code> · <code>.ns-message</code> ·
+      <code>.ns-chip</code> · <code>.ns-button--danger</code> ·
+      <code>.ns-table__row-button</code> · <code>.ns-table--rows-clickable</code>.
+      (<code>.ns-tabs__count</code> 와 <code>.ns-multi-select__*</code> 는 위 두 컴포넌트에
+      딸린 것이라 따로 세지 않는다.)
+    </li>
+    <li>
+      <strong>명령형 API 셋</strong> — <code>nsToast</code> · <code>nsAlert</code> ·
+      <code>nsConfirm</code>. 함수로 부르고 Promise 를 돌려받는다.
+    </li>
+  </ul>
+
+  <h2 id="v0-2-5">v0.2.5</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>태그만 올린다.</strong> 소비자 코드를 고칠 것은 없고, 잘못 쓰고 있었다면
+    이 릴리스부터 그것이 드러난다.
+  </p>
+  <ul>
+    <li>
+      <code>ns-icon</code> 의 슬롯 자식이 하이드레이션 때 튀지 않는다.
+      <code>::slotted()</code> 는 upgrade 전에 존재하지 않으므로 슬롯 자식의 크기를
+      shadow 쪽 규칙만으로는 예약할 수 없었다 — <code>tokens.css</code> 에 문서 트리
+      짝(<code>ns-icon &gt; *</code>)을 함께 두어 그 구간을 덮는다.
+    </li>
+    <li>
+      <strong>프로퍼티 전용 이름을 속성으로 쓰면 콘솔 경고가 나온다.</strong>
+      <code>&lt;ns-dialog open&gt;</code> 처럼 관찰되지 않는 이름을 마크업에 쓰면
+      이전에는 아무 신호 없이 무시됐다. 라이브러리는 그 이름들을 호스트에 쓰지
+      않으므로 <strong>그 속성이 발견되면 언제나 소비자의 실수다.</strong>
+      경고를 내는 곳은 셋이다 — <code>ns-dialog</code> 의 <code>open</code>(→
+      <code>default-open</code>), <code>ns-pagination</code> 의 <code>page</code>(→
+      <code>default-page</code>), <code>ns-table</code> 의 상태 프로퍼티들.
+    </li>
+  </ul>
+
+  <h2 id="v0-2-4">v0.2.4</h2>
+  <p class="dist"><code>dist/</code> <strong>동일</strong> (<code>v0.2.2</code> 와 바이트 일치)</p>
+  <p>
+    <strong>소비자가 할 일은 없다.</strong> <code>index.html</code> 의 다크모드 코드 블록을
+    고친 문서 전용 릴리스다.
+  </p>
+
+  <h2 id="v0-2-3">v0.2.3</h2>
+  <p class="dist"><code>dist/</code> <strong>동일</strong> (<code>v0.2.2</code> 와 바이트 일치)</p>
+  <p>
+    <strong>소비자가 할 일은 없다.</strong> 예시를 <code>name</code> 대신 슬롯 우선으로
+    개편한 문서 전용 릴리스다.
+  </p>
+
+  <h2 id="v0-2-2">v0.2.2</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>태그만 올린다.</strong> <code>ns-icon</code> 이 기본 슬롯을 갖는다 —
+    아무 아이콘이나 자식으로 넣어 크기·색만 통일할 수 있고,
+    <code>name</code> 은 내장 스프라이트와 <code>registerIcons()</code> 로 등록한 것에만 쓴다.
+  </p>
+
+  <h2 id="v0-2-1">v0.2.1</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>태그만 올린다.</strong> 다만 0.2.0 을 쓰면서 손으로 메워 둔 것이 있으면
+    지운다 — <code>globals.css</code> 에 사이드바 오른쪽 경계선을 되살려 둔 규칙이 그것이다.
+  </p>
+  <p>
+    <strong>왜 메워야 했나.</strong> 0.2.0 까지 그 경계선은
+    <code>:host { border-right: … }</code> 였다. 호스트 요소는 문서 트리에 있으므로
+    Tailwind preflight 의 <code>*, ::before, ::after, ::backdrop { border: 0 solid }</code> 가
+    그것을 잡고, shadow 트리의 <code>:host</code> 규칙은 특정도와 무관하게 문서 트리
+    규칙에 진다 — Tailwind 를 쓰는 소비자에게만 경계선이 사라졌다. 0.2.1 이 박스를
+    shadow 안의 <code>nav</code> 로 내려 문서 규칙이 닿지 못하게 했으므로, 메워 둔
+    규칙을 남기면 이제 선이 둘이 된다. 전말은
+    <code>docs/gotchas.md</code> 의 <strong><code>:host</code> 는 소비자 문서 규칙에 진다</strong> 에 있다.
+  </p>
+  <p>
+    <strong><code>exports</code> 에 <code>./package.json</code> 이 생겼다.</strong> 설치된
+    버전을 <code>node -p</code> 한 줄로 확인하는 것이 <strong>0.2.1 부터만</strong> 동작하는
+    이유가 이것이다. 그 명령과 옛 태그에서 나는 오류는 <code>README.md</code> 의
+    <strong>설치</strong> 절에 있다.
+  </p>
+
+  <h2 id="v0-2-0">v0.2.0</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
+  <p>
+    <strong>공개 토큰 이름 전부에 <code>--ns-</code> 접두사가 붙었다.</strong>
+    <code>var(--space-3)</code> 는 <code>var(--ns-space-3)</code> 다. 옛 이름을 직접
+    참조하는 CSS 가 이미 있는 프로젝트는 <code>aliases.css</code> 를
+    <strong>선택적으로</strong> 함께 불러와 시간을 벌 수 있다 — 임포트 한 줄과, 새
+    프로젝트가 그것을 쓰지 않는 이유는 <code>README.md</code> 의 <strong>설치</strong>
+    절에 있다.
+  </p>
+  <p>
+    <strong>왜 접두사를 붙였나.</strong> 이름을 소비자와 공유하면 라이브러리가 소비자
+    CSS 의 임포트 순서에 종속된다 — 같은 이름을 다른 뜻으로 쓰던 프로젝트에서
+    <code>tokens.css</code> 를 어디에 두느냐가 셸 색을 정했다. 전말은
+    <code>docs/gotchas.md</code> 의 <strong>토큰 이름을 소비자와 공유하면 라이브러리가
+    캐스케이드에 종속된다</strong> 에 있다.
+  </p>
+  <p>
+    <strong>React 의 <code>NsSidebar</code> 가 <code>Sidebar</code> 가 됐다.</strong>
+    이름만 바뀐 것이 아니라 프롭 모양이 바뀐다 — 이벤트 <code>detail</code> 을 벗긴
+    shim 이라 핸들러가 레코드를 직접 받는다.
+  </p>
+  <script type="text/plain">
+    // 0.1.5
+    <NsSidebar onNsNavigate={(e) => go(e.detail)} />
+
+    // 0.2.0
+    <Sidebar onNavigate={(d) => go(d)} />
+  </script>
+  <p>
+    <strong>소비자 코드를 고치지 않아도 화면이 바뀌는 부분이 하나 있다 — 다크모드다.</strong>
+    <code>tokens.css</code> 를 불러오는 것만으로 켜지므로, 라이트 전용으로 만든 앱도
+    사용자의 OS 가 다크면 셸·폼 컨트롤·스크롤바가 어두워진다. 모양을 고정하는
+    옵트아웃(<code>&lt;html data-theme="light"&gt;</code>)과 자기 CSS 에서
+    <code>color-scheme</code> 을 세우고 있을 때 할 일은 <code>README.md</code> 의
+    <strong>다크모드</strong> 절에 있다 — 이 릴리스에 국한된 이야기가 아니라 지금도
+    유효한 설정이라 그쪽에 둔다.
+  </p>
+  </main>
+</div>
+
+<script src="./dist/bundle.umd.js"></script>
+
+<script>
+  /*
+    index.html 의 배선을 이 페이지에 필요한 만큼만 옮긴 것이다. 배선은
+    **스크립트 요소 하나**이므로, 위쪽에서 예외가 던져지면 아래 전부가 실행되지
+    않는다. 그래서 순서가 index.html 과 같다 — 예시 코드 변환이 가장 먼저다.
+  */
+  function dedent(html) {
+    const lines = html.replace(/^\n/, "").replace(/\s+$/, "").split("\n");
+    const indent = Math.min(
+      ...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length)
+    );
+    return lines.map((l) => l.slice(indent)).join("\n");
+  }
+
+  /*
+    실행하지 않는 예시는 <script type="text/plain"> 에 원문으로 담는다.
+    브라우저가 파싱하지 않으므로 이스케이프가 필요 없고, 변환 전까지는 화면에
+    보이지 않는다. 이 변환을 맨 앞에 두는 이유는 아래 배선이 던지면 예시 전부가
+    빈 화면으로 남는데 페이지는 멀쩡해 보여서 원인을 알아채기 어렵기 때문이다.
+  */
+  for (const src of document.querySelectorAll('script[type="text/plain"]')) {
+    const pre = document.createElement("pre");
+    pre.textContent = dedent(src.textContent);
+    src.replaceWith(pre);
+  }
+
+  // dist 가 없으면 셸이 통째로 비어 원인을 알 수 없다.
+  if (!customElements.get("ns-nav-item")) {
+    document.body.insertAdjacentHTML("afterbegin",
+      '<p class="missing-dist">dist 가 없습니다. 먼저 <code>npm run build</code> 를 실행하세요.</p>');
+  }
+
+  const changelogHeader = document.getElementById("changelog-header");
+  const changelogNav = document.getElementById("changelog-nav");
+
+  /*
+    셸은 제어 모드다. 시작부터 프로퍼티로 세워 반쪽 제어를 만들지 않는다 —
+    open 을 첫 토글에서만 대입하면 그때까지는 default-open 이 진실이고 그
+    뒤에는 프로퍼티가 진실이 된다.
+  */
+  changelogNav.open = true;
+
+  /*
+    ns-toggle 을 올리는 곳은 이 페이지의 헤더 하나다. 그래도 리스너는 document
+    가 아니라 그 헤더 엘리먼트에 붙인다 — 이벤트가 composed 라 조상에 붙이면
+    나중에 이 페이지에 데모를 더하는 순간 그것이 낸 것까지 받는다.
+  */
+  changelogHeader.addEventListener("ns-toggle", (e) => {
+    changelogHeader.sidebarOpen = e.detail.open;
+    changelogNav.open = e.detail.open;
+  });
+
+  // 같은 이유로 셸 사이드바에 붙인다.
+  changelogNav.addEventListener("ns-navigate", (e) => {
+    document.querySelector(e.detail.href)?.scrollIntoView({ behavior: "smooth" });
+    history.replaceState(null, "", e.detail.href);
+  });
+
+  // 스크롤에 따라 active 를 옮긴다. active 프로퍼티의 데모이기도 하다.
+  const navItems = [...changelogNav.querySelectorAll("ns-nav-item")];
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        for (const item of navItems) {
+          item.active = item.href === `#${entry.target.id}`;
+        }
+      }
+    },
+    { rootMargin: "0px 0px -70% 0px" },
+  );
+  for (const item of navItems) {
+    const target = document.querySelector(item.href);
+    if (target) observer.observe(target);
+  }
+</script>
+
+</body>
+</html>
