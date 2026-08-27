@@ -28,7 +28,7 @@
 ## 살아남는 것 — 지우지 말 것
 
 - `ns-nav-group` 의 `#nested` 판정과 `.nested` 스타일 **전부**
-- `open` 프로퍼티 전용 + `default-open` 속성, `#innerOpen`/`#toggled`, `willUpdate` 씨앗과 그 `undefined` 좁히기
+- `open` 프로퍼티 전용 + `default-open` 속성, `#innerOpen`, `willUpdate` 씨앗과 그 `undefined` 좁히기 (**`#toggled` 는 남기지 않는다** — 초안은 남기라고 했으나 자기 토글 경로가 없어져 값이 변하지 않는다. Step 1 뒤 문단에 근거가 있다)
 - 호스트의 `data-ns-open` 과 `tokens.css` 의 upgrade 전 예약
 - `Sidebar.tsx` 의 `default-open` 원시 속성 렌더(`open === true || defaultOpen === true`)
 - `--ns-label-display`·`--ns-group-list-display` 가 **삭제된 상태**
@@ -101,15 +101,17 @@ export class NsSidebar extends LitElement {
    * 같고, `ns-nav-group` 의 `default-collapsed` 와 반대로 보이지만 규칙은 같다 —
    * 그쪽은 기본이 펼침이었다.
    *
-   * 나중에 이 값을 바꾸면 **아직 토글되지 않은 사이드바에만** 반영된다.
+   * **레일이 없어 이 컴포넌트는 스스로 토글하지 않는다.** 그래서 비제어
+   * 모드에서 사용자 상호작용으로 여닫히는 경로가 아예 없고, 이 값을 지키던
+   * 가드(`#toggled`)도 지킬 대상이 없어져 지웠다 — 나중에 이 값을 바꾸면
+   * 그대로 다시 반영된다. 사실상 비제어 모드는 **초기값 하나로 시작해서
+   * 계속 그 값을 따라가는 것**이고, "나중에 소비자가 상호작용으로 연 것을
+   * `defaultOpen` 변경이 덮어쓴다" 는 걱정을 할 필요가 없다.
    */
   @property({ type: Boolean, attribute: "default-open" }) defaultOpen = false;
 
   /** 비제어일 때의 진실. */
   #innerOpen = false;
-
-  /** 사용자가 한 번이라도 토글했나. 늦게 도착한 defaultOpen 이 그것을 덮지 않게 막는다. */
-  #toggled = false;
 
   get #isOpen(): boolean {
     return this.open ?? this.#innerOpen;
@@ -135,7 +137,7 @@ export class NsSidebar extends LitElement {
     것이 아니라 뒤집는다.**
   */
   protected override willUpdate(changed: PropertyValues): void {
-    if (changed.has("defaultOpen") && !this.#toggled) {
+    if (changed.has("defaultOpen")) {
       this.#innerOpen = this.defaultOpen === true;
     }
   }
@@ -167,7 +169,9 @@ declare global {
 }
 ```
 
-**`#toggled` 는 남지만 이 컴포넌트는 스스로 토글하지 않는다.** 레일 타일이 없어져 토글을 요청할 주체가 사라졌기 때문이다. 그래도 필드를 남기는 이유는 `willUpdate` 씨앗의 가드가 그것을 읽고, 소비자가 `el.open` 을 직접 대입하는 경로에서 늦게 온 `defaultOpen` 이 그 조작을 덮지 않아야 하기 때문이다.
+**`#toggled` 도 함께 지운다.** 이 계획의 초안은 필드를 남기라고 했고 그 근거가 틀렸다 — 레일 타일이 이 컴포넌트 안에서 토글을 요청하던 유일한 주체였으므로, 타일이 없어진 뒤에는 "사용자가 한 번이라도 토글했나" 가 **언제나 false** 다. 값이 변하지 않는 가드는 가드가 아니고, 그것을 남기면 읽는 사람에게 자기 토글 경로가 있는 것처럼 읽힌다. 소비자가 `el.open` 을 직접 대입하는 경로는 **제어 모드**이고 그쪽은 `open ?? #innerOpen` 의 `??` 가 이미 지킨다 — `#innerOpen` 씨앗이 무엇이 되든 `open` 이 있으면 그것이 이긴다.
+
+**그래서 비제어 모드는 초기값 전용이다.** `ns-sidebar` 를 여닫는 버튼은 `ns-header` 에만 있고, `ns-toggle` 을 받아 `open` 에 내려주는 한 줄은 여전히 소비자 코드다(`docs/project-structure.md` 의 "남은 일").
 
 - [ ] **Step 2: `ns-sidebar.styles.ts` 를 아래로 전면 교체한다**
 
@@ -188,6 +192,13 @@ export const styles = css`
     height: 100%;
     min-height: 0;
     width: var(--ns-sidebar-width);
+    /*
+      양방향을 함께 자른다. 닫힘 규칙에만 두면 열릴 때 규칙이 즉시 매칭을 멈추는
+      바람에 폭이 200ms 동안 늘어나는 내내 안의 <nav> 가 호스트 밖으로, 곧 <main>
+      위로 그려진다. overflow 는 check-tokens.mjs 규칙 ④ 의 박스 프로퍼티
+      (border·margin·padding)가 아니므로 :host 에 두어도 된다.
+    */
+    overflow: hidden;
     background: var(--ns-color-surface);
     transition: width 200ms var(--ns-transition-ease);
   }
@@ -201,13 +212,21 @@ export const styles = css`
     upgrade 전에는 문서 예약이, upgrade 와 hydration 사이에는 shim 이 렌더한
     default-open 을 Lit 의 컨버터가 읽어 세운 값이, hydration 이후에는 컴포넌트가
     쓰는 data-ns-open 이 폭을 잡는다.
-
-    overflow: hidden 이 함께 필요하다. 폭이 0 인 동안 안의 <nav> 가 자기 폭을
-    유지해 밖으로 삐져나오는 것을 막는다.
   */
   :host(:not([data-ns-open])) {
     width: var(--ns-sidebar-width-collapsed);
-    overflow: hidden;
+  }
+
+  /*
+    닫히면 탭 순서에서도 빠진다. 폭 0 과 overflow: hidden 은 자를 뿐 숨기지
+    않으므로, 그것만으로는 보이지 않는 링크에 Tab 이 내려앉는다.
+
+    지연을 새 상태 쪽에 두는 것이 요점이다 — 닫힐 때는 200ms 뒤에 숨어 애니메이션이
+    끝난 뒤에 사라지고, 열릴 때는 기본 규칙에 전이가 없어 즉시 보인다.
+  */
+  :host(:not([data-ns-open])) nav {
+    visibility: hidden;
+    transition: visibility 0s 200ms;
   }
 
   /*
@@ -222,19 +241,30 @@ export const styles = css`
     스크롤바가 호스트 것이라 경계선 오른쪽에 생긴다. 같은 요소가 둘을 가져야
     스크롤바가 경계선 안쪽에 남는다.
 
-    닫힐 때 폭이 줄어드는 동안 안의 내용이 함께 찌그러지지 않도록 min-width 로
-    열린 폭을 붙들어 둔다. 바깥의 overflow: hidden 이 그것을 잘라낸다.
+    min-width 를 두지 않는다. 닫힐 때 폭이 줄어드는 동안 내용이 찌그러지지
+    않게 하려던 것이었지만, 그러려면 :host { width: … } override 가 깨진다 —
+    소비자가 ns-sidebar { width: 12rem } 처럼 토큰보다 좁은 값을 주면 min-width
+    가 여전히 --ns-sidebar-width(15rem)를 붙들어 nav 가 호스트 밖으로 3rem
+    삐져나온다. 대신 :host 가 이제 양방향을 자르므로 삐져나올 걱정이 없고,
+    안의 .label 이 이미 white-space: nowrap; overflow: hidden; text-overflow:
+    ellipsis 라 폭이 줄어드는 동안 글자가 말줄임표로 점진적으로 줄어들 뿐
+    레이아웃이 깨지지 않는다.
   */
   nav {
     box-sizing: border-box;
     height: 100%;
-    min-width: var(--ns-sidebar-width);
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid var(--ns-color-line);
   }
 `;
 ```
+
+**이 블록은 실행 중에 세 번 고쳐졌고 위 내용이 실제로 나간 것이다.** 초안과 달라진 것 셋을 남겨 둔다 — 같은 것을 다시 쓰면 같은 결함을 다시 만든다.
+
+- **`overflow: hidden` 을 닫힘 규칙이 아니라 `:host` 에 둔다.** 닫힘 규칙 안에 있으면 `data-ns-open` 이 붙는 순간 규칙이 매칭을 멈추는데 폭은 아직 늘어나는 중이라, 안의 `<nav>` 가 200ms 내내 `<main>` 위에 그려진다.
+- **`visibility: hidden` 규칙을 더한다.** 자르는 것과 숨기는 것은 달라서, 폭 0 짜리 사이드바의 링크에 Tab 이 그대로 내려앉았다.
+- **`nav { min-width }` 를 두지 않는다.** 문서화된 `ns-sidebar { width: … }` override 를 깬다.
 
 - [ ] **Step 3: `types.ts` 에서 `NsGroupSelectDetail` 을 지운다**
 
