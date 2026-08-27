@@ -987,18 +987,24 @@ static override shadowRootOptions: ShadowRootInit = {
 
 → **고치는 길은 사이드바 밖에 랜드마크를 두는 것**이고, 그러면 랜드마크의 범위가 "지금 보이는 네비게이션" 이 아니라 "사이드바가 있던 자리" 로 바뀐다. 접근성 트리의 모양을 바꾸는 변경이라 계기가 생기면(소비자가 랜드마크 점프로 사이드바를 찾는다고 보고하면) 별도 릴리스로 낸다.
 
-## `ns-sidebar` 의 `nav` 스크롤바를 감추는 데 벤더 접두사를 처음 썼다
+## `ns-sidebar` 의 `nav` 스크롤바에 처음으로 벤더 접두사를 썼다 — 감추지 않고 가늘게
 
-`ns-sidebar.styles.ts` 의 `nav` 는 이미 `overflow-y: auto` 였다 — 내용이 길어지면 스크롤은 원래도 됐다. 이번에 추가한 것은 "스크롤은 되는데 막대는 안 보인다" 는 요구이고, 이것을 표준만으로 이 저장소의 하한 셋 전부에서 만족시킬 수 없다.
+`ns-sidebar.styles.ts` 의 `nav` 는 이미 `overflow-y: auto` 였다 — 내용이 길어지면 스크롤은 원래도 됐다. 처음 요구는 "막대를 아예 감춘다" 였고 그렇게 구현했으나, 화면으로 본 뒤 **감추지 않고 가늘게** 로 바뀌었다 — 막대가 없으면 "목록이 더 이어진다" 는 것을 알려주는 유일한 정적 신호까지 함께 사라지기 때문이다. 휠·트랙패드·키보드 스크롤은 애초에 이 신호에 기대지 않으므로 계속 되지만, 마우스로 훑어보다 우연히 발견하는 경로는 막대가 있어야 남는다. 지금은 평소엔 옅게 두고(`--ns-color-line-strong`) `nav` 를 hover 할 때만 진해지게(`--ns-color-fg-subtle`) 해서, 신호는 남기고 평소의 존재감만 줄였다.
 
-**`scrollbar-width: none` 하나로는 하한을 못 덮는다.** `docs/project-structure.md` 가 못박은 하한은 Chrome 123·Safari 17.5·Firefox 121 이다. `scrollbar-width` 는 Chrome 121·Firefox 64 부터라 Chrome·Firefox 쪽 하한은 이미 덮지만, **Safari 는 18.2 부터**라 하한(17.5)보다 위다 — caniuse 의 `mdn-css_properties_scrollbar-width` 항목으로 확인했다. 하한을 그대로 두는 한 Safari 쪽에 구멍이 남는다.
+**표준 프로퍼티 하나로는 이 저장소의 하한 셋을 다 못 덮는 것은 감추던 시절과 같다.** `docs/project-structure.md` 가 못박은 하한은 Chrome 123·Safari 17.5·Firefox 121 이다. `scrollbar-width`·`scrollbar-color` 는 Chrome 121·Firefox 64 부터라 Chrome·Firefox 쪽 하한은 이미 덮지만, **Safari 는 18.2 부터**라 하한(17.5)보다 위다 — caniuse 의 `mdn-css_properties_scrollbar-width` 항목으로 확인했다. 하한을 그대로 두는 한 Safari 쪽에 구멍이 남는다.
 
-**그래서 `::-webkit-scrollbar { display: none }` 을 짝으로 붙였다.** 비표준이고 `-webkit-` 접두사가 붙었지만 Safari 전 버전과 Chrome 에서 오래전부터 동작해 그 구멍을 정확히 메운다. Firefox 는 애초에 이 규칙이 필요 없다 — `scrollbar-width` 가 이미 하한을 덮으므로 매칭되지 않아도 상관없다.
+**그래서 `::-webkit-scrollbar` 계열을 짝으로 붙였다.** 비표준이고 `-webkit-` 접두사가 붙었지만 Safari 전 버전과 Chrome 에서 오래전부터 동작해 그 구멍을 정확히 메운다. Firefox 는 애초에 이 규칙이 필요 없다 — `scrollbar-width` 가 이미 하한을 덮으므로 매칭되지 않아도 상관없다.
 
-→ **`grep -rn '\-webkit-\|\-moz-' src/` 가 처음으로 결과를 낸다.** `.claude/rules/library-invariants.md` 는 `:host-context()` 를 Chromium 전용이라는 이유로 금지하지만, **이것은 같은 종류의 판단이 아니다.** `:host-context()` 가 없으면 그 셀렉터가 매칭 자체를 안 해 스타일링이 조용히 죽는다 — 기능이 죽는 것이다. `::-webkit-scrollbar` 규칙이 어느 브라우저에서 안 먹으면 스크롤 막대가 보일 뿐이고, **휠·트랙패드·키보드·프로그램 스크롤은 전부 그대로 동작한다.** 죽는 것과 못생겨지는 것의 차이다. 게다가 `scrollbar-width: none` 과 짝지은 지금은 명시한 하한 안에서 애초에 빠지는 브라우저가 없다 — 이 규칙은 순전히 방어선이다.
+**두 경로가 Chrome 에서 겹쳐 그려지지 않는다.** CSS 워킹 그룹이 2024년에 정리한 규칙대로, `scrollbar-width`·`scrollbar-color` 가 `auto` 가 아닌 값으로 지원되면 레거시 `::-webkit-scrollbar` 계열은 통째로 무시된다(Chrome 121 부터 반영) — 웹서치로 근거 자료 세 건에서 일치하는 것을 확인했다. 그래서 이 저장소 하한에서는 Chrome·Firefox 가 표준 경로를, 18.2 미만 Safari 만 WebKit 경로를 실제로 그린다.
+
+**두 경로가 픽셀 단위로 같을 수는 없다.** 표준 `scrollbar-width` 는 `auto`·`thin`·`none` 세 키워드만 받아 두께를 숫자로 고를 수 없다. WebKit 쪽만 트랙 폭(8px)과 인셋을 직접 그릴 수 있어서, `thin` 키워드가 각 엔진에서 렌더하는 실제 두께와 최대한 가깝게 맞췄을 뿐 정확히 같지는 않다.
+
+→ **`grep -rn '\-webkit-\|\-moz-' src/` 가 처음으로 결과를 낸다.** `.claude/rules/library-invariants.md` 는 `:host-context()` 를 Chromium 전용이라는 이유로 금지하지만, **이것은 같은 종류의 판단이 아니다.** `:host-context()` 가 없으면 그 셀렉터가 매칭 자체를 안 해 스타일링이 조용히 죽는다 — 기능이 죽는 것이다. `::-webkit-scrollbar` 규칙이 어느 브라우저에서 안 먹으면(18.2 미만 Safari 가 아닌 다른 상상 속 엔진이라면) **플랫폼 기본 스크롤바로 떨어질 뿐** 스크롤 자체는 죽지 않는다. 죽는 것과 못생겨지는 것의 차이이고, 감추던 시절에도 지금 칠하는 시절에도 이 시험은 그대로 유효하다.
 
 → **이 판단은 벤더 접두사를 일반적으로 허용하지 않는다.** 판정 기준은 "없으면 죽는가, 못생겨지는가" 하나이지 "벤더 접두사인가" 가 아니다. 다음에 벤더 접두사를 쓰고 싶은 자리가 생기면 이 절을 선례로 들 것이 아니라 같은 질문을 다시 던져야 한다 — 그 자리에서 없으면 기능이 죽는다면 이 판단은 적용되지 않는다.
 
-→ **막대가 사라지면 "더 있다" 는 정적 신호도 함께 사라진다.** 스크롤 가능 여부를 화면만 보고 알 수 있던 유일한 단서가 없어진다. 페이드나 그림자 같은 힌트를 붙이는 것은 이번 요청 범위가 아니고 별도의 디자인 판단이라 넣지 않았다 — 필요하면 후속으로 다룬다.
+→ **`background-clip: padding-box` 로 트랙보다 좁은 막대를 그린다.** `border` 를 `transparent` 로 주고 `background-clip: padding-box` 를 쓰면 배경색이 border 안쪽(패딩 상자)에서만 칠해져, 실제로 보이는 막대는 트랙보다 좁고 양옆에 여백이 남는다 — border 두께만큼 막대가 트랙 가운데로 졸아든다. `::-webkit-scrollbar-track` 자체가 `transparent` 라 그 여백을 색 없이 만드는 유일한 수단이 이 인셋이다.
 
-→ **클래식(공간을 차지하는) 스크롤바 환경에서는 레이아웃도 함께 바뀐다.** 오버레이 스크롤바가 아니라 항상 자리를 차지하는 플랫폼·설정에서는 막대를 감추는 것이 그 여백도 되찾아준다 — 라벨이 몇 픽셀 더 넓어지고 내용이 살짝 옮겨 보인다. 이것은 결함이 아니라 이 변경이 의도한 시각적 결과다.
+→ **클래식(공간을 차지하는) 스크롤바 환경에서는 레이아웃이 원래도 안 바뀐다.** 감추지 않고 칠하기로 정한 뒤에는 막대 자체가 사라지지 않으므로 트랙이 차지하던 여백도 그대로 남는다 — 이것은 감추던 버전에서만 있었던 결론이라 지금은 적용되지 않는다.
+
+**이 저장소의 스크롤 영역은 셋이고, 지금 스타일한 것은 그중 하나다.** `ns-sidebar` 의 `nav`(shadow) 말고 `ns-dialog` 의 본문(shadow) 과 `.ns-multi-select__list`(`src/controls/controls.css:721`, Light DOM) 도 스크롤한다. 나머지 둘은 당분간 플랫폼 기본 스크롤바를 그대로 쓴다. **공유 스타일시트는 shadow root 안에 닿지 않으므로**, 셋을 통일하려면 이 규칙들을 `controls.css` 한 곳에 쓰는 것이 아니라 컴포넌트마다 반복해야 한다 — 그 비용을 치를지는 이번 범위 밖의 판단이라 여기서는 제약만 적어 둔다.
