@@ -187,7 +187,7 @@ ns-nav-group + ns-nav-group { padding-top: 1.5rem }
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
-| (릴리스 전 · 0.5.0) | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`(`open` 이 프로퍼티 전용이 됐다), `ns-nav-item` 의 `badge` 삭제(`leading` 슬롯으로 옮긴다). 닫힌 사이드바가 4rem 이 아니라 0 이 된다. `ns-nav-group` 의 `collapsible` 과 **하위 카테고리 중첩**이 함께 나간다. 위 **0.5.0 이주** 절을 본다 |
+| `v0.5.0` | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`(`open` 이 프로퍼티 전용이 됐다), `ns-nav-item` 의 `badge` 삭제(`leading` 슬롯으로 옮긴다). 닫힌 사이드바가 4rem 이 아니라 0 이 된다. `ns-nav-group` 의 `collapsible` 과 **하위 카테고리 중첩**이 함께 나간다. 위 **0.5.0 이주** 절을 본다 |
 | `v0.4.0` | 변경 | **breaking 둘.** 액센트 토큰 `--ns-color-accent-hover`·`--ns-color-accent-fg` 가 없어졌다(`--ns-color-accent-fill-hover`·`--ns-color-accent-fill-fg` 로 옮겨간다). `nsToast()` 기본 자리가 상단 중앙 — 우하단을 유지하려면 시작 지점에서 `nsToastPosition("bottom-right")` |
 | `v0.3.0` | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
 | `v0.2.5` | 변경 | 태그만 올린다. `ns-icon` 슬롯 자식이 하이드레이션 때 튀지 않는다. 프로퍼티 전용 이름을 속성으로 쓰면 경고가 나온다 |
