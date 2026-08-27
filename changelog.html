@@ -8,18 +8,18 @@
 <link rel="stylesheet" href="./dist/controls.css">
 <style>
   /*
-    이 페이지의 <style> 은 index.html 의 것을 줄여 옮긴 것이다. 두 파일이
+    이 페이지의 <style> 은 guide.html 의 것을 줄여 옮긴 것이다. 두 파일이
     같은 셸(ns-header + ns-sidebar)을 세우므로 높이 체인과 셸 레이아웃 규칙은
     같아야 한다.
 
-    index.html 의 타이포그래피 규칙에는 :not(:where(.demo *, ns-dialog *))
+    guide.html 의 타이포그래피 규칙에는 :not(:where(.demo *, ns-dialog *))
     가드가 붙어 있는데 여기에는 없다. 그 가드는 **이 페이지의 산문 규칙이
-    라이브러리가 그리는 영역을 덮는 것**을 막는 것이고, 그 영역은 index.html
+    라이브러리가 그리는 영역을 덮는 것**을 막는 것이고, 그 영역은 guide.html
     에서 .demo 컨테이너와 명령형 대화상자 둘이었다. 이 페이지에는 데모도
     대화상자도 없다 — 라이브러리가 문서 트리에 그리는 것은 헤더 actions slot 에
     넣은 <a class="ns-button"> 하나뿐이고, 여기에는 a 규칙이 없다. 지켜 줄
     상대가 없는 가드는 보호가 아니라 잡음이므로 붙이지 않는다. **데모를 이
-    페이지에 더하면 그 판단이 바뀐다** — index.html 의 그 주석을 먼저 읽는다.
+    페이지에 더하면 그 판단이 바뀐다** — guide.html 의 그 주석을 먼저 읽는다.
   */
   body {
     margin: 0;
@@ -60,7 +60,7 @@
   }
 
   /*
-    dist 가 없을 때 띄우는 경고. index.html 은 이것을 인라인 style 로 넣지만
+    dist 가 없을 때 띄우는 경고. guide.html 은 이것을 인라인 style 로 넣지만
     여기서는 클래스로 둔다 — check-tokens.mjs 의 규칙 ⑤ 는 <style> 안만 보므로
     인라인으로 두면 리터럴 색이 검사를 통과한다. 클래스로 두면 그 방어 안에 든다.
   */
@@ -73,7 +73,7 @@
   }
 
   /*
-    코드 블록의 두 값은 index.html 과 같은 이유로 light-dark() 한 쌍이다 —
+    코드 블록의 두 값은 guide.html 과 같은 이유로 light-dark() 한 쌍이다 —
     --ns-color-fg 를 배경으로 쓰면 다크에서 뒤집히는데 짝인 글자색을 리터럴로
     못박으면 흰 바탕에 흰 글씨가 된다.
   */
@@ -99,12 +99,18 @@
 <body>
 
 <ns-header project-name="common-ui 버전 기록" sidebar-open id="changelog-header">
-  <a class="ns-button ns-button--ghost ns-button--sm" slot="actions" href="./index.html">문서로</a>
+  <!--
+    헤더의 이 링크는 목차(index.html)로 간다. guide.html 로 직접 보내지 않는
+    이유는 두 내용 페이지가 서로를 가리키기 시작하면 페이지가 늘 때마다 링크가
+    제곱으로 늘기 때문이다 — 목차 하나를 거치면 어느 페이지에서든 나머지 전부가
+    두 번에 닿고, 새 페이지는 목차에 한 줄만 더하면 된다.
+  -->
+  <a class="ns-button ns-button--ghost ns-button--sm" slot="actions" href="./index.html">목차</a>
 </ns-header>
 
 <div class="shell">
   <!--
-    셸의 모양과 이유는 index.html 과 같다. default-open 과 data-ns-open 을
+    셸의 모양과 이유는 guide.html 과 같다. default-open 과 data-ns-open 을
     함께 두는 까닭도 같다 — data-ns-open 은 tokens.css 의 :not(:defined) 예약이
     읽어 upgrade 전 폭을 잡고, default-open 은 upgrade 시점에 Lit 의 속성
     컨버터가 내부 상태를 세우게 해서 첫 updated() 가 data-ns-open 을 지우지
@@ -148,7 +154,7 @@
     안 바뀐 릴리스는 설치해도 화면이 그대로다. 그런데 소비자가 그것을 알 방법은
     태그를 둘 받아 <code>diff -rq</code> 하는 것밖에 없다 — 버전 번호만 보고는
     산출물이 그대로인지 알 수 없으므로 여기 적는다. 문서만 고친 릴리스도 태그를
-    다시 잘라야 하는 까닭은 <code>index.html</code> 과 이 파일이
+    다시 잘라야 하는 까닭은 <code>guide.html</code> 과 이 파일이
     <code>package.json</code> 의 <code>files</code> 에 들어 있어 패키지와 함께
     배포되기 때문이다.
   </p>
@@ -399,7 +405,7 @@
   <h2 id="v0-2-4">v0.2.4</h2>
   <p class="dist"><code>dist/</code> <strong>동일</strong> (<code>v0.2.2</code> 와 바이트 일치)</p>
   <p>
-    <strong>소비자가 할 일은 없다.</strong> <code>index.html</code> 의 다크모드 코드 블록을
+    <strong>소비자가 할 일은 없다.</strong> <code>guide.html</code> 의 다크모드 코드 블록을
     고친 문서 전용 릴리스다.
   </p>
 
@@ -486,9 +492,9 @@
 
 <script>
   /*
-    index.html 의 배선을 이 페이지에 필요한 만큼만 옮긴 것이다. 배선은
+    guide.html 의 배선을 이 페이지에 필요한 만큼만 옮긴 것이다. 배선은
     **스크립트 요소 하나**이므로, 위쪽에서 예외가 던져지면 아래 전부가 실행되지
-    않는다. 그래서 순서가 index.html 과 같다 — 예시 코드 변환이 가장 먼저다.
+    않는다. 그래서 순서가 guide.html 과 같다 — 예시 코드 변환이 가장 먼저다.
   */
   function dedent(html) {
     const lines = html.replace(/^\n/, "").replace(/\s+$/, "").split("\n");

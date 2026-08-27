@@ -44,19 +44,25 @@ pkg.version = version;
 writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
 
 /*
-  README.md / index.html 에 적힌 설치 라인의 태그도 같은 커밋에서 갱신한다.
+  README.md / guide.html 에 적힌 설치 라인의 태그도 같은 커밋에서 갱신한다.
   이걸 릴리스 이후로 미루면, npm pack 이 태그 커밋 시점의 README 를 그대로
   패키지에 넣기 때문에 태그의 README 는 항상 이전 버전을 가리키게 된다.
   패턴에 매치되는 게 없으면 조용히 넘어가지 않고 바로 실패한다 — 그게
   바로 이 버그를 다시 만드는 길이다.
 
-  **changelog.html 은 이 목록에 넣지 않는다.** 함께 배포되는 문서지만 설치
-  라인을 담지 않으므로(태그별 변경 내역이라 특정 버전을 설치하라고 안내하는
-  자리가 없다) 넣으면 위의 하드 실패가 매 릴리스마다 걸린다. 그 파일이 자기
-  릴리스의 절을 갖는지는 npm run check 가 릴리스 표와 대조해 본다.
+  **changelog.html 과 index.html 은 이 목록에 넣지 않는다.** 둘 다 함께 배포되는
+  문서지만 설치 라인을 담지 않으므로 넣으면 위의 하드 실패가 매 릴리스마다 걸린다.
+  changelog.html 은 태그별 변경 내역이라 특정 버전을 설치하라고 안내하는 자리가
+  없고, index.html 은 두 페이지로 보내는 목차라 설치를 말하지 않는다 — 설치 안내는
+  guide.html 한 곳에만 둔다. changelog.html 이 자기 릴리스의 절을 갖는지는
+  npm run check 가 릴리스 표와 대조해 본다.
+
+  **목록의 기준은 "배포되는가" 가 아니라 "설치 라인을 담는가" 다.** 배포로 기준을
+  잡으면 문서 페이지가 늘어날 때마다 설치 라인 없는 파일이 목록에 끌려 들어와
+  하드 실패를 부른다.
 */
 const installPattern = /dashboard-common-ui\.git#v\d+\.\d+\.\d+/g;
-const docFiles = ["README.md", "index.html"];
+const docFiles = ["README.md", "guide.html"];
 for (const file of docFiles) {
   const content = readFileSync(file, "utf8");
   if (!content.match(installPattern)) {

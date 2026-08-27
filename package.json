@@ -25,12 +25,13 @@
   "files": [
     "dist",
     "index.html",
+    "guide.html",
     "changelog.html"
   ],
   "scripts": {
     "build": "vite build --mode es && vite build --mode react && vite build --mode umd && tsc -p tsconfig.build.json && node scripts/copy-css.mjs",
     "check": "tsc -p tsconfig.json && tsc -p tsconfig.consumer.json && node scripts/check-events.mjs && node scripts/check-controls.mjs && node scripts/check-tokens.mjs",
-    "demo": "npm run build && open index.html",
+    "demo": "npm run build && open guide.html",
     "release": "node scripts/release.mjs"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 /*
   **이름 목록 둘을 양방향으로 대조하는 검사 둘이 이 파일에 있다.**
 
-    ㉠ controls.css 의 클래스 ↔ index.html 문서
+    ㉠ controls.css 의 클래스 ↔ guide.html 문서
     ㉡ README.md 릴리스 표의 태그 ↔ changelog.html 의 절
 
   둘은 대상이 다르지만 하는 일이 정확히 같다 — 두 곳에 나뉘어 적힌 같은 이름
@@ -10,10 +10,10 @@
 
   ---
 
-  ㉠ controls.css 의 클래스와 index.html 문서를 양방향으로 대조한다.
+  ㉠ controls.css 의 클래스와 guide.html 문서를 양방향으로 대조한다.
 
   클래스 레이어에는 타입 검사가 닿지 않는다. controls.css 에 클래스를 추가하고
-  index.html 에 안 적으면 아무도 모른다. 반대로 index.html 이 존재하지 않는
+  guide.html 에 안 적으면 아무도 모른다. 반대로 guide.html 이 존재하지 않는
   클래스를 문서화하고 있으면 오타다.
 
   --modifier 변형도 개별 이름으로 센다. .ns-button--ghost 를 문서에 빠뜨리는
@@ -28,7 +28,7 @@
   한계: 클래스가 언급됐는지만 본다. 예시가 올바른지는 보지 못한다.
 
   요소 선택자(ns-table 등)는 정방향으로만 대조한다. CSS 에 있으면 문서에도
-  있어야 하지만, 태그 이름은 index.html 전체에 정당하게 등장하므로 역방향
+  있어야 하지만, 태그 이름은 guide.html 전체에 정당하게 등장하므로 역방향
   대조는 넣지 않는다.
 */
 import { readFileSync } from "node:fs";
@@ -36,7 +36,7 @@ import { readFileSync } from "node:fs";
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
 
 const css = stripComments(readFileSync("src/controls/controls.css", "utf8"));
-const html = readFileSync("index.html", "utf8");
+const html = readFileSync("guide.html", "utf8");
 
 const CLASS = /\.(ns-[a-z0-9_-]+)/g;
 
@@ -50,7 +50,7 @@ const defined = new Set([...css.matchAll(CLASS)].map((m) => m[1]));
   찾으면 그 규칙들이 문서 대조 밖에 놓인다.
 
   정방향만 본다 — CSS 에 있으면 문서에도 있어야 한다. 역방향은 넣지 않는다.
-  태그 이름은 index.html 전체에 정당하게 등장하므로(데모 마크업, 프로퍼티 표,
+  태그 이름은 guide.html 전체에 정당하게 등장하므로(데모 마크업, 프로퍼티 표,
   예시 블록) 역방향으로 보면 거짓 양성만 쏟아진다.
 
   선택자 경계에서 잡는다 — 줄 시작이 아니라. 줄 기준으로 하면
@@ -90,14 +90,14 @@ const missing = [...defined]
   .filter((n) => !documented.has(n) && !TAG(n).test(html))
   .sort();
 if (missing.length > 0) {
-  console.error(`index.html 에 문서화되지 않은 클래스: ${missing.join(", ")}`);
+  console.error(`guide.html 에 문서화되지 않은 클래스: ${missing.join(", ")}`);
   process.exit(1);
 }
 
 const unknown = [...documented].filter((n) => !defined.has(n)).sort();
 if (unknown.length > 0) {
   console.error(
-    `controls.css 에 없는 클래스가 index.html 에 있습니다: ${unknown.join(", ")}`,
+    `controls.css 에 없는 클래스가 guide.html 에 있습니다: ${unknown.join(", ")}`,
   );
   process.exit(1);
 }
