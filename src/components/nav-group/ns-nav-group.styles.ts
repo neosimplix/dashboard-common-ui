@@ -17,8 +17,8 @@ export const styles = css`
   .heading {
     display: block;
     padding: var(--ns-space-4) var(--ns-space-4) var(--ns-space-2);
-    font-size: var(--ns-font-size-xs);
-    line-height: var(--ns-line-height-xs);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
     font-weight: var(--ns-weight-semibold);
     letter-spacing: 0.05em;
     color: var(--ns-color-fg-subtle);
@@ -71,7 +71,7 @@ export const styles = css`
   }
 
   /*
-    caret 은 헤딩 글자(--ns-font-size-xs)에 붙는 것이라 --ns-icon-size(1.25rem)가
+    caret 은 헤딩 글자(--ns-font-size-sm, .875rem)에 붙는 것이라 --ns-icon-size(1.25rem)가
     크다. 커스텀 프로퍼티는 상속되므로 이 인스턴스에만 세우면 ns-icon 의 shadow
     :host 까지 도달한다. 사용처가 하나이고 변할 이유가 없으므로 리터럴이다.
   */
