@@ -120,17 +120,22 @@ export const styles = css`
   }
 
   /*
-    WebKit 쪽 두께는 트랙(8px)과 인셋을 함께 정해 만든다. border 를
-    transparent 로 주고 background-clip: padding-box 를 쓰면 배경색이
-    border 안쪽(패딩 상자)에서만 칠해져, 실제로 보이는 막대는 트랙보다
-    좁고 양옆에 여백이 남는다 — border 두께만큼 막대가 트랙 가운데로
-    졸아든다. border 를 안 쓰고 막대 폭만 줄이면 트랙 배경이 그대로
-    남아 막대 옆에 색 있는 여백이 아니라 색 없는 여백이 필요한데,
-    ::-webkit-scrollbar-track 자체가 transparent 라 그 여백을 만드는
-    유일한 수단이 이 인셋이다.
+    WebKit 쪽 두께는 트랙(--ns-scrollbar-width)과 인셋(--ns-scrollbar-thumb-inset)을
+    함께 정해 만든다. border 를 transparent 로 주고 background-clip:
+    padding-box 를 쓰면 배경색이 border 안쪽(패딩 상자)에서만 칠해져,
+    실제로 보이는 막대는 트랙보다 좁고 양옆에 여백이 남는다 — border
+    두께만큼 막대가 트랙 가운데로 졸아든다. border 를 안 쓰고 막대 폭만
+    줄이면 트랙 배경이 그대로 남아 막대 옆에 색 있는 여백이 아니라 색
+    없는 여백이 필요한데, ::-webkit-scrollbar-track 자체가 transparent
+    라 그 여백을 만드는 유일한 수단이 이 인셋이다.
+
+    두 값을 토큰으로 뽑은 이유는 tokens.css 의 정의 옆 주석에 있다 — 이
+    블록이 ns-dialog · .ns-multi-select__list 에도 그대로 반복되면서
+    "한 곳에만 있는 구조적 상수" 에서 "두 곳 이상에 나타나는 값" 으로
+    넘어갔다.
   */
   nav::-webkit-scrollbar {
-    width: 8px;
+    width: var(--ns-scrollbar-width);
   }
 
   nav::-webkit-scrollbar-track {
@@ -140,7 +145,7 @@ export const styles = css`
   nav::-webkit-scrollbar-thumb {
     background-color: var(--ns-color-line-strong);
     border-radius: var(--ns-radius-pill);
-    border: 2px solid transparent;
+    border: var(--ns-scrollbar-thumb-inset) solid transparent;
     background-clip: padding-box;
   }
 

@@ -196,6 +196,16 @@
   --ns-control-height-sm: 1.75rem;
   --ns-control-height-md: 2.5rem;
 
+  /*
+    가는 스크롤바(WebKit 경로)의 트랙 폭과 인셋. ns-sidebar 의 nav ·
+    ns-dialog 의 .body · .ns-multi-select__list 셋이 shadow 경계 때문에
+    같은 규칙 블록을 각자 다시 적는다 — 값이 세 곳에 나타나므로 여기서
+    한 번만 정의한다. 표준 scrollbar-width: thin 경로는 두께를 숫자로
+    고를 수 없어 이 값들의 대상이 아니다.
+  */
+  --ns-scrollbar-width: 8px;
+  --ns-scrollbar-thumb-inset: 2px;
+
   /* 기타 */
   --ns-elevation-card:
     0 1px 3px 0 light-dark(rgb(0 0 0 / .1), rgb(0 0 0 / .4)),

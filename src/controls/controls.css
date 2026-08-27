@@ -724,6 +724,40 @@
     border: 1px solid var(--ns-color-line);
     border-radius: var(--ns-radius-control);
     padding: var(--ns-space-1) var(--ns-space-3);
+    /*
+      ns-sidebar.styles.ts 의 nav 와 같은 가는 스크롤바. Light DOM 이라
+      shadow 경계가 없지만, 표준 경로가 이 저장소 하한의 Safari(17.5)를
+      못 덮는 것은 여기서도 같으므로 WebKit 짝을 그대로 붙인다. 근거는
+      ns-sidebar.styles.ts 의 주석에 있고, 값은 tokens.css 의
+      --ns-scrollbar-width · --ns-scrollbar-thumb-inset 에서 온다 —
+      shadow 안이 아니라 여기서는 클래스를 직접 겨냥해서 쓸 뿐이다.
+    */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ns-color-line-strong) transparent;
+  }
+
+  .ns-multi-select__list:hover {
+    scrollbar-color: var(--ns-color-fg-subtle) transparent;
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar {
+    width: var(--ns-scrollbar-width);
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar-thumb {
+    background-color: var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-pill);
+    border: var(--ns-scrollbar-thumb-inset) solid transparent;
+    background-clip: padding-box;
+  }
+
+  .ns-multi-select__list::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ns-color-fg-subtle);
+    background-clip: padding-box;
   }
 
   .ns-multi-select__empty {
