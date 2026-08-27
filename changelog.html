@@ -118,7 +118,8 @@
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
     <ns-nav-group collapsible heading="0.5.x">
-      <ns-nav-item href="#v0-5-1" label="v0.5.1" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-2" label="v0.5.2" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-1" label="v0.5.1"></ns-nav-item>
       <ns-nav-item href="#v0-5-0" label="v0.5.0"></ns-nav-item>
     </ns-nav-group>
   </ns-sidebar>
@@ -148,6 +149,32 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-5-2">v0.5.2</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>문서를 세 페이지로 나눴다.</strong> 지금까지 하나였던 문서가
+    <a href="./index.html">목차</a>·<a href="./guide.html">사용 안내</a>·이 페이지로
+    갈라졌다. 소비자가 할 일은 없다 — 코드는 주석만 바뀌었다.
+  </p>
+  <p>
+    <strong>이름이 바뀐 파일이 있다.</strong> 사용 안내가 <code>index.html</code> 에서
+    <code>guide.html</code> 로 옮겨갔다. <code>index.html</code> 은 두 페이지로 가는
+    목차로 남았다 — 그 이름은 우리가 고른 것이 아니라 브라우저가 디렉터리를 받았을 때
+    찾는 기본 문서라, 없애면 폴더를 여는 경로와 정적 호스팅이 함께 끊긴다.
+    문서를 <code>index.html</code> 경로로 북마크해 둔 사람은 목차로 도착한다.
+  </p>
+  <p>
+    <strong>v0.4.0 이하의 절을 지웠다.</strong> 이 페이지와 <code>README.md</code> 의
+    릴리스 표가 함께 v0.5.0 부터만 담는다. <strong>태그는 그대로 있다</strong> —
+    <code>v0.2.0</code>~<code>v0.4.0</code> 은 여전히 설치할 수 있고, 문서에서만 뺐다.
+  </p>
+  <p>
+    <code>dist/</code> 가 바뀌는 이유는 주석이다. 컴포넌트 스타일이
+    <code>css</code> 템플릿 리터럴이라 그 안의 주석이 번들에 문자열로 실린다 —
+    파일 이름을 가리키던 주석들이 <code>guide.html</code> 로 바뀌었다.
+    화면에 드러나는 변경은 없다.
   </p>
 
   <h2 id="v0-5-1">v0.5.1</h2>

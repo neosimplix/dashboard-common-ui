@@ -99,6 +99,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
+| [`v0.5.2`](./changelog.html#v0-5-2) | 변경 | 없다. 문서가 세 페이지로 나뉘고 사용 안내가 `guide.html` 로 옮겨갔다 — `dist/` 는 주석만 바뀐다 |
 | [`v0.5.1`](./changelog.html#v0-5-1) | 변경 | 접히는 사이드바가 글자를 찌그러뜨리지 않는다. 폭 손잡이는 `--ns-sidebar-width` 하나다 |
 | [`v0.5.0`](./changelog.html#v0-5-0) | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`, `ns-nav-item` 의 `badge` 삭제. 닫힌 사이드바가 0 이 된다 |
 
