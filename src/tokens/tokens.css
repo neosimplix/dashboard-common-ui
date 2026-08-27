@@ -376,7 +376,19 @@
 ns-header { display: block; height: var(--ns-header-height); }
 
 ns-sidebar                             { display: block; }
-ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); }
+/*
+  overflow 를 함께 예약한다. ns-sidebar.styles.ts 의 :host 가 상태와 무관하게
+  overflow: hidden 을 갖는데 그 규칙은 upgrade 전 구간에 없으므로, 그 사이에
+  사이드바는 width: 0; overflow: visible 이다. ns-nav-group·ns-nav-item 은 내용을
+  자기 shadow 에 그려 upgrade 전에 아무것도 페인트하지 않지만, 소비자가 사이드바에
+  평범한 마크업(제목·a·구분선)을 직접 넣으면 그것이 폭 0 짜리 상자 밖으로, 곧
+  <main> 위로 흐른다.
+
+  :not(:defined) 로 묶는 이유는 upgrade 뒤의 소유자를 :host 하나로 두는 것이다.
+  이 예약은 폭 예약과 한 몸이고(폭이 0 이 아니면 흐를 것도 없다), 조건 없이 두면
+  문서 규칙이 :host 를 이겨 나중에 :host 쪽을 고쳐도 화면이 안 바뀌게 된다.
+*/
+ns-sidebar:not(:defined)               { width: var(--ns-sidebar-width-collapsed); overflow: hidden; }
 /*
   [open] 이 아니라 [default-open] 이다. 0.5.0 부터 open 은 프로퍼티 전용이고
   순수 HTML 이 쓰는 이름은 default-open 이다. data-ns-open 은 React shim 이
