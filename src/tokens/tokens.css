@@ -91,16 +91,14 @@
     무엇인지 보고 이름을 정한다. 대칭을 맞추려고 되살리면 같은 함정이 그대로
     돌아온다.
 
-    포커스 링(액센트 2px)은 자리가 여덟이고 두 갈래다. **바깥에 그리는 넷**은
+    포커스 링(액센트 2px)은 자리가 일곱이고 두 갈래다. **바깥에 그리는 넷**은
     페이지 배경 위에 놓여 surface(21%)에 11.99:1, surface-sunken(14.1%)에
-    13.46:1 이다. **안쪽에 그리는 넷**(ns-tabs 와 .ns-accordion summary,
-    ns-nav-group 의 헤딩 버튼, 그리고 ns-sidebar 의 레일 타일은 outline-offset
-    이 음수다)은 요소 자신의 배경 위에 놓이므로 그 두 숫자가 그대로 적용되지
-    않는다 — ns-tabs 와 ns-nav-group 의 헤딩 버튼은 자기 배경이 없어
-    --ns-color-surface 로 떨어져 11.99:1 이고, 레일 타일도 자기 배경이 없지만
-    .rail 자체가 surface-sunken 이라 그 위에서 13.46:1 이다. 유일하게 다른
-    값이 hover 중인 accordion summary 의 surface-hover(27.4%)로 10.08:1 이다.
-    다섯 다 비텍스트 기준 3:1 을 크게 넘는다.
+    13.46:1 이다. **안쪽에 그리는 셋**(ns-tabs 와 .ns-accordion summary,
+    그리고 ns-nav-group 의 헤딩 버튼은 outline-offset 이 음수다)은 요소 자신의
+    배경 위에 놓이므로 그 두 숫자가 그대로 적용되지 않는다 — 셋 다 자기 배경이
+    없어 --ns-color-surface 로 떨어져 11.99:1 이다. 유일하게 다른 값이 hover
+    중인 accordion summary 의 surface-hover(27.4%)로 10.08:1 이다. 넷 다
+    비텍스트 기준 3:1 을 크게 넘는다.
 
     **밝기를 낮출 때 링이 먼저 사라진다** — 이 값들이 하한을 정하는 근거이고,
     채움면을 따로 떼어낸 이유이기도 하다.
@@ -170,17 +168,19 @@
   /* 레이아웃 상수 */
   --ns-header-height: 3.5rem;
   /*
-    열린 총폭이다. 레일(--ns-sidebar-width-collapsed)과 패널의 합이다.
+    열린 폭이다. 닫히면 --ns-sidebar-width-collapsed 로 줄어든다.
 
-    **패널 폭은 이 둘의 차로 계산하지 않는다.** 레일과 패널 사이의 1px 경계선이
-    그 산수에 들어가지 않아 자식이 호스트 content box 를 1px 넘긴다. 실제
-    .panel 은 flex: 1; min-width: 0 으로 **남는 폭**을 받으므로 경계선이 몇
-    개든 맞는다(ns-sidebar.styles.ts 의 .panel 주석). 그래서 이 토큰이 정하는
-    것은 호스트 폭 하나뿐이고, 패널 폭이라는 파생값은 아예 존재하지 않는다.
+    0.5.0 개발 중에 이 값이 잠시 19rem 이었다 — 레일 4rem + 패널 15rem 을 합친
+    "열린 총폭" 이던 시절이다. 레일을 물리면서 뜻과 값이 함께 돌아왔다.
   */
-  --ns-sidebar-width: 19rem;
-  /* 닫힌 총폭이자 레일 폭이다. 레일은 패널이 열려도 사라지지 않는다. */
-  --ns-sidebar-width-collapsed: 4rem;
+  --ns-sidebar-width: 15rem;
+  /*
+    닫힌 폭. 0 이라 사이드바가 통째로 사라진다.
+
+    이름을 지우지 않는 이유는 소비자가 이것을 덮어 좁은 레일 비슷한 것을 원할 수
+    있기 때문이다. 그 자리를 남겨 둔다.
+  */
+  --ns-sidebar-width-collapsed: 0;
   --ns-page-padding-x: var(--ns-space-6);
   --ns-page-padding-y: var(--ns-space-6);
   --ns-card-padding: var(--ns-space-8);
@@ -341,7 +341,7 @@
   :defined 로 경계를 긋는 이유가 사이드바에 있다. 예약 규칙이 정의 이후까지
   계속 걸리면, @lit/react 는 반응형 프로퍼티(open·defaultOpen)를
   useLayoutEffect 에서만 설정하므로 서버 마크업에 그 속성이 없어 하이드레이션
-  전까지 4rem 레일로 그려지다 19rem 으로 벌어진다. upgrade 이후의 너비는
+  전까지 폭 0 으로 그려지다 15rem 으로 벌어진다. upgrade 이후의 너비는
   ns-sidebar.styles.ts 의 :host 가 소유하므로 예약은 거기서 손을 뗀다.
 
   data-ns-open 은 제어 모드 React 소비자를 위한 통로다. createComponent 가

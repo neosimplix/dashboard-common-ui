@@ -1,101 +1,50 @@
-import { LitElement, html, nothing, type PropertyValues } from "lit";
+import { LitElement, html, type PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 
 import { register } from "../../internal/register.js";
 import { warnIfTokensMissing } from "../../internal/warn-missing-tokens.js";
 import { warnPropertyOnlyAttributes } from "../../internal/warn-property-only.js";
-import type { NsNavGroup } from "../nav-group/ns-nav-group.js";
-
-// 타일 폴백이 <ns-icon> 을 쓴다. 등록 부수효과가 필요하다.
-import "../icon/ns-icon.js";
-import type { NsGroupSelectDetail, NsToggleDetail } from "../../types.js";
 import { styles } from "./ns-sidebar.styles.js";
 
 /**
- * 레일 타일 하나가 필요로 하는 것. 직계 자식 그룹에서 읽어 만든다.
- *
- * 그룹 엘리먼트를 그대로 들고 있는 이유는 패널 슬롯에 배정할 대상이 그것이기
- * 때문이다. 수동 배정은 노드 참조를 받는다.
- */
-interface RailEntry {
-  /** activeGroup 이 가리키는 키. name 이 비면 DOM 순서 인덱스의 문자열이다. */
-  key: string;
-  /**
-   * 타일의 DOM id. 패널의 `aria-labelledby` 가 이것을 가리킨다.
-   *
-   * **소비자의 `name` 을 쓰지 않는다.** IDREF 목록은 공백으로 나뉘므로
-   * `name="my group"` 이면 `aria-labelledby` 가 두 IDREF 로 파싱되어 패널이
-   * 접근성 이름을 조용히 잃는다(공백이 든 `id` 자체도 무효다). DOM 순서
-   * 인덱스는 shadow root 안에서 언제나 유일하므로 `name` 이 겹칠 때 `id` 까지
-   * 겹쳐 `aria-labelledby` 가 첫 타일만 가리키던 것도 함께 없어진다.
-   * 키는 계속 `data-name` 이 들고 있어 devtools 에서도 `name` 이 보인다.
-   */
-  id: string;
-  /** 타일의 aria-label 과 title. */
-  heading: string;
-  /** 타일 슬롯이 비었을 때 보이는 것. ns-icon 템플릿이거나 글자다. */
-  fallback: unknown;
-  /** 패널 슬롯에 배정할 그룹. */
-  group: Element;
-  /** 타일 슬롯에 배정할 아이콘. 없으면 undefined 다. */
-  icon?: Element;
-}
-
-/**
- * 네비게이션 컨테이너. **레일과 패널 두 칼럼이다.**
- *
- * 레일은 항상 보이고 직계 자식 `ns-nav-group` 하나마다 타일 하나를 갖는다.
- * 패널은 **선택된 그룹 하나만** 보여주고 열려 있지 않으면 사라진다(제어는
- * `open`, 비제어는 `default-open` 이 정한다). VS Code 의 활동 바 + 사이드 바
- * 모델이다.
+ * 네비게이션 컨테이너. 열리면 `ns-nav-group` 이 세로로 이어지고 닫히면 사라진다.
  *
  * ```html
  * <ns-sidebar default-open>
- *   <ns-icon data-ns-rail="admin">…</ns-icon>
- *   <ns-nav-group name="admin" heading="관리" badge="관"> … </ns-nav-group>
+ *   <ns-nav-group heading="관리">
+ *     <ns-nav-group heading="사용자" collapsible>
+ *       <ns-nav-item href="/users" label="목록"></ns-nav-item>
+ *     </ns-nav-group>
+ *     <ns-nav-item href="/logs" label="로그"></ns-nav-item>
+ *   </ns-nav-group>
  * </ns-sidebar>
  * ```
  *
- * **`slotAssignment: "manual"` 이라 `slot` 속성이 동작하지 않는다.** 배정은 전부
- * 이 컴포넌트가 한다. 그래서 아이콘의 표시는 `slot=` 이 아니라 `data-ns-rail` 이고,
- * 선택되지 않은 그룹은 숨겨지는 것이 아니라 **배정되지 않아 렌더되지 않는다** —
- * 레이아웃에도 접근성 트리에도 없고, light DOM 에는 그대로 남아 접힘 상태를
- * 계속 들고 있다.
+ * **0.5.0 개발 중에 레일 모델을 만들었다가 물렀다.** 4rem 레일에 그룹마다 한 글자
+ * 타일을 쌓는 방식이었는데 그것이 무엇인지 읽히지 않았다. 경위는
+ * `docs/gotchas.md` 에 있다.
  */
 export class NsSidebar extends LitElement {
   static override styles = styles;
-
-  /*
-    수동 슬롯 배정. 선택된 그룹만 패널에, 그 그룹의 아이콘만 그 타일에 배정한다.
-    자동 배정이었다면 선택되지 않은 그룹을 소비자 DOM 에 속성을 써서 숨겨야 하고,
-    그러면 MutationObserver 와 이름 충돌 위험이 함께 온다.
-
-    부수 효과로 사이드바 자식의 공백 텍스트 노드가 무해해진다 — 자동 배정에서는
-    기본 슬롯으로 가서 패널에 들어간다.
-  */
-  static override shadowRootOptions: ShadowRootInit = {
-    ...LitElement.shadowRootOptions,
-    slotAssignment: "manual",
-  };
 
   /**
    * 제어 모드. `undefined` 면 비제어다.
    *
    * 속성이 아니라 프로퍼티 전용이다. 겸용했다면 `<ns-sidebar open>` 이 boolean
-   * 속성으로 읽혀 제어 모드로 들어가고, 그러면 컴포넌트가 스스로 패널을 여닫지
-   * 못한다. 순수 HTML 소비자가 쓸 것은 `default-open` 이다.
+   * 속성으로 읽혀 제어 모드로 들어가고, 그러면 컴포넌트가 스스로 여닫지 못한다.
+   * 순수 HTML 소비자가 쓸 것은 `default-open` 이다.
    *
-   * 그 속성이 관찰되지 않으므로 `<ns-sidebar open>` 은 제어 모드로 들어가는
-   * 것이 아니라 통째로 무시된다. connectedCallback 이 경고한다.
+   * **그래서 그 속성은 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도
+   * 않는다. `connectedCallback` 이 경고한다.
    */
   @property({ attribute: false }) open?: boolean;
 
   /**
-   * 비제어 초기값. 있으면 패널이 열린 채로 시작한다.
+   * 비제어 초기값. 있으면 열린 채로 시작한다.
    *
-   * 기본이 닫힘이므로 **기본값에서 벗어나는 쪽**이 속성 이름이다. ns-nav-group 이
-   * `default-collapsed` 인 것과 반대로 보이지만 규칙은 같다 — 그쪽은 기본이
-   * 펼침이었다.
+   * 기본이 닫힘이므로 **기본값에서 벗어나는 쪽**이 속성 이름이다. `ns-dialog` 와
+   * 같고, `ns-nav-group` 의 `default-collapsed` 와 반대로 보이지만 규칙은 같다 —
+   * 그쪽은 기본이 펼침이었다.
    *
    * 나중에 이 값을 바꾸면 **아직 토글되지 않은 사이드바에만** 반영된다.
    */
@@ -107,526 +56,50 @@ export class NsSidebar extends LitElement {
   /** 사용자가 한 번이라도 토글했나. 늦게 도착한 defaultOpen 이 그것을 덮지 않게 막는다. */
   #toggled = false;
 
-  get #controlledOpen(): boolean {
-    return this.open !== undefined;
-  }
-
   get #isOpen(): boolean {
     return this.open ?? this.#innerOpen;
-  }
-
-  /**
-   * 제어 모드의 활성 그룹. `undefined` 면 비제어다.
-   *
-   * 속성이 아니라 프로퍼티 전용인 이유는 `ns-tabs` 의 `active` 와 같다 —
-   * `<ns-sidebar active-group="admin">` 이 속성으로 읽히면 제어 모드로 들어가
-   * 컴포넌트가 스스로 그룹을 바꾸지 못한다. 순수 HTML 은 `default-active-group`
-   * 을 쓴다.
-   *
-   * **그래서 그 속성은 무시된다** — 관찰되지 않으므로 제어 모드로 들어가지도
-   * 않는다. 붙어 있으면 connectedCallback 이 경고한다.
-   */
-  @property({ attribute: false }) activeGroup?: string;
-
-  /** 비제어 초기 그룹. 비어 있으면 첫 번째 그룹이다. */
-  @property({ type: String, attribute: "default-active-group" }) defaultActiveGroup = "";
-
-  /** 비제어일 때의 진실. */
-  #innerActive = "";
-
-  /** 사용자가 한 번이라도 골랐나. 늦게 도착한 defaultActiveGroup 이 그것을 덮지 않게 막는다. */
-  #selected = false;
-
-  /** 렌더가 읽는 목록. 반응형 프로퍼티가 아니므로 갱신을 직접 요청한다. */
-  #entries: RailEntry[] = [];
-
-  #observer?: MutationObserver;
-
-  /*
-    평생 한 번만 켜진다. ns-tabs 의 #warnedNoMatch 와 같은 관용구다 — 렌더마다
-    다시 경고하면 스팸이 되고, 다른 진단과 플래그를 공유하면 먼저 일어난 쪽이
-    나머지를 막는다.
-  */
-  #warnedNoMatch = false;
-  #warnedNoName = false;
-  #warnedDupName = false;
-
-  /*
-    **진단을 한 매크로태스크 뒤로 미룬다.**
-
-    #syncGroups 는 connectedCallback 에서 돈다. 그 시점에 React 소비자의 자식
-    ns-nav-group 은 DOM 에 이미 있지만 @lit/react 의 createComponent 는 아직
-    프로퍼티를 설정하지 않았다 — 그것은 하이드레이션 커밋의 useLayoutEffect
-    에서만 일어나고, customElements.define 이 hydrateRoot 보다 먼저 실행되므로
-    이 콜백은 그보다 앞이다. 그리고 name 의 필드 기본값이 "" 라 read() 의
-    own ?? attribute ?? "" 가 "" 를 주므로 **"아직 하이드레이션되지 않았다" 와
-    "정말로 이름이 없다" 가 구분되지 않는다.**
-
-    플래그가 인스턴스 평생 한 번이므로 그대로 두면 React 소비자 전부가 마운트
-    마다 거짓 경고를 받고 그것이 영구히 남는다. 같은 창이 #warnedNoMatch 에도
-    걸린다 — 사이드바의 activeGroup 은 설정됐는데 그룹의 name 반영이 아직
-    도착하지 않은 순간에는 없는 불일치가 관측된다.
-
-    **동기적으로 가를 방법이 없다** — 두 경우 모두 속성이 없고 프로퍼티가 "" 다.
-    그래서 판정 자체를 미룬다. willUpdate 씨앗을 firstUpdated 에서 옮긴 것과
-    같은 타이밍 사실이고, 한 걸음 더 나간 것이다.
-
-    #warnedDupName 은 미루지 않는다. 이름이 겹치는 것은 하이드레이션 부작용일
-    수 없다 — 비어 있지 않은 값 둘이 필요하고, 하이드레이션 전의 키는 DOM 순서
-    인덱스라 언제나 유일하다.
-
-    남는 위험 하나는 적어 둔다. React 18 의 하이드레이션 렌더는 태스크를
-    나눌 수 있으므로 아주 큰 트리에서는 이 타이머가 커밋보다 먼저 도착할 수
-    있다. 실무에서는 스케줄러가 MessageChannel(클램프 없음)을 쓰고 setTimeout
-    은 최소 클램프가 있어 뒤로 밀리며, 클라이언트 마운트에서는 삽입과
-    layout effect 가 같은 태스크 안이라 언제나 이 타이머가 뒤다. 완전한
-    보장이 아니라 **거짓 경고를 남기지 않는 방향으로 기울인 것**이다.
-  */
-  #settled = false;
-  #settleTimer?: ReturnType<typeof setTimeout>;
-
-  get #controlledGroup(): boolean {
-    return this.activeGroup !== undefined;
-  }
-
-  /**
-   * 지금 패널에 있는 항목. 지목된 것이 목록에 없으면 첫 번째다.
-   *
-   * 제어 모드에서도 폴백한다. `ns-tabs` 와 같은 자리다 — 표시만 폴백하고 소비자
-   * 상태를 교정하지 않으며, 경고가 "첫 그룹을 보여주지만 그 타일을 눌러도
-   * ns-group-select 가 나가지 않는다" 를 알린다.
-   */
-  get #activeEntry(): RailEntry | undefined {
-    const entries = this.#entries;
-    if (entries.length === 0) return undefined;
-
-    const wanted = this.activeGroup ?? this.#innerActive;
-    const found = entries.find((e) => e.key === wanted);
-    if (found !== undefined) return found;
-
-    const fallback = entries[0];
-
-    // 빈 문자열은 지목이 아니다 — 비제어 기본값(첫 그룹)을 뜻하므로 거른다.
-    if (this.#settled && wanted !== "" && !this.#warnedNoMatch) {
-      this.#warnedNoMatch = true;
-      console.warn(
-        this.#controlledGroup
-          ? `[ns-sidebar] activeGroup="${wanted}" 와 일치하는 ns-nav-group[name] 이 없습니다. 첫 그룹 "${fallback.key}" 을 보여주지만 그 타일을 눌러도 ns-group-select 가 나가지 않습니다. 대소문자까지 맞는지 확인하세요.`
-          : `[ns-sidebar] 활성 그룹 "${wanted}" 와 일치하는 ns-nav-group[name] 이 없습니다. 첫 그룹 "${fallback.key}" 을 보여줍니다. default-active-group 값이 name 과 맞는지, 또는 그 그룹이 제거되지 않았는지 확인하세요.`,
-      );
-    }
-
-    return fallback;
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
-    warnPropertyOnlyAttributes(this, {
-      open: "default-open",
-      "active-group": "default-active-group",
-    });
-
-    this.#syncGroups();
-
-    /*
-      childList 는 그룹이 늘고 줄는 것을, attributeFilter 는 레일이 읽는 네 값이
-      바뀌는 것을 본다. 수동 배정에서는 자식이 바뀌어도 배정이 자동으로 변하지
-      않으므로 slotchange 가 발생하지 않는다 — 이 관찰자가 유일한 신호다.
-
-      **subtree 가 없으면 attributes 절반이 죽는다.** MutationObserver 의
-      attributes 는 관찰 대상 노드 **자신의** 속성만 보므로, subtree 없이는
-      호스트의 속성을 볼 뿐 자식 그룹의 heading 이 바뀌는 것을 보지 못한다.
-
-      **불변 규칙의 "attributes 는 켜지 않는다" 와 어긋나지 않는다.** 그 규칙이
-      막으려는 것은 동기화가 setAttribute 를 쓰므로 자기 쓰기에 재발동해 루프가
-      되는 것인데, 여기서 하는 동기화는 slot.assign() 이고 자식의 속성을 쓰지
-      않는다. attributeFilter 가 대상을 우리가 쓰지 않는 이름들로 못박아 그
-      성질을 코드에 남긴다.
-    */
-    this.#observer = new MutationObserver(() => this.#syncGroups());
-    this.#observer.observe(this, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["name", "heading", "icon", "badge", "data-ns-rail"],
-    });
-
-    /*
-      진단을 켜고 다시 동기한다. 다시 도는 것이 요점이다 — 미루기만 하면 정말로
-      name 이 없는 그룹이 아무 경고도 받지 못한다. #syncGroups 의 requestUpdate
-      가 렌더를 예약하므로 #activeEntry 의 불일치 진단도 이때 함께 돈다.
-    */
-    this.#settleTimer = setTimeout(() => {
-      this.#settleTimer = undefined;
-      this.#settled = true;
-      this.#syncGroups();
-    }, 0);
-  }
-
-  override disconnectedCallback(): void {
-    this.#observer?.disconnect();
-    this.#observer = undefined;
-
-    /*
-      떼어낸 엘리먼트에 대해 경고하지 않는다. 다시 붙으면 connectedCallback 이
-      타이머를 새로 걸어 그때 다시 판정한다 — 이동(제거 후 삽입)이 진단을
-      영구히 죽이지 않는다.
-    */
-    clearTimeout(this.#settleTimer);
-    this.#settleTimer = undefined;
-    this.#settled = false;
-    super.disconnectedCallback();
+    warnPropertyOnlyAttributes(this, { open: "default-open" });
   }
 
   /*
-    씨앗을 firstUpdated 가 아니라 여기서 심는다. ns-nav-group 의
-    defaultCollapsed 와 정확히 같은 이유다 — customElements.define 이
+    씨앗을 firstUpdated 가 아니라 여기서 심는다. customElements.define 이
     hydrateRoot 보다 먼저 실행되므로 첫 업데이트의 마이크로태스크가 하이드레이션
     커밋의 useLayoutEffect 보다 먼저 흘러가고, @lit/react 의 createComponent 는
     반응형 프로퍼티를 그 useLayoutEffect 에서만 설정한다. firstUpdated 로 한 번만
-    읽으면 React 소비자에게 default-active-group 이 조용히 무시된다.
+    읽으면 React 소비자에게 default-open 이 조용히 무시된다.
+
+    대입 전에 좁히는 이유는 반응형 프로퍼티의 필드 기본값이 소비자의 undefined
+    대입에 지워지기 때문이다 — shim 의 선택 프롭이 주어지지 않으면 값이 undefined
+    이고 createComponent 는 그것을 그대로 대입한다. 좁히지 않으면 #isOpen 이
+    undefined 가 되고, **toggleAttribute 의 두 번째 인자가 undefined 면 지우는
+    것이 아니라 뒤집는다.**
   */
   protected override willUpdate(changed: PropertyValues): void {
-    /*
-      씨앗을 대입하기 전에 좁힌다.
-
-      반응형 프로퍼티는 필드 기본값을 갖지만 소비자가 undefined 를 대입하면 그
-      기본값이 지워진다. 그 경로는 흔하다 — shim 의 선택 프롭이 주어지지 않으면
-      값이 undefined 이고 createComponent 는 그것을 그대로 대입한다.
-      <Sidebar onNavigate={…} /> 하나로 충분하다.
-
-      좁히지 않으면 #isOpen 이 undefined 가 되고, **toggleAttribute 의 두 번째
-      인자가 undefined 면 지우는 것이 아니라 뒤집는다** — 갱신마다 패널이 열리고
-      닫힌다. 같은 렌더에서 aria-selected 도 열린 타일에 "false" 로 나간다.
-      #innerActive 쪽은 "활성 그룹 undefined 와 일치하는 그룹이 없다" 는 경고를
-      근거 없이 띄운다.
-
-      타입 검사는 이것을 보지 못한다. 프로퍼티 타입이 boolean·string 이라
-      라이브러리 안에서는 undefined 가 들어올 수 없는 것처럼 보이고, 약속이
-      깨지는 지점은 createComponent 안이다.
-    */
     if (changed.has("defaultOpen") && !this.#toggled) {
       this.#innerOpen = this.defaultOpen === true;
     }
-    if (changed.has("defaultActiveGroup") && !this.#selected) {
-      this.#innerActive =
-        typeof this.defaultActiveGroup === "string" ? this.defaultActiveGroup : "";
-    }
+  }
+
+  /*
+    호스트에 속성을 쓴다. 불변 규칙("호스트의 속성을 쓰지 않는다")의 좁은
+    예외다 — open 이 프로퍼티 전용이라 CSS 가 볼 속성이 없는데, 폭은 :host 에
+    있어야 한다(소비자가 ns-sidebar { width: … } 로 덮을 자리를 남기려면).
+
+    규칙이 막으려던 것은 소비자가 쓴 속성을 덮는 것이고, 이 이름은 소비자가 쓰는
+    이름이 아니다 — 소비자가 쓰는 것은 default-open 이다. 덮을 값이 애초에
+    없으므로 ns-toast 의 position 과 같은 형태의 예외다.
+  */
+  protected override updated(): void {
+    this.toggleAttribute("data-ns-open", this.#isOpen);
   }
 
   override render() {
-    const entries = this.#entries;
-    const active = this.#activeEntry;
-
-    return html`
-      <div class="shell">
-        <div
-          class="rail"
-          role="tablist"
-          aria-orientation="vertical"
-          @keydown=${this.#onKeyDown}
-        >
-          ${entries.map((entry) => this.#tile(entry, entry === active))}
-        </div>
-        <nav class="panel">
-          <!--
-            role="tabpanel" 을 <nav> 에 두지 않는다. role 은 암시적 역할을 덮으므로
-            얹으면 navigation 랜드마크가 사라진다 — 네비게이션 사이드바에서 그것은
-            잃어도 되는 것이 아니다. 안쪽 <div> 가 tabpanel 을 지고 aria-labelledby
-            로 활성 타일을 가리켜 패널에 이름이 붙는다(그 이름이 그룹의 heading 이다).
-          -->
-          <div
-            id="panel"
-            role="tabpanel"
-            aria-labelledby=${active === undefined ? nothing : active.id}
-          >
-            <slot class="panel-slot"></slot>
-          </div>
-        </nav>
-      </div>
-    `;
-  }
-
-  #tile(entry: RailEntry, isActive: boolean) {
-    /*
-      패널이 닫혀 있으면 선택된 타일이 없다 — VS Code 가 사이드 바를 숨겼을 때와
-      같다. roving tabindex 는 그것과 무관하게 활성 항목을 따라간다. 둘이 갈라져야
-      패널이 닫혀도 레일에 Tab 으로 닿을 수 있다.
-    */
-    const selected = isActive && this.#isOpen;
-    return html`
-      <button
-        id=${entry.id}
-        class=${selected ? "tile selected" : "tile"}
-        type="button"
-        role="tab"
-        aria-selected=${selected ? "true" : "false"}
-        aria-controls="panel"
-        aria-label=${entry.heading}
-        title=${entry.heading}
-        tabindex=${isActive ? "0" : "-1"}
-        data-name=${entry.key}
-        @click=${() => this.#onTile(entry.key)}
-      >
-        <span class="tile-body">
-          <slot class="tile-slot" data-name=${entry.key}>${entry.fallback}</slot>
-        </span>
-      </button>
-    `;
-  }
-
-  /*
-    배정은 렌더 다음이어야 한다. 슬롯이 그때 존재한다.
-
-    assign() 을 인자 없이 부르면 배정이 비워진다 — 선택된 그룹이 없거나 그 그룹에
-    아이콘이 없는 경우가 그것이다.
-  */
-  protected override updated(): void {
-    /*
-      호스트에 속성을 쓴다. 불변 규칙("호스트의 속성을 쓰지 않는다")의 좁은
-      예외다 — open 이 프로퍼티 전용이 되면서 CSS 가 볼 속성이 없어졌는데, 폭은
-      :host 에 있어야 한다(소비자가 ns-sidebar { width: … } 로 덮을 자리를
-      남기려면 그렇다).
-
-      규칙이 막으려던 것은 소비자가 쓴 속성을 덮어 문서화된 override 를 조용히
-      죽이는 것이고, 이 이름은 소비자가 쓰는 이름이 아니다 — 소비자가 쓰는 것은
-      default-open 이다. 덮을 값이 애초에 없으므로 ns-toast 의 position 과 같은
-      형태의 예외다.
-
-      새 이름이 아니다. tokens.css 의 upgrade 전 예약이 이미 이 이름을 본다.
-
-      제어 모드에서 shim 이 SSR 마크업에 data-ns-open 을 먼저 심어 두지만, 그것
-      만으로는 부족하다 — upgrade 직후 가장 먼저 도는 이 첫 updated() 에서 open
-      은 아직 undefined 이고 #innerOpen 은 기본값 false 라, 좁히지 않으면 이 줄이
-      shim 이 방금 심어 둔 속성을 지워 버린다(패널이 접혔다가 하이드레이션 뒤에
-      다시 벌어지는 튐). shim 이 default-open 도 함께 렌더해 Lit 의 속성
-      컨버터가 upgrade 시점에 #innerOpen 을 먼저 세우므로, 이 줄에 도착할 때
-      #isOpen 이 이미 참이라 지우지 않고 유지한다. 하이드레이션 이후에는 이 줄이
-      컴포넌트 자신의 진실대로 계속 쓴다.
-    */
-    this.toggleAttribute("data-ns-open", this.#isOpen);
-
-    const active = this.#activeEntry;
-
-    const panel = this.renderRoot.querySelector<HTMLSlotElement>("slot.panel-slot");
-    panel?.assign(...(active === undefined ? [] : [active.group]));
-
-    for (const slot of this.renderRoot.querySelectorAll<HTMLSlotElement>("slot.tile-slot")) {
-      const entry = this.#entries.find((e) => e.key === slot.dataset.name);
-      slot.assign(...(entry?.icon === undefined ? [] : [entry.icon]));
-    }
-  }
-
-  /**
-   * 직계 자식에서 레일 목록을 다시 만든다.
-   *
-   * **직계 자식만 본다.** 중첩된 하위 그룹은 그룹의 자식이므로 애초에 보이지
-   * 않는다. 그룹이 아닌 자식은 아이콘 표시가 없으면 어디에도 배정되지 않아
-   * 렌더되지 않는다.
-   */
-  #syncGroups(): void {
-    const children = [...this.children];
-
-    const icons = new Map<string, Element>();
-    for (const el of children) {
-      const key = el.getAttribute("data-ns-rail");
-      if (key === null || key === "") continue;
-      /*
-        그룹 자신에 data-ns-rail 을 붙이면 그 그룹이 타일 슬롯으로 가버려 패널이
-        빈다. 노드 하나는 슬롯 하나에만 배정되기 때문이다. 걸러내고 경고한다.
-      */
-      if (el.tagName === "NS-NAV-GROUP") {
-        console.warn(
-          `[ns-sidebar] data-ns-rail 은 그룹이 아니라 아이콘 요소에 붙입니다. ns-nav-group 에 붙이면 그 그룹이 레일 타일로 가버려 패널이 빕니다.`,
-        );
-        continue;
-      }
-      // 같은 키가 둘이면 문서 순서상 첫 번째를 쓴다. getElementById 와 같은 규약이다.
-      if (!icons.has(key)) icons.set(key, el);
-    }
-
-    const groups = children.filter((el) => el.tagName === "NS-NAV-GROUP");
-    const seen = new Set<string>();
-
-    /*
-      프로퍼티를 먼저 읽고 속성으로 폴백한다. 둘이 필요한 이유는 타이밍이다 —
-      React 는 프로퍼티로 설정하고 반영은 다음 업데이트에서 일어나므로 그 사이
-      속성이 낡아 있고, upgrade 전에는 프로퍼티가 없어 속성만 있다.
-    */
-    const read = (el: Element, prop: "name" | "heading" | "icon" | "badge"): string => {
-      const own = (el as Partial<NsNavGroup>)[prop];
-      return own ?? el.getAttribute(prop) ?? "";
-    };
-
-    this.#entries = groups.map((group, i) => {
-      const name = read(group, "name");
-      const heading = read(group, "heading");
-      const icon = read(group, "icon");
-      const badge = read(group, "badge");
-
-      /*
-        name 이 없으면 인덱스를 키로 쓴다. 마크업 순서가 바뀌면 상태가 엉뚱한
-        그룹을 가리키게 되므로 키로 쓰기 나쁘지만, 화면이 죽는 것보다 낫다.
-      */
-      if (this.#settled && name === "" && !this.#warnedNoName) {
-        this.#warnedNoName = true;
-        console.warn(
-          `[ns-sidebar] ns-nav-group 에 name 이 없습니다("${heading}"). DOM 순서를 키로 쓰지만 순서가 바뀌면 선택이 엉뚱한 그룹을 가리킵니다. name 을 주세요.`,
-        );
-      }
-
-      const key = name === "" ? String(i) : name;
-
-      /*
-        키가 겹치면 두 번째 타일이 첫 번째의 아이콘을 가져가고, 키로 타일을 찾는
-        키보드 이동도 첫 번째만 찾는다. 고치지는 않고 들리게만 한다.
-      */
-      if (seen.has(key) && !this.#warnedDupName) {
-        this.#warnedDupName = true;
-        console.warn(
-          `[ns-sidebar] ns-nav-group 의 name 이 겹칩니다("${key}"). 레일 타일과 선택 상태가 첫 번째 그룹만 가리킵니다.`,
-        );
-      }
-      seen.add(key);
-
-      /*
-        타일 내용의 폴백 세 단. 슬롯에 배정된 것이 있으면 이것은 보이지 않는다.
-        코드 포인트 단위로 자르는 이유는 서로게이트 페어를 반으로 쪼개지 않는
-        것이다.
-      */
-      const fallback =
-        icon !== ""
-          ? html`<ns-icon name=${icon}></ns-icon>`
-          : badge !== ""
-            ? badge
-            : ([...heading][0] ?? "");
-
-      return { id: `tile-${i}`, key, heading, fallback, group, icon: icons.get(key) };
-    });
-
-    this.requestUpdate();
-  }
-
-  /** 이벤트가 레일 타일에서 났으면 그 타일의 키, 아니면 null. */
-  #keyFrom(target: EventTarget | null): string | null {
-    const el = (target as Element | null)?.closest?.(".tile") ?? null;
-    // 이 레일의 타일인지 확인한다. shadow 안이라 경계가 있지만 조회 지점을 맞춘다.
-    if (el === null || el.getRootNode() !== this.renderRoot) return null;
-    return (el as HTMLElement).dataset.name ?? null;
-  }
-
-  /*
-    자동 활성화 패턴. 화살표를 누르면 포커스와 선택이 함께 움직인다 — 그룹 전환이
-    싼 화면이라 이 패턴이 맞다. 목록 끝에서는 반대쪽으로 순환한다.
-
-    **기준점은 키가 발생한 타일이지 선택된 타일이 아니다.** 둘은 제어 모드에서
-    갈라진다 — 소비자가 ns-group-select 를 무시하거나 비동기로 미루면 포커스는
-    옆 타일로 갔는데 활성은 그대로다. 선택된 타일을 기준으로 세면 다음 화살표가
-    같은 곳을 다시 골라 포커스가 한 칸 옆에 영영 갇히고, 그 사이 DOM 포커스는
-    tabindex="-1" 인 요소에 앉아 roving tabindex 규약 자체가 깨진다.
-    ns-tabs 의 #onKeyDown 과 같은 판단이다.
-  */
-  #onKeyDown = (e: KeyboardEvent): void => {
-    const from = this.#keyFrom(e.target);
-    if (from === null) return;
-
-    const entries = this.#entries;
-    const index = entries.findIndex((entry) => entry.key === from);
-    // 기준점이 없으면 화살표를 삼키지 않는다.
-    if (index === -1) return;
-
-    const at = (next: number): void => {
-      e.preventDefault();
-      const entry = entries[(next + entries.length) % entries.length];
-      this.#select(entry.key);
-      /*
-        제어 모드에서 소비자가 activeGroup 을 바꾸지 않으면 업데이트가 일어나지
-        않아 tabindex 가 옮겨가지 않는다. 화살표 이동은 그 자리에서 포커스를
-        옮겨야 하므로 직접 부른다 — 비제어에서는 #select 의 requestUpdate 가
-        렌더를 예약하지만 포커스는 그것과 무관하다.
-
-        #focusTile 이 선택자를 조립하지 않는 이유는 그 메서드의 주석에 있다.
-      */
-      this.#focusTile(entry.key);
-    };
-
-    if (e.key === "ArrowDown") at(index + 1);
-    else if (e.key === "ArrowUp") at(index - 1);
-    else if (e.key === "Home") at(0);
-    else if (e.key === "End") at(entries.length - 1);
-  };
-
-  #onTile(key: string): void {
-    const active = this.#activeEntry;
-
-    if (active?.key === key) {
-      // 활성 타일을 다시 누르면 패널을 접는다. VS Code 그대로다.
-      this.#requestOpen(!this.#isOpen);
-      return;
-    }
-
-    this.#select(key);
-    if (!this.#isOpen) this.#requestOpen(true);
-  }
-
-  #select(key: string): void {
-    /*
-      이미 그 그룹이면 이벤트를 내지 않는다. ns-tabs 의 #select 가 같은 자리에서
-      같은 일을 한다 — 레일에 타일이 하나뿐일 때 화살표를 누르면 같은 키가 다시
-      들어오고, 단축이 없으면 아무것도 바뀌지 않았는데 ns-group-select 가 나간다.
-    */
-    if (key === this.#activeEntry?.key) return;
-
-    this.#selected = true;
-
-    // 제어 중이면 그 값을 바꾸지 않는다. 이벤트는 양쪽 모두 낸다.
-    if (!this.#controlledGroup) {
-      this.#innerActive = key;
-      this.requestUpdate();
-    }
-
-    const detail: NsGroupSelectDetail = { name: key };
-    this.dispatchEvent(
-      new CustomEvent("ns-group-select", { detail, bubbles: true, composed: true }),
-    );
-  }
-
-  /**
-   * 키로 타일을 찾아 포커스를 옮긴다.
-   *
-   * **선택자를 문자열로 조립하지 않는다.** key 는 소비자가 준 `name` 이므로
-   * `.tile[data-name="${key}"]` 로 만들면 그 안에 `"` 가 하나 있는 순간
-   * querySelector 가 DOMException 을 던진다. 그 시점에는 preventDefault 와
-   * #select 가 이미 끝나 있어 선택 상태와 DOM 포커스가 어긋난 채로 keydown
-   * 리스너에서 예외가 난다. ns-tabs 의 #focus 가 배열 비교를 쓰는 이유가 같다.
-   */
-  #focusTile(key: string): void {
-    for (const el of this.renderRoot.querySelectorAll<HTMLElement>(".tile")) {
-      if (el.dataset.name === key) {
-        el.focus();
-        return;
-      }
-    }
-  }
-
-  /*
-    제어 중이면 그 값을 바꾸지 않는다. 이벤트는 양쪽 모두 낸다.
-
-    composed 라 ns-header 의 ns-toggle 을 셸에서 듣던 소비자에게 같은 핸들러로
-    도착한다. 두 이벤트가 뜻하는 것이 정확히 같으므로 이름을 나누지 않는다 —
-    ns-nav-group 의 접힘이 별도 이름을 가진 것은 그것이 다른 것이었기 때문이다.
-  */
-  #requestOpen(open: boolean): void {
-    this.#toggled = true;
-
-    if (!this.#controlledOpen) {
-      this.#innerOpen = open;
-      this.requestUpdate();
-    }
-
-    const detail: NsToggleDetail = { open };
-    this.dispatchEvent(new CustomEvent("ns-toggle", { detail, bubbles: true, composed: true }));
+    return html`<nav><slot></slot></nav>`;
   }
 }
 

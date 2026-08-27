@@ -158,15 +158,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </NsHeader>
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-        <Sidebar
-          open={open}
-          defaultActiveGroup="projects"
-          onToggle={(next) => setOpen(next)}
-          onGroupSelect={(name) => log(name)}
-          onNavigate={(d) => router.push(d.href)}
-        >
+        <Sidebar open={open} onNavigate={(d) => router.push(d.href)}>
           <NsNavGroup
-            name="projects"
             heading="프로젝트"
             onNsNavigate={(e) => log(e.detail.label)}
             /*
@@ -178,7 +171,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <NsNavItem
               href="/a"
               label="프로젝트 A"
-              badge="PA"
               active={pathname === "/a"}
               onNsNavigate={(e) => log(e.detail.href)}
             />
@@ -201,24 +193,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </NsNavItem>
           </NsNavGroup>
         </Sidebar>
-        {/* 비제어. open 을 주지 않으면 레일 타일이 스스로 패널을 여닫는다. */}
-        <Sidebar defaultOpen defaultActiveGroup="admin" onNavigate={(d) => router.push(d.href)}>
+        {/* 비제어. open 을 주지 않으면 사이드바가 스스로 여닫는다. */}
+        <Sidebar defaultOpen onNavigate={(d) => router.push(d.href)}>
           {/*
             하위 카테고리. collapsible 은 최상위(admin)가 아니라 하위(사용자)에
             쓴다. ns-group-toggle 은 composed 라 하위에서 올린 것도 이 핸들러에
             도착한다 — e.detail.open 을 실제로 읽어 그 경로가 타입으로 성립하는지
             검사하는 자리다.
           */}
-          <NsNavGroup
-            name="admin"
-            heading="관리"
-            badge="관"
-            onNsGroupToggle={(e) => log(String(e.detail.open))}
-          >
+          <NsNavGroup heading="관리" onNsGroupToggle={(e) => log(String(e.detail.open))}>
             <NsNavGroup heading="사용자" collapsible>
-              <NsNavItem href="/users" label="목록" badge="목" />
+              <NsNavItem href="/users" label="목록" />
             </NsNavGroup>
-            <NsNavItem href="/logs" label="로그" badge="로" />
+            <NsNavItem href="/logs" label="로그" />
           </NsNavGroup>
         </Sidebar>
         <main>

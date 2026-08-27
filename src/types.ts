@@ -20,21 +20,6 @@ export interface NsGroupToggleDetail {
   open: boolean;
 }
 
-/**
- * ns-sidebar 의 레일 타일이 요청하는 다음 그룹.
- *
- * `name` 은 `ns-nav-group` 의 `name` 속성이다. `heading` 을 함께 싣지 않는
- * 이유는 그것이 표시용 문자열이라 상태를 저장할 키로 나쁘고, 필드가 둘이 되는
- * 순간 필드를 하나 더하는 것이 breaking 이 되기 때문이다 —
- * NsGroupToggleDetail 과 같은 판단이다.
- *
- * **"바뀌었다" 가 아니라 "바꾸고 싶다" 다.** 제어 모드에서 소비자가
- * activeGroup 을 바꾸지 않으면 패널은 그대로 있다.
- */
-export interface NsGroupSelectDetail {
-  name: string;
-}
-
 /** ns-dialog 가 닫히기를 요청할 때 올리는 이벤트의 사유. */
 export type NsDialogCloseReason = "escape" | "close-button" | "backdrop";
 
@@ -107,7 +92,6 @@ declare global {
     "ns-toggle": CustomEvent<NsToggleDetail>;
     "ns-navigate": CustomEvent<NsNavigateDetail>;
     "ns-group-toggle": CustomEvent<NsGroupToggleDetail>;
-    "ns-group-select": CustomEvent<NsGroupSelectDetail>;
     "ns-dialog-close": CustomEvent<NsDialogCloseDetail>;
     "ns-sort": CustomEvent<NsSortDetail>;
     "ns-select-change": CustomEvent<NsSelectChangeDetail>;

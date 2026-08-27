@@ -5,37 +5,13 @@ import type { NsNavigateDetail } from "../../types.js";
 
 export type SidebarProps = {
   /**
-   * 패널 보임 여부. 주면 제어 모드다 — 컴포넌트가 스스로 바꾸지 않으므로
-   * `onToggle` 을 받아 다시 내려줘야 한다.
+   * 사이드바 보임 여부. 주면 제어 모드다 — 컴포넌트가 스스로 바꾸지 않는다.
    *
    * 주지 않으면 컴포넌트가 스스로 여닫고, 초기값은 `defaultOpen` 이다.
    */
   open?: boolean;
   /** 비제어 초기값. */
   defaultOpen?: boolean;
-  /**
-   * 패널에 보일 그룹의 `name`. 주면 제어 모드다 — 컴포넌트가 스스로 바꾸지 않는다.
-   *
-   * 주지 않으면 컴포넌트가 스스로 관리하고, 초기값은 `defaultActiveGroup` 이다.
-   */
-  activeGroup?: string;
-  /** 비제어 초기 그룹. 비우면 첫 번째 그룹이다. */
-  defaultActiveGroup?: string;
-  /**
-   * 레일 타일이 요청하는 다음 그룹.
-   *
-   * 제어 모드(`open` 을 준 경우)에서는 `onToggle` 과 짝으로 다뤄야 한다 —
-   * 타일 클릭은 그룹을 바꾸면서 패널을 열어 달라고 요청하는데, 소비자가 `open`
-   * 을 들고 있으니 다시 내려주지 않으면 패널이 열리지 않는다. 비제어에서는
-   * 엘리먼트가 스스로 여니 이 프롭 없이도 열린다.
-   */
-  onGroupSelect?: (name: string) => void;
-  /**
-   * 패널의 다음 상태 요청. 레일 타일과 `ns-header` 의 토글이 같은 이름으로 올린다.
-   *
-   * 빠뜨리면 레일 타일을 눌러도 패널이 열리지 않는다.
-   */
-  onToggle?: (open: boolean) => void;
   /**
    * 하위 ns-nav-item 의 클릭. composed 라 사이드바에서 한 번만 들으면 된다.
    *
@@ -74,10 +50,6 @@ export type SidebarProps = {
 export function Sidebar({
   open,
   defaultOpen,
-  activeGroup,
-  defaultActiveGroup,
-  onGroupSelect,
-  onToggle,
   onNavigate,
   children,
   className,
@@ -87,8 +59,6 @@ export function Sidebar({
     <NsSidebarBase
       open={open}
       defaultOpen={defaultOpen}
-      activeGroup={activeGroup}
-      defaultActiveGroup={defaultActiveGroup}
       /*
         하이픈 든 이름은 반응형 프로퍼티가 아니므로 createComponent 가 가로채지
         않고 React.createElement 로 흘러가 서버 마크업에 그대로 실린다.
@@ -122,8 +92,6 @@ export function Sidebar({
       // e.detail 을 여기서 실제로 읽는다. elements.ts 의 EventName<> 캐스트가
       // 빠지면 e 가 Event 로 타입돼 이 줄들이 깨진다.
       onNsNavigate={(e) => onNavigate?.(e.detail)}
-      onNsGroupSelect={(e) => onGroupSelect?.(e.detail.name)}
-      onNsToggle={(e) => onToggle?.(e.detail.open)}
     >
       {children}
     </NsSidebarBase>
