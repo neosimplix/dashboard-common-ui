@@ -3156,8 +3156,10 @@
     함께 있어야 한다.</strong> <code>Sidebar</code> 에는 <code>onToggle</code> 이
     없다 — 사이드바가 여닫기를 요청하는 경로가 없기 때문이다. 상태를 움직이는 것은
     <code>NsHeader</code> 의 <code>onNsToggle</code> 이고, 그것을 붙이지 않으면
-    사이드바가 <code>open</code> 값에 고정된다. 스스로 여닫게 두려면
-    <code>open</code> 대신 <code>defaultOpen</code> 이다.
+    사이드바가 <code>open</code> 값에 고정된다.
+    <strong><code>defaultOpen</code> 으로 바꿔도 스스로 여닫지는 않는다</strong> —
+    비제어 모드는 <strong>초깃값 전용</strong>이고, 그 값으로 시작한 상태가 그대로
+    유지된다. 여닫는 것은 어느 모드에서나 <code>onNsToggle</code> 배선이다.
   </p>
   <p>
     <strong><code>onNavigate</code> 를 빠뜨리면 그 사이드바의 링크가 전부 죽는다.</strong>
