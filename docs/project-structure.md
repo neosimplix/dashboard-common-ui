@@ -94,7 +94,6 @@ common-ui/
 ├── docs/
 │   ├── project-structure.md           이 문서
 │   ├── gotchas.md                     함정과 그 이유. 규칙이 왜 그런지는 전부 여기
-│   ├── pending-human-checks.md        다음 릴리스 전에 사람이 눈으로 볼 것. 릴리스가 나가면 비운다
 │   ├── consumer-example.tsx           소비자 관점 타입 검사 대상 (npm run check 가 실행)
 │   └── superpowers/{specs,plans}/     설계 문서와 구현 계획
 ├── .claude/
@@ -167,7 +166,6 @@ grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
 ## 관련 문서
 
 - 함정과 그 이유: `docs/gotchas.md`
-- 다음 릴리스 전에 사람이 눈으로 볼 것: `docs/pending-human-checks.md` (소비자 프로젝트가 있어야 확인되는 항목이 따로 있다)
 - 설계 배경과 수용된 한계: `docs/superpowers/specs/2026-08-12-common-ui-web-components-design.md`
 - 구현 계획(Task 단위 코드 포함): `docs/superpowers/plans/2026-08-12-common-ui-web-components.md`
 - 사용법·프로퍼티·이벤트·라이브 데모: `index.html` (`npm run demo`)
