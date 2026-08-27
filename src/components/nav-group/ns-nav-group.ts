@@ -13,71 +13,8 @@ import "../icon/ns-icon.js";
 export class NsNavGroup extends LitElement {
   static override styles = styles;
 
-  /**
-   * 그룹 제목. `ns-sidebar` 안에서는 이것이 그대로 패널 제목의 자리에 온다.
-   *
-   * 반영하는 이유는 사이드바가 이 값을 관찰하기 때문이다. `@lit/react` 의
-   * `createComponent` 는 반응형 프로퍼티를 **프로퍼티로만** 설정하므로, 반영이
-   * 없으면 React 소비자가 제목을 바꿔도 속성 변화가 일어나지 않아 사이드바의
-   * MutationObserver 가 보지 못한다. 소비자가 준 값을 되울리는 것이라
-   * "호스트의 속성을 쓰지 않는다" 가 겨냥하는 덮어쓰기가 아니다 —
-   * `ns-nav-item` 의 `active` 가 이미 같은 방식이다.
-   */
-  /*
-    **`useDefault: true` 가 없으면 필드 초기값 `""` 도 속성으로 반영된다.**
-    `@lit/reactive-element` 의 기본값이 `useDefault: false` 이므로 첫 업데이트가
-    초기값을 변경으로 기록해 `<ns-nav-group heading="관리">` 가
-    `<ns-nav-group heading="관리" name="" icon="" badge="">` 가 된다.
-
-    반영이 "호스트의 속성을 쓰지 않는다" 의 예외인 근거는 **소비자가 준 값을
-    되울리는 것**인데, 그 값은 소비자가 준 적이 없다. 부작용도 둘이다 —
-    `ns-nav-group[name]` 류 선택자가 전부 매치하고, 그룹마다 속성 변이 셋이
-    `ns-sidebar` 의 MutationObserver 를 깨워 `#syncGroups()` 가 불필요하게
-    여러 번 돈다(루프는 아니다 — 사이드바는 이 이름들을 쓰지 않는다).
-
-    `lit@3.3` 이상에서만 있는 옵션이다. 이 저장소는 `lit@3.3.3`
-    (`@lit/reactive-element@2.1.2`)을 쓴다.
-  */
-  @property({ type: String, reflect: true, useDefault: true }) heading = "";
-
-  /**
-   * 레일 키. `ns-sidebar` 의 `activeGroup` 이 이 값을 가리킨다.
-   *
-   * **이름이 `key` 가 아닌 이유는 React 다.** `key` 는 재조정 키로 소비되어
-   * 엘리먼트까지 도달하지 않고, shim 으로도 고칠 수 없다 — `title` 은 우리에게
-   * 도착한 뒤 이름을 바꿀 수 있었지만 `key` 는 도착하지 않는다.
-   *
-   * `heading` 을 키로 쓰지 않는 이유는 그것이 표시용 문자열이라는 것이다.
-   * `ns-group-toggle` 의 `detail` 에서 이미 한 판단이다.
-   *
-   * 비어 있으면 사이드바가 DOM 순서 인덱스를 키로 쓰고 경고한다.
-   */
-  @property({ type: String, reflect: true, useDefault: true }) name = "";
-
-  /**
-   * 레일 타일에 그릴 아이콘의 이름. `<ns-icon name="…">` 에 그대로 넘어간다.
-   *
-   * **스프라이트는 열려 있다** — 내장 셋에 없는 이름은 `registerIcons()` 로
-   * 더한다. 그룹의 정의가 마크업 한 자리에 모이므로 이것이 기본 경로다.
-   *
-   * 이것으로 부족한 경우가 둘 있고 그때는 사이드바의 직계 자식에
-   * `data-ns-rail="<name>"` 로 요소를 직접 넣는다 — React 아이콘 컴포넌트를
-   * 쓸 때, 그리고 `registerIcons` 가 Next 번들에 들어가지 않는 배치일 때다.
-   */
-  @property({ type: String, reflect: true, useDefault: true }) icon = "";
-
-  /**
-   * 레일 타일에 보이는 짧은 글자. 1~2자를 넣는다.
-   *
-   * 타일 내용은 네 단계로 떨어진다 — `data-ns-rail` 슬롯 → `icon` → 이
-   * `badge` → `heading` 의 첫 글자. 마지막 단이 있는 이유는 이주다: 0.4.0
-   * 소비자는 `heading` 만 갖고 있으므로 아무것도 더하지 않아도 레일이 빈
-   * 타일이 되지 않는다.
-   *
-   * `ns-nav-item` 의 `badge` 와 같은 종류의 폴백이지만 **그쪽은 행 안에 늘
-   * 보이고 이것은 레일에만 보인다.**
-   */
-  @property({ type: String, reflect: true, useDefault: true }) badge = "";
+  /** 그룹 제목. `[role="group"]` 의 `aria-label` 로도 실린다. */
+  @property({ type: String }) heading = "";
 
   /**
    * 헤딩 줄을 토글 버튼으로 만든다.
