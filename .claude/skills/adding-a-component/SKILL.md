@@ -36,7 +36,7 @@ Light DOM 이면 두 가지가 더 갈린다.
 - [ ] `src/index.ts` — 등록 부수효과 import **와** 클래스 재export 둘 다
 - [ ] `src/react/elements.ts` — `createComponent` 래퍼, 이벤트 매핑
 - [ ] `src/react/index.ts` — 값과 타입 재export
-- [ ] `index.html` — 문서 섹션
+- [ ] `guide.html` — 문서 섹션
 - [ ] `.claude/skills/releasing/SKILL.md` 의 콜드 설치 스모크 테스트가 기대하는 export 목록 — `src/index.ts` 에 새 클래스를 재export 하면 그 목록도 늘어난다. 이 스모크 테스트가 이 저장소에서 SSR 안전성을 증명하는 유일한 자동 검사이므로, 새 컴포넌트의 등록 경로는 여기를 고치지 않으면 그 검사 밖에 남는다
 - [ ] `src/controls/controls.css` — Light DOM 컴포넌트라면 요소 선택자로 스타일. `check-controls.mjs` 가 정방향으로 대조한다
 
@@ -45,10 +45,10 @@ Light DOM 이면 두 가지가 더 갈린다.
 - [ ] `src/controls/controls.css` 의 `@layer ns-controls` 블록 **안**에 규칙. 값은 토큰만, `var()` 폴백 없음
 - [ ] `src/react/controls/<Name>.tsx` — 네이티브 요소에 클래스를 붙이는 컴포넌트
 - [ ] `src/react/index.ts` — 값과 타입 재export
-- [ ] `index.html` — 데모 · **클래스 표** · HTML 예시 · React 예시
+- [ ] `guide.html` — 데모 · **클래스 표** · HTML 예시 · React 예시
 - [ ] `docs/consumer-example.tsx` — 새 컴포넌트를 실제로 사용
 
-`scripts/check-controls.mjs` 가 `controls.css` 의 클래스와 `index.html` 을 양방향으로 대조한다. `--modifier` 변형도 개별로 센다. 문서에 빠뜨리면 `npm run check` 가 막는다. **요소 선택자(`ns-table` 같은 Light DOM 컴포넌트 스타일)는 정방향만 본다** — CSS 에 있는데 문서에 없으면 막지만, 역방향은 확인하지 않는다.
+`scripts/check-controls.mjs` 가 `controls.css` 의 클래스와 `guide.html` 을 양방향으로 대조한다. `--modifier` 변형도 개별로 센다. 문서에 빠뜨리면 `npm run check` 가 막는다. **요소 선택자(`ns-table` 같은 Light DOM 컴포넌트 스타일)는 정방향만 본다** — CSS 에 있는데 문서에 없으면 막지만, 역방향은 확인하지 않는다.
 
 **상태 변형은 클래스를 만들지 않는다.** `invalid` 는 `[aria-invalid="true"]`, `disabled` 는 `:has(:disabled)` 로 잡는다. 클래스를 토글하는 자바스크립트가 필요 없어 순수 HTML 에서도 동작한다.
 
@@ -74,7 +74,7 @@ events: {
 
 `scripts/check-events.mjs` 가 1번과 3번의 이름을 대조하지만, 전체 집합끼리 비교하므로 컴포넌트별 매핑까지는 보증하지 않는다.
 
-## `index.html` 섹션
+## `guide.html` 섹션
 
 문서는 바깥에서 안으로 읽는다. 컨테이너 컴포넌트가 앞에 온다.
 
@@ -92,7 +92,7 @@ events: {
 npm run check
 npm run build
 grep -c "ns-<name>" dist/bundle.umd.js      # 등록이 번들에 살아남았는지
-grep -n 'document.addEventListener' index.html   # 출력 없어야 정상
+grep -n 'document.addEventListener' guide.html   # 출력 없어야 정상
 node scripts/check-controls.mjs             # 클래스 ↔ 문서
 ```
 

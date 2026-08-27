@@ -57,7 +57,7 @@
 
     ns-pagination 의 이전·다음은 disabled 대신 aria-disabled="true" 를 쓴다 —
     포커스된 버튼이 disabled 되면 브라우저가 blur 시켜 키보드 사용자가 위치를
-    잃기 때문이다(근거는 index.html 의 ns-pagination 절). 동작만 살리고 겉모습을
+    잃기 때문이다(근거는 guide.html 의 ns-pagination 절). 동작만 살리고 겉모습을
     두면 "눌러도 아무 일도 안 일어나는데 활성으로 보이는 버튼" 이 되므로,
     회색·not-allowed·hover 억제 셋을 :disabled 와 같이 준다.
 

@@ -97,7 +97,7 @@ export class NsSidebar extends LitElement {
 
     규칙이 막으려던 것은 소비자가 쓴 속성을 덮는 것이고, 소비자가 쓰는 이름은
     default-open 이다. 이 이름을 마크업에 쓰는 것은 라이브러리와 그 shim 뿐이고
-    (Sidebar.tsx 가 제어 모드에서 SSR 마크업에 싣는다. 이 저장소의 index.html 이
+    (Sidebar.tsx 가 제어 모드에서 SSR 마크업에 싣는다. 이 저장소의 guide.html 이
     순수 HTML 제어 모드에서 같은 짝을 손으로 적는 것은 그 shim 을 흉내 낸 것이다),
     거기 실린 값은 구조상 이 updated() 가 쓸 값과 같으므로 덮을 값이 애초에 없다.
     ns-toast 의 position 과 같은 형태의 예외이고, 성립 근거는 "아무도 그 이름을

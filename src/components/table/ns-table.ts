@@ -230,7 +230,7 @@ export class NsTable extends ReactiveElement {
 
     default-sort-key 로 처음부터 정렬된 표는 여전히 upgrade 때 속성이 생긴다.
     그것은 진짜 상태이므로 지울 수 없다 — 그 소비자는 서버 마크업에 같은
-    속성을 직접 렌더한다(index.html 의 SSR 안내).
+    속성을 직접 렌더한다(guide.html 의 SSR 안내).
   */
   #syncAriaSort(): void {
     const key = this.#key;
@@ -296,7 +296,7 @@ export class NsTable extends ReactiveElement {
     지금은 한 번이다.)
 
     **그래서 두 훅을 정렬 훅이 붙은 <th> 안에 두지 않는다.** 선택 칼럼에는
-    data-ns-sort-key 를 붙이지 않는 것이 답이고, index.html 의 데모 마크업이
+    data-ns-sort-key 를 붙이지 않는 것이 답이고, guide.html 의 데모 마크업이
     이미 그렇게 돼 있다.
 
     코드로 못 막는 것은 아니다. controls.css 가 이미 :has() 를 쓰므로 브라우저

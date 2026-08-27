@@ -35,7 +35,7 @@ npm 레지스트리를 쓰지 않는다. 소비자는 `git+ssh://…#v0.1.3` 으
 
 **`npm run check` 가 이것을 강제한다.** `scripts/check-controls.mjs` 가 릴리스 표의 태그와 `changelog.html` 의 절을 양방향으로 대조하므로, 표의 `(릴리스 전)` 행에 태그를 채우고 절을 만들지 않으면 `check` 가 실패하고 릴리스 스크립트가 빌드 전에 멈춘다. 반대로 절만 만들고 행을 안 채워도 실패한다.
 
-`changelog.html` 을 고쳤으면 구조 검사 넷도 함께 돈다 — `.claude/rules/verification.md` 의 명령이 두 문서 페이지를 함께 본다.
+`changelog.html` 을 고쳤으면 구조 검사 넷도 함께 돈다 — `.claude/rules/verification.md` 의 명령이 문서 페이지 셋(`index.html`·`guide.html`·`changelog.html`)을 루프로 돈다. **기대값이 파일마다 다르다** — 첫 검사는 `guide`·`changelog` 가 1, 목차인 `index` 는 0 이다.
 
 ## 실행
 
@@ -99,7 +99,7 @@ Node 에는 `window` 도 `customElements` 도 없으므로, **이것이 이 저�
 | 상황 | 처리 |
 |---|---|
 | 깨진 산출물로 태그를 이미 만들었다 | `git tag -d vX.Y.Z` 로 폐기하고 다음 번호로 다시 자른다. 깨진 태그를 남기는 것이 없는 것보다 나쁘다 |
-| 릴리스 직후 `index.html` 이 빈 화면 | 정상이다. 브랜치 복귀 시 git 이 `dist/` 를 지운다. `npm run demo` 로 재빌드 |
+| 릴리스 직후 `guide.html` 이 빈 화면 | 정상이다. 브랜치 복귀 시 git 이 `dist/` 를 지운다. `npm run demo` 로 재빌드 |
 | 릴리스가 중간에 실패했다 | `git branch --show-current` 로 `main` 인지 먼저 확인. 스크립트가 정리 명령을 출력한다 |
 | `origin` 이 없다 | 스크립트가 push 를 건너뛰고 알린다. 오류가 아니다 |
 

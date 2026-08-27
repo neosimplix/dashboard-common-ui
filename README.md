@@ -68,7 +68,7 @@ Tailwind v4 의 임포트 리졸버가 bare specifier 를 해석하므로 `@impo
 
 ## React 래퍼는 전부 클라이언트 경계다
 
-**`dist/react.js` 최상단에 `"use client"` 배너가 있다.** `@lit/react` 의 `createComponent` 가 훅을 쓰므로 필요하고 없앨 수 없다. 배너는 파일 단위라 그 진입점이 export 하는 것 전부에 걸린다 — 상호작용이 전혀 없는 `Card`·`PageHeading` 도 클라이언트 경계다. 쓰는 것 자체는 정상이지만 **그 경계 너머로 함수를 넘길 수 없다.** 표 칼럼을 `{ render, sortValue }` 처럼 함수를 담은 값으로 정의해 서버 페이지에서 넘기면 `Functions cannot be passed directly to Client Components` 로 빌드가 깨진다. 셸을 이 라이브러리로 바꾸면 표시 전용 컴포넌트까지 클라이언트로 끌려온다는 뜻이라 **도입을 정하기 전에 알아야 한다.** 우회(칼럼 정의를 `"use client"` 파일로 내린다)와 전체 설명은 `index.html` 의 "React 래퍼는 전부 클라이언트 경계다"(`#usage-use-client`) 에 있다. 순수 HTML 로 커스텀 엘리먼트를 직접 쓰는 경로에는 해당하지 않는다.
+**`dist/react.js` 최상단에 `"use client"` 배너가 있다.** `@lit/react` 의 `createComponent` 가 훅을 쓰므로 필요하고 없앨 수 없다. 배너는 파일 단위라 그 진입점이 export 하는 것 전부에 걸린다 — 상호작용이 전혀 없는 `Card`·`PageHeading` 도 클라이언트 경계다. 쓰는 것 자체는 정상이지만 **그 경계 너머로 함수를 넘길 수 없다.** 표 칼럼을 `{ render, sortValue }` 처럼 함수를 담은 값으로 정의해 서버 페이지에서 넘기면 `Functions cannot be passed directly to Client Components` 로 빌드가 깨진다. 셸을 이 라이브러리로 바꾸면 표시 전용 컴포넌트까지 클라이언트로 끌려온다는 뜻이라 **도입을 정하기 전에 알아야 한다.** 우회(칼럼 정의를 `"use client"` 파일로 내린다)와 전체 설명은 `guide.html` 의 "React 래퍼는 전부 클라이언트 경계다"(`#usage-use-client`) 에 있다. 순수 HTML 로 커스텀 엘리먼트를 직접 쓰는 경로에는 해당하지 않는다.
 
 ## 다크모드
 
@@ -115,9 +115,11 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 **문서는 두 파일이고 둘 다 패키지에 함께 설치된다.** 설치한 뒤 바로 열면 되고, 옆에 `dist/` 가 있어 라이브 데모까지 그대로 동작한다.
 
 ```sh
-open node_modules/@neosimplix/common-ui/index.html      # 사용법·프로퍼티·이벤트·라이브 데모
+open node_modules/@neosimplix/common-ui/guide.html      # 사용법·프로퍼티·이벤트·라이브 데모
 open node_modules/@neosimplix/common-ui/changelog.html  # 태그별 변경 내역과 이주 코드
 ```
+
+`index.html` 도 함께 설치되지만 위 둘로 보내는 목차일 뿐이다. 어느 파일이 무엇인지 잊었을 때 폴더를 열면 브라우저가 그것을 집으므로 남겨 둔다 — `index.html` 은 이름이 아니라 관례라서, 없으면 디렉터리를 여는 경로가 죽는다.
 
 두 파일은 설치된 버전과 정확히 같은 시점의 문서다. 저장소를 따로 보러 가면 다른 버전의 문서를 읽게 될 수 있다 — **특히 `changelog.html` 은 지금 설치한 태그보다 뒤의 항목은 담고 있지 않다.**
 
@@ -136,13 +138,13 @@ npm run demo
 |---|---|
 | `npm run check` | 타입 검사 + 이벤트 매핑 · 클래스 ↔ 문서 · 토큰 참조 검사 |
 | `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css · aliases.css 생성 |
-| `npm run demo` | 빌드 후 `index.html` 열기. `changelog.html` 은 같은 `dist/` 를 읽으므로 빌드 뒤 그냥 열면 된다 |
+| `npm run demo` | 빌드 후 `guide.html` 열기 — 데모가 있는 페이지로 바로 간다. `index.html`·`changelog.html` 은 같은 `dist/` 를 읽으므로 빌드 뒤 그냥 열면 된다 |
 | `npm run release -- 0.1.0` | 빌드 산출물을 포함한 `v0.1.0` 태그 생성·푸시 |
 
 테스트 러너가 없다. `npm run check` 와 육안 확인이 회귀 확인 수단이다.
-`index.html` 과 `changelog.html` 두 페이지의 헤더와 네비게이션 자체가 이 패키지의
+`guide.html` 과 `changelog.html` 두 페이지의 헤더와 네비게이션 자체가 이 패키지의
 컴포넌트라, 깨지면 문서가 열리지 않는 것으로 드러난다. 컴포넌트를 추가하면
-`index.html` 에도 섹션을 추가하고, 태그를 자르면 `changelog.html` 에도 절을
+`guide.html` 에도 섹션을 추가하고, 태그를 자르면 `changelog.html` 에도 절을
 추가한다 — 후자는 `npm run check` 가 릴리스 표와 대조해 강제한다.
 
 ## 설계

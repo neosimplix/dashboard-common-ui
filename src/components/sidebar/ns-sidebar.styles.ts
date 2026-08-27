@@ -88,7 +88,7 @@ export const styles = css`
     잘린다 — 레이아웃이 깨지진 않지만 내용이 다 보이지도 않는다. 그래서
     폭을 조절하는 공식 통로는 --ns-sidebar-width 토큰이고, ns-sidebar
     { width } 만 override 하는 것은 토큰보다 좁지 않을 때만 안전하다. 같은
-    문구가 README.md 의 0.5.0 이주 절과 index.html 의 ns-sidebar 절에도
+    문구가 README.md 의 0.5.0 이주 절과 guide.html 의 ns-sidebar 절에도
     있다.
   */
   nav {

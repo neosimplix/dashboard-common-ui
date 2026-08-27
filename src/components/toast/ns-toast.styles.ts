@@ -53,7 +53,7 @@ export const styles = css`
       check-tokens.mjs 규칙 ④ 는 no-op 값을 면제하므로 :host { border: none;
       padding: 0 } 으로 되돌리면 통과한다.)
 
-      해결은 문서다 — index.html 의 nsToast 절 "주의" 에 적혀 있다.
+      해결은 문서다 — guide.html 의 nsToast 절 "주의" 에 적혀 있다.
     */
     z-index: 1000;
     display: block;

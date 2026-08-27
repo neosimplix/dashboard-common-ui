@@ -7,18 +7,18 @@
   이 파일은 "@neosimplix/common-ui/react" 를 실제로 설치해 쓰는 소비자
   프로젝트를 흉내 내어, tsconfig.consumer.json 을 통해 별도로 타입 검사된다.
 
-  아래 JSX 의 뼈대(NsHeader / Sidebar / NsNavGroup / NsNavItem)는 index.html 의
+  아래 JSX 의 뼈대(NsHeader / Sidebar / NsNavGroup / NsNavItem)는 guide.html 의
   "환경별 연동 → Next.js (App Router)" 절 예시를 옮긴 것이고, 그 안에 다른 절의
   React 예시(Dialog · Field · Select · Checkbox · Card · NsTable · NsPagination
   등)를 한 셸 안에 모아 넣었다. next/navigation, UserMenu 등 Next 전용 부분만
   최소 스텁으로 대체했다(이 패키지는 next 에 의존하지 않는다).
 
-  **이 파일은 index.html 의 스니펫을 통째로 검사하지 않는다.** 문서의
+  **이 파일은 guide.html 의 스니펫을 통째로 검사하지 않는다.** 문서의
   <script type="text/plain"> 안은 tsc 가 보지 않고, 여기 옮겨 적힌 것만 검사된다.
   둘이 갈라지면 문서 쪽만 컴파일되지 않는 상태가 조용히 생긴다 — 실제로
   ns-table 의 React 예시가 `useState({ direction: "none" as const })` 로 갈라져
   있다가 소비자의 첫 빌드에서 막히는 형태로 발견됐다. 그래서 정렬 상태는
-  index.html 의 ns-table 절과 **같은 형태**(useState<NsSortDetail> +
+  guide.html 의 ns-table 절과 **같은 형태**(useState<NsSortDetail> +
   setSort(e.detail))로 적어 둔다. 예시를 고칠 때는 양쪽을 같이 본다.
 */
 import * as React from "react";
@@ -99,7 +99,7 @@ const TABS = [
 /*
   후보 목록은 모듈 상수다. 인라인 배열 리터럴로 넘기면 렌더마다 새 배열이 되고,
   options 는 반응형 프로퍼티라 그때마다 ns-multi-select 가 다시 렌더된다.
-  index.html 의 React 예시가 같은 이유로 OWNERS 를 밖에 둔다.
+  guide.html 의 React 예시가 같은 이유로 OWNERS 를 밖에 둔다.
 
   value 는 유일해야 한다 — 목록과 칩 줄의 렌더 키다.
 */
@@ -124,7 +124,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   // 세 번째 래퍼 NsSidebarBase 는 비공개라 이 파일이 닿을 수 없고, 그쪽은
   // src/react/tags/Sidebar.tsx 의 shim 이 onNsNavigate={(e) => onNavigate?.(e.detail)}
   // 로 같은 방어를 한다.
-  // (사이드바에서 한 번만 듣는 것도 여전히 유효한 패턴이다. index.html 의 각
+  // (사이드바에서 한 번만 듣는 것도 여전히 유효한 패턴이다. guide.html 의 각
   // 컴포넌트 절 참고.)
   const log = (msg: string) => console.log(msg);
 
@@ -202,7 +202,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {/*
             하위 카테고리. collapsible 은 **단을 가리지 않는다** — 최상위 그룹에
             쓰면 그 그룹이 통째로 접혀 긴 네비게이션을 가장 크게 줄이고(이 저장소
-            index.html 의 좌측 네비게이션이 그렇게 돼 있다), 하위 그룹에 쓰면 그
+            guide.html 의 좌측 네비게이션이 그렇게 돼 있다), 하위 그룹에 쓰면 그
             카테고리만 접힌다. 0.5.0 개발 중에 한동안 "최상위가 아니라 하위에
             쓴다" 고 안내했으나 그것은 패널에 그룹 하나만 보이던 레일 시절의
             것이고, 지금은 최상위가 오히려 주 용도다.
