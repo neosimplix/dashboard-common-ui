@@ -43,11 +43,14 @@ npm run release -- 0.1.4
 
 ```sh
 git show v0.1.4:dist/react/elements.d.ts | grep -E 'onNs[A-Za-z]+:'
+git show v0.1.4:dist/react/elements.d.ts | grep -cE 'onNs[A-Za-z]+:'   # 11 이어야 한다
 ```
 
-이벤트를 가진 아홉 래퍼가 (`onNsNavigate` 는 세 컴포넌트가 공유하므로) 열 줄로 나와야 하고, 전부 `EventName<CustomEvent<...>>` 여야 한다. **`EventName` 브랜딩은 `dist/react/index.d.ts` 가 아니라 `elements.d.ts` 에 있다** — `index.d.ts` 를 대상으로 grep 하면 아무 줄도 안 나오고 그 상태로 항상 "통과"하므로 검사가 아니다.
+**줄이 정확히 열한 개여야 하고**, 전부 `EventName<CustomEvent<...>>` 여야 한다. **세는 단위는 래퍼가 아니라 이벤트 매핑 줄이다** — 래퍼는 아홉인데 줄이 열하나인 이유가 둘이다. `ns-nav-group` 과 `ns-table` 이 각각 이벤트를 둘씩 내고, `onNsNavigate` 는 세 래퍼(`ns-sidebar`·`ns-nav-group`·`ns-nav-item`)가 공유하는데 이 grep 은 중복을 줄이지 않는다. 숫자의 출처는 `src/react/elements.ts` 에서 `events` 가 비어 있지 않은 `createComponent` 호출이 내는 이벤트 전부이고, 래퍼나 이벤트를 더하면 이 숫자와 `.claude/rules/verification.md` 의 숫자를 **함께** 고친다. **`EventName` 브랜딩은 `dist/react/index.d.ts` 가 아니라 `elements.d.ts` 에 있다** — `index.d.ts` 를 대상으로 grep 하면 아무 줄도 안 나오고 그 상태로 항상 "통과"하므로 검사가 아니다.
 
-나쁜 결과는 둘이다. ① 어떤 줄이 `onNsToggle: string;` 처럼 `EventName<...>` 없이 맨 `string` 으로 끝난다 — 그 이벤트의 캐스트가 소스에서 빠졌거나 약해졌다는 뜻이다. ② 줄이 열 개보다 적게 나온다 — 래퍼 하나가 통째로 사라졌다는 뜻이다.
+나쁜 결과는 둘이다. ① 어떤 줄이 `onNsToggle: string;` 처럼 `EventName<...>` 없이 맨 `string` 으로 끝난다 — 그 이벤트의 캐스트가 소스에서 빠졌거나 약해졌다는 뜻이다. ② **줄 수가 열하나가 아니다.** 적으면 이벤트 매핑이 사라진 것이고(래퍼가 통째로 빠진 것과 래퍼는 남은 채 이벤트 하나만 빠진 것이 여기서 같은 모양으로 드러난다), 많으면 소스에 없는 매핑이 태그에 들어간 것이다.
+
+**하한이 아니라 등식으로 본다.** "열 개보다 적게" 같은 하한은 이벤트 하나가 조용히 사라진 상태를 통과시킨다 — 그리고 이것이 태그 앞의 마지막 검사이고 태그는 되돌릴 수 없다. 숫자가 어긋나면 먼저 `src/react/elements.ts` 를 다시 세어 **어느 쪽이 옳은지** 정하고, 이 문단과 `verification.md` 를 고친 뒤에 태그를 자른다.
 
 ### 태그 안의 문서가 자기 버전을 가리키는가
 
