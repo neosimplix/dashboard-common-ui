@@ -289,7 +289,8 @@ export const NsSidebarBase = createComponent({
 **upgrade 전 예약은 고치지 않는다.** `ns-sidebar:not(:defined)[default-open]`·`[data-ns-open]` 두 줄이 그대로 맞다. 다만 그 위 주석에 레일을 언급하는 문장이 있으면 지운다.
 
 Run: `grep -n '레일\|19rem' src/tokens/tokens.css`
-Expected: 출력이 없다.
+
+**출력이 위 두 주석 블록 안의 경위 서술뿐이어야 한다.** 그 둘은 일부러 남기는 역사 기록이다 — 이 저장소는 값이 왜 그 값인지를 주석에 남기고(`--ns-color-accent` 가 같은 모양이다), 다음 사람이 19rem 을 다시 제안하는 것을 막는 것이 그 문장의 일이다. 그 밖의 자리(포커스 링 재고 서술, upgrade 전 예약 주석 등)에 레일이 남아 있으면 지운다.
 
 - [ ] **Step 7: `docs/consumer-example.tsx` 에서 레일 프롭을 지운다**
 
@@ -468,9 +469,11 @@ Run: `grep -n 'data-ns-rail\|activeGroup\|default-active-group\|ns-group-select\
 
 **포커스 링 숫자를 되돌린다.** 레일 타일이 사라졌으므로 여덟에서 일곱으로 돌아간다.
 
+**`src/tokens/tokens.css` 쪽은 Task 1 이 이미 고쳤다.** 남은 것은 `index.html` 이다.
+
 Run: `grep -rn '여덟' src/tokens/tokens.css index.html`
 
-찾은 네 곳을 `일곱` 으로 되돌리고, "바깥에 그리는 넷 / 안에 그리는" 갈래에서 레일 타일을 뺀다.
+출력이 `index.html` 한 곳뿐인지 확인하고 그것을 `일곱` 으로 되돌린다. `tokens.css` 에서도 나오면 Task 1 이 놓친 것이므로 함께 고친다.
 
 - [ ] **Step 2: `index.html` 구조 검사 넷을 돌린다**
 
