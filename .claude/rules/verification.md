@@ -8,8 +8,8 @@
 
 | 수단 | 무엇을 잡나 |
 |---|---|
-| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 일관성 ④ 클래스 ↔ 문서 대조 ⑤ 토큰 참조·`data-ns-*` 훅·`:host` 박스·`index.html` 리터럴 색 |
-| `index.html` 육안 확인 | 렌더·상호작용. 문서 셸이 이 라이브러리로 만들어져 있어 깨지면 문서가 안 열린다 |
+| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 일관성 ④ 클래스 ↔ 문서 대조 · 릴리스 표 ↔ `changelog.html` 절 대조 ⑤ 토큰 참조·`data-ns-*` 훅·`:host` 박스·문서 페이지 리터럴 색 |
+| 문서 페이지 육안 확인 | 렌더·상호작용. `index.html` 과 `changelog.html` 의 셸이 이 라이브러리로 만들어져 있어 깨지면 문서가 안 열린다 |
 
 **육안 확인은 볼 것의 목록이 있어야 작동한다.** 다음 릴리스 전에 사람이 봐야 하는 것은 파일에 모으지 않는다 — 작업이 끝나는 시점에 사람에게 직접 보고한다. 그중에는 이 저장소에서 **재현할 수 없어 소비자 프로젝트가 필요한** 항목도 있고, 그것들에 대해서는 `npm run check` 가 초록인 것이 아무 증거도 아니다.
 
@@ -40,17 +40,25 @@ React 래퍼의 `events` 값은 라이브러리 안에서는 그냥 문자열이
 
 **사람 눈이 필요한 것은 구현 서브에이전트가 보고서에 적는 것으로 끝나지 않는다.** 그 보고서는 `.superpowers/` 아래의 gitignore 대상이라 워크스페이스와 함께 사라진다. 서브에이전트는 정적으로 확인한 것과 사람 눈이 필요한 것을 나눠 적고, 조정자는 그중 사람 눈이 필요한 항목을 작업이 끝나는 시점에 사용자에게 직접 전달한다 — 파일이 아니라 사람이 받는다.
 
-`index.html` 을 고친 뒤 브라우저 없이 할 수 있는 검사:
+`index.html` 이나 `changelog.html` 을 고친 뒤 브라우저 없이 할 수 있는 검사:
 
 ```sh
-grep -c '<script>' index.html                      # 헬퍼 하나 = 1
-grep -n '</script>' index.html \
-  | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='   # 출력 없어야 정상
-grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
-grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
-  | sed -E 's/.*id="([^"]*)"/\1/' | sort | uniq -d            # 출력 없어야 정상
+for f in index.html changelog.html; do
+  echo "— $f"
+  grep -c '<script>' "$f"                          # 헬퍼 하나 = 1
+  grep -n '</script>' "$f" \
+    | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='   # 출력 없어야 정상
+  grep -n 'document.addEventListener' "$f"         # 출력 없어야 정상
+  grep -oE '(^|[[:space:]])id="[^"]*"' "$f" \
+    | sed -E 's/.*id="([^"]*)"/\1/' | sort | uniq -d            # 출력 없어야 정상
+done
 ```
+
+**파일마다 따로 센다.** 넷 중 특히 마지막이 그렇다 — id 는 **파일 안에서만** 유일해야
+한다. 두 페이지를 합쳐 세면 각자 자기 문서만 조회하는 배선이 서로 충돌한다고 잘못
+읽는다. 두 파일이 이름을 겹쳐 쓰는 것 자체는 정상이므로(`docs-header` /
+`changelog-header` 처럼 접두사가 다른 것은 관례이지 요구가 아니다) 루프로 나눠 돈다.
 
 세 번째가 중요하다. 이벤트가 `composed` 라 데모에서 발생한 것도 `document` 까지 올라온다. 리스너는 자기가 소유한 엘리먼트에만 붙인다.
 
-네 번째는 **id 중복**이다. `getElementById` 는 문서 순서상 첫 번째를 주므로, 다른 절이 이미 쓴 이름을 쓰면 엉뚱한 요소를 받고 `querySelector(...).addEventListener` 에서 예외가 난다. 이 파일의 배선은 **`<script>` 하나**라 그 지점부터 아래 전부가 실행되지 않는다. **화면은 멀쩡해 보이므로 육안 확인 경로가 이 결함의 피해자다** — 스스로를 검증할 수 없다. 새 절의 id 에는 절 이름을 접두사로 붙인다(`table-select-demo`).
+네 번째는 **id 중복**이다. `getElementById` 는 문서 순서상 첫 번째를 주므로, 다른 절이 이미 쓴 이름을 쓰면 엉뚱한 요소를 받고 `querySelector(...).addEventListener` 에서 예외가 난다. 각 페이지의 배선은 **스크립트 요소 하나**라 그 지점부터 아래 전부가 실행되지 않는다. **화면은 멀쩡해 보이므로 육안 확인 경로가 이 결함의 피해자다** — 스스로를 검증할 수 없다. 새 절의 id 에는 절 이름을 접두사로 붙인다(`table-select-demo`).

@@ -45,7 +45,7 @@
 
 **모노레포를 쓰지 않는다.** 이전 시도(`shared-ui`)가 pnpm workspace 였고, git 의존성으로 설치가 되지 않아 폐기됐다. 단일 패키지에 `exports` 서브패스로 나눈다.
 
-**테스트 러너를 두지 않는다.** 같은 시도가 검증 하네스 복잡도 때문에도 폐기됐다. 회귀 확인은 `npm run check` 와 `index.html` 육안 확인이다. 문서 페이지의 헤더와 좌측 네비게이션이 이 라이브러리의 컴포넌트로 만들어져 있어서, 깨지면 문서가 열리지 않는 것으로 즉시 드러난다.
+**테스트 러너를 두지 않는다.** 같은 시도가 검증 하네스 복잡도 때문에도 폐기됐다. 회귀 확인은 `npm run check` 와 문서 페이지 육안 확인이다. 문서 페이지가 둘(`index.html` · `changelog.html`)이고 **양쪽의 헤더와 좌측 네비게이션이 이 라이브러리의 컴포넌트로 만들어져 있어서**, 깨지면 문서가 열리지 않는 것으로 즉시 드러난다.
 
 **폼 컨트롤을 웹 컴포넌트로 만들지 않는다.** shadow DOM 이 폼 참여·라벨·검증·자동완성을 끊고, FACE 로 되살려도 "JS 없이 동작한다"는 성질은 돌아오지 않는다. 근거는 `docs/gotchas.md` 에 있다.
 
@@ -86,10 +86,11 @@ common-ui/
 ├── scripts/
 │   ├── copy-css.mjs                   tokens.css · controls.css → dist/, tokens.css → dist/aliases.css 생성
 │   ├── check-events.mjs               발생 이벤트 ↔ React 래퍼 매핑 대조
-│   ├── check-controls.mjs             클래스 ↔ index.html 양방향, 요소 선택자는 정방향만 대조
+│   ├── check-controls.mjs             클래스 ↔ index.html 양방향(요소 선택자는 정방향만),
+│   │                                  README 릴리스 표 태그 ↔ changelog.html 절 양방향
 │   ├── check-tokens.mjs               var() 참조의 --ns- 접두사·정의 여부, data-ns-* 훅 세 곳 일치,
 │   │                                  :host 에 박스 프로퍼티가 없는지(preflight 가 지운다),
-│   │                                  index.html <style> 에 리터럴 색이 없는지
+│   │                                  문서 페이지 <style> 에 리터럴 색이 없는지
 │   └── release.mjs                    빌드 → detached 커밋에 dist 포함 → 태그
 ├── docs/
 │   ├── project-structure.md           이 문서
@@ -101,6 +102,7 @@ common-ui/
 │   └── skills/                        작업별 절차 (releasing, adding-a-component)
 ├── CLAUDE.md                          매 세션 로드되는 최소 규약. 규칙은 .claude/rules/ 로 뺀다
 ├── index.html                         문서 겸 플레이그라운드. 셸 자체가 우리 컴포넌트
+├── changelog.html                     태그별 변경 내역·이주 코드. 같은 셸을 쓴다. files 로 함께 배포된다
 ├── vite.config.ts                     --mode 로 세 벌 빌드
 ├── tsconfig.json                      타입 검사용(noEmit)
 ├── tsconfig.build.json                선언 방출 전용
@@ -137,31 +139,39 @@ dist/**/*.d.ts        tsc 가 src 트리 유지해 방출
 
 | 명령 | 하는 일 |
 |---|---|
-| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 ⑤ 토큰 참조·:host 박스·문서 리터럴 색 |
+| `npm run check` | ① 라이브러리 타입 ② 소비자 관점 타입 ③ 이벤트 매핑 ④ 클래스 ↔ 문서 · 릴리스 표 ↔ changelog 절 ⑤ 토큰 참조·:host 박스·문서 페이지 리터럴 색 |
 | `npm run build` | `dist/` 에 ES · React · UMD · tokens.css · controls.css · aliases.css 생성 |
 | `npm run demo` | 빌드 후 `index.html` 열기 (macOS `open`) |
 | `npm run release -- 0.1.4` | 검사 → 빌드 → 버전 커밋 → dist 포함 태그 생성 |
 
 `release` 는 `README.md` 와 `index.html` 의 설치 버전도 함께 갱신해 태그 안의 문서가 자기 버전을 가리키게 한다.
 
-**릴리스 직후에는 `dist/` 가 사라진다.** 브랜치로 돌아오면서 git 이 지운다. `index.html` 을 다시 보려면 `npm run demo` 로 재빌드한다.
+**릴리스 직후에는 `dist/` 가 사라진다.** 브랜치로 돌아오면서 git 이 지운다. 문서 페이지를 다시 보려면 `npm run demo` 로 재빌드한다 — `changelog.html` 은 같은 `dist/` 를 링크하므로 빌드만 되어 있으면 그냥 열면 된다.
 
 ## 구조 검사
 
-`index.html` 을 고친 뒤 확인한다. 브라우저 없이 가능한 것들이다.
+`index.html` 이나 `changelog.html` 을 고친 뒤 확인한다. 브라우저 없이 가능한 것들이다.
 
 ```sh
-grep -c '<script>' index.html                      # 헬퍼 하나 = 1
-grep -n '</script>' index.html \
-  | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='   # 출력 없어야 정상
-grep -n 'document.addEventListener' index.html     # 출력 없어야 정상
-grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
-  | sed -E 's/.*id="([^"]*)"/\1/' | sort | uniq -d            # 출력 없어야 정상
+for f in index.html changelog.html; do
+  echo "— $f"
+  grep -c '<script>' "$f"                          # 헬퍼 하나 = 1
+  grep -n '</script>' "$f" \
+    | grep -v -E ':\s*</script>\s*$' | grep -v '<script src='   # 출력 없어야 정상
+  grep -n 'document.addEventListener' "$f"         # 출력 없어야 정상
+  grep -oE '(^|[[:space:]])id="[^"]*"' "$f" \
+    | sed -E 's/.*id="([^"]*)"/\1/' | sort | uniq -d            # 출력 없어야 정상
+done
 ```
+
+**파일마다 따로 센다.** 넷 중 특히 마지막이 그렇다 — id 는 **파일 안에서만** 유일해야
+한다. 두 페이지를 합쳐 세면 각자 자기 문서만 조회하는 배선이 서로 충돌한다고 잘못
+읽는다. 두 파일이 이름을 겹쳐 쓰는 것 자체는 정상이므로(`docs-header` /
+`changelog-header` 처럼 접두사가 다른 것은 관례이지 요구가 아니다) 루프로 나눠 돈다.
 
 세 번째가 중요하다. 이벤트가 `composed` 라 데모에서 발생한 것도 `document` 까지 올라온다. 리스너를 `document` 에 붙이면 데모를 만질 때 문서 페이지가 제멋대로 움직인다. 모든 리스너는 자기가 소유한 엘리먼트에 붙인다.
 
-네 번째는 **중복 id** 다. 배선이 `<script>` 하나라 `getElementById` 가 엉뚱한 요소를 주는 순간 그 아래 전부가 실행되지 않는데, 화면은 멀쩡해 보인다. 새 절의 id 에는 절 이름을 접두사로 붙인다(`table-select-demo`).
+네 번째는 **중복 id** 다. 각 페이지의 배선이 스크립트 요소 하나라 `getElementById` 가 엉뚱한 요소를 주는 순간 그 아래 전부가 실행되지 않는데, 화면은 멀쩡해 보인다. 새 절의 id 에는 절 이름을 접두사로 붙인다(`table-select-demo`).
 
 ## 관련 문서
 
@@ -169,6 +179,7 @@ grep -oE '(^|[[:space:]])id="[^"]*"' index.html \
 - 설계 배경과 수용된 한계: `docs/superpowers/specs/2026-08-12-common-ui-web-components-design.md`
 - 구현 계획(Task 단위 코드 포함): `docs/superpowers/plans/2026-08-12-common-ui-web-components.md`
 - 사용법·프로퍼티·이벤트·라이브 데모: `index.html` (`npm run demo`)
+- 태그별 변경 내역과 이주 코드: `changelog.html` (`README.md` 의 릴리스 표가 태그마다 링크한다)
 
 ## 남은 일
 
