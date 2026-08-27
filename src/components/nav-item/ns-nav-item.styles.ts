@@ -64,8 +64,16 @@ export const styles = css`
     font-weight: var(--ns-weight-medium);
   }
 
-  .trailing {
-    display: block;
+  /*
+    leading 과 달리 max-width 를 주지 않는다. trailing 은 배지·카운트처럼
+    내용에 따라 넓어지는 것이 정상이다 — "3" 과 "128" 은 너비가 달라야
+    맞다. 높이만 행 높이에 맞춰 눌러 준다.
+
+    flex: none 이 필요한 이유는 leading 과 같다 — 이제 .trailing 래퍼
+    없이 .row 의 직계 flex 항목이라, 라벨이 길면 축소 대상이 된다.
+  */
+  ::slotted([slot="trailing"]) {
     flex: none;
+    max-height: var(--ns-control-height-sm);
   }
 `;

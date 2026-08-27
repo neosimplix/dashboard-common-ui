@@ -31,7 +31,7 @@ export class NsNavItem extends LitElement {
       <a class="row" href=${this.href} title=${this.label} @click=${this.#onClick}>
         <slot name="leading"></slot>
         <span class="label">${this.label}</span>
-        <span class="trailing"><slot name="trailing"></slot></span>
+        <slot name="trailing"></slot>
       </a>
     `;
   }
