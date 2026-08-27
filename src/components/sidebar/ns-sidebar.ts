@@ -92,9 +92,13 @@ export class NsSidebar extends LitElement {
     예외다 — open 이 프로퍼티 전용이라 CSS 가 볼 속성이 없는데, 폭은 :host 에
     있어야 한다(소비자가 ns-sidebar { width: … } 로 덮을 자리를 남기려면).
 
-    규칙이 막으려던 것은 소비자가 쓴 속성을 덮는 것이고, 이 이름은 소비자가 쓰는
-    이름이 아니다 — 소비자가 쓰는 것은 default-open 이다. 덮을 값이 애초에
-    없으므로 ns-toast 의 position 과 같은 형태의 예외다.
+    규칙이 막으려던 것은 소비자가 쓴 속성을 덮는 것이고, 소비자가 쓰는 이름은
+    default-open 이다. 이 이름을 마크업에 쓰는 것은 라이브러리와 그 shim 뿐이고
+    (Sidebar.tsx 가 제어 모드에서 SSR 마크업에 싣는다. 이 저장소의 index.html 이
+    순수 HTML 제어 모드에서 같은 짝을 손으로 적는 것은 그 shim 을 흉내 낸 것이다),
+    거기 실린 값은 구조상 이 updated() 가 쓸 값과 같으므로 덮을 값이 애초에 없다.
+    ns-toast 의 position 과 같은 형태의 예외이고, 성립 근거는 "아무도 그 이름을
+    쓰지 않는다" 가 아니라 "쓰는 쪽이 같은 값을 쓴다" 다.
   */
   protected override updated(): void {
     this.toggleAttribute("data-ns-open", this.#isOpen);
