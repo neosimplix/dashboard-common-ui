@@ -193,7 +193,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </NsNavItem>
           </NsNavGroup>
         </Sidebar>
-        {/* 비제어. open 을 주지 않으면 사이드바가 스스로 여닫는다. */}
+        {/*
+          비제어. defaultOpen 은 **초깃값 전용**이다 — ns-sidebar 는 자기를 여닫는
+          버튼을 갖지 않으므로 그 뒤로 상태를 바꾸는 것은 소비자다. 여닫게 하려면
+          위 제어 모드처럼 ns-header 의 onNsToggle 을 받아 open 에 내려준다.
+        */}
         <Sidebar defaultOpen onNavigate={(d) => router.push(d.href)}>
           {/*
             하위 카테고리. collapsible 은 최상위(admin)가 아니라 하위(사용자)에
