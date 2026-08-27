@@ -3053,10 +3053,21 @@
   <h3>동작</h3>
   <ol>
     <li>
-      <strong>닫히면 통째로 사라진다.</strong> 폭이
-      <code>--ns-sidebar-width-collapsed</code>(<code>0</code>)가 되고
-      <code>overflow: hidden</code> 이 안의 내용을 잘라낸다. 열린 폭은
+      <strong>닫히면 통째로 사라지고, 탭 순서와 접근성 트리에서도 빠진다.</strong>
+      폭이 <code>--ns-sidebar-width-collapsed</code>(<code>0</code>)가 되고
+      <code>overflow: hidden</code> 이 안의 내용을 잘라내며, 이어서 shadow 안의
+      <code>&lt;nav&gt;</code> 에 <code>visibility: hidden</code> 이 걸린다. 열린 폭은
       <code>--ns-sidebar-width</code>(<code>15rem</code>)다.
+      <br>
+      <strong>자르는 것과 숨기는 것은 다르다.</strong> 자르기만 하면 보이지 않는 링크에
+      Tab 이 내려앉는다. 그래서 폭 전환이 끝나는 <strong>200ms 뒤에</strong> 숨긴다 —
+      지연을 닫힘 쪽에만 두었으므로 여는 쪽은 즉시 보인다. <strong>닫힌 사이드바의
+      링크에 Tab 이 닿지 않는 것은 소비자가 기대도 되는 보장이다.</strong>
+      <br>
+      <strong>닫는 200ms 동안에는 아직 닿는다.</strong> 애니메이션을 먼저 보이려고 숨김을
+      뒤로 미룬 결과이고, 그 사이 사이드바 안에 있던 포커스는 숨김이 도착할 때
+      <code>&lt;body&gt;</code> 로 떨어진다(다음 Tab 이 문서 처음부터 다시 시작한다).
+      둘 다 "애니메이션 뒤에 숨긴다" 에 딸린 성질이고 결함이 아니다.
     </li>
     <li>
       <strong>열리면 최상위 그룹이 전부 보인다.</strong> 한 번에 하나가 아니라
@@ -3073,8 +3084,16 @@
     </li>
     <li>
       <strong>폭 전환은 200ms 다.</strong> <code>--ns-sidebar-width</code> 를 덮으면
-      열린 폭이 바뀌고, <code>--ns-sidebar-width-collapsed</code> 를 덮으면 닫힌
-      사이드바가 그만큼 남는다 — 좁은 띠를 남기고 싶으면 그 자리다.
+      열린 폭이 바뀐다. <code>--ns-sidebar-width-collapsed</code> 를 덮으면 닫힌
+      사이드바가 그만큼의 <strong>빈 자리</strong>를 예약한다 — 항목도 제목도 경계선도
+      없이 배경색만 남는다.
+      <br>
+      <strong>이 토큰으로 좁은 레일을 만들 수는 없다.</strong> 감추는 것이 폭이 아니라
+      상태여서(위 ①) 넓혀도 안이 비고, 0.4.0 에서 좁은 띠를 읽히게 만들던 신호
+      프로퍼티 둘(<code>--ns-label-display</code>·<code>--ns-group-list-display</code>)은
+      0.5.0 에 없어졌고 되살리지 않는다. 레일을 만들어 보고 무른 경위는
+      <code>docs/gotchas.md</code> 에 있다. 남은 쓸모는 "닫혔을 때 본문을 얼마나 밀어
+      둘 것인가" 하나다.
     </li>
   </ol>
 
