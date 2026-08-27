@@ -189,6 +189,7 @@ ns-nav-group + ns-nav-group { padding-top: 1.5rem }
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
+| `v0.5.1` | 변경 | 사이드바를 접을 때 글자가 찌그러지며 리플로우되던 것을 고쳤다 — `nav` 가 열린 폭을 붙들고 `:host` 가 자르므로 내용이 그대로 잘려 사라진다. 그룹 헤딩도 이제 줄바꿈 대신 말줄임표로 잘린다. **폭을 바꾸는 손잡이는 `--ns-sidebar-width` 다** — `ns-sidebar { width: … }` 만 토큰보다 좁게 주면 내용이 토큰 폭으로 잡힌 채 잘린다 |
 | `v0.5.0` | 변경 | **breaking 둘.** `<ns-sidebar open>` → `default-open`(`open` 이 프로퍼티 전용이 됐다), `ns-nav-item` 의 `badge` 삭제(`leading` 슬롯으로 옮긴다). 닫힌 사이드바가 4rem 이 아니라 0 이 된다. `ns-nav-group` 의 `collapsible` 과 **하위 카테고리 중첩**이 함께 나간다. 위 **0.5.0 이주** 절을 본다 |
 | `v0.4.0` | 변경 | **breaking 둘.** 액센트 토큰 `--ns-color-accent-hover`·`--ns-color-accent-fg` 가 없어졌다(`--ns-color-accent-fill-hover`·`--ns-color-accent-fill-fg` 로 옮겨간다). `nsToast()` 기본 자리가 상단 중앙 — 우하단을 유지하려면 시작 지점에서 `nsToastPosition("bottom-right")` |
 | `v0.3.0` | 변경 | 태그만 올린다. 컴포넌트 둘과 클래스 여섯, 명령형 API 셋이 늘었다 |
