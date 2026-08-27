@@ -67,12 +67,12 @@ export function Sidebar({
         함께 있는 이유가 그것이다.
 
         비제어: defaultOpen 은 반응형이라 useLayoutEffect 에서만 설정되므로 서버
-        마크업에 아무 표시도 남지 않고, upgrade 시점에 아직 false 라 4rem 으로
-        그려지다 하이드레이션 직후 19rem 으로 벌어진다.
+        마크업에 아무 표시도 남지 않고, upgrade 시점에 아직 false 라 폭 0 으로
+        그려지다 하이드레이션 직후 15rem 으로 벌어진다.
 
-        제어: shim 이 심은 data-ns-open 이 upgrade 전까지는 19rem 을 잡지만,
+        제어: shim 이 심은 data-ns-open 이 upgrade 전까지는 15rem 을 잡지만,
         upgrade 직후 엘리먼트의 첫 updated() 가 돌 때 open 은 아직 undefined 이고
-        #innerOpen 은 false 라 **그 속성을 지운다.** 4rem 으로 접혔다가 하이드레이션
+        #innerOpen 은 false 라 **그 속성을 지운다.** 폭 0 으로 접혔다가 하이드레이션
         직후 다시 벌어진다.
 
         이 속성이 있으면 upgrade 때 Lit 의 컨버터가 defaultOpen 을 세우고,

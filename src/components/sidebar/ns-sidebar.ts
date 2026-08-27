@@ -46,15 +46,17 @@ export class NsSidebar extends LitElement {
    * 같고, `ns-nav-group` 의 `default-collapsed` 와 반대로 보이지만 규칙은 같다 —
    * 그쪽은 기본이 펼침이었다.
    *
-   * 나중에 이 값을 바꾸면 **아직 토글되지 않은 사이드바에만** 반영된다.
+   * **레일이 없어 이 컴포넌트는 스스로 토글하지 않는다.** 그래서 비제어
+   * 모드에서 사용자 상호작용으로 여닫히는 경로가 아예 없고, 이 값을 지키던
+   * 가드(`#toggled`)도 지킬 대상이 없어져 지웠다 — 나중에 이 값을 바꾸면
+   * 그대로 다시 반영된다. 사실상 비제어 모드는 **초기값 하나로 시작해서
+   * 계속 그 값을 따라가는 것**이고, "나중에 소비자가 상호작용으로 연 것을
+   * `defaultOpen` 변경이 덮어쓴다" 는 걱정을 할 필요가 없다.
    */
   @property({ type: Boolean, attribute: "default-open" }) defaultOpen = false;
 
   /** 비제어일 때의 진실. */
   #innerOpen = false;
-
-  /** 사용자가 한 번이라도 토글했나. 늦게 도착한 defaultOpen 이 그것을 덮지 않게 막는다. */
-  #toggled = false;
 
   get #isOpen(): boolean {
     return this.open ?? this.#innerOpen;
@@ -80,7 +82,7 @@ export class NsSidebar extends LitElement {
     것이 아니라 뒤집는다.**
   */
   protected override willUpdate(changed: PropertyValues): void {
-    if (changed.has("defaultOpen") && !this.#toggled) {
+    if (changed.has("defaultOpen")) {
       this.#innerOpen = this.defaultOpen === true;
     }
   }
