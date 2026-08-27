@@ -78,5 +78,24 @@ export const styles = css`
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid var(--ns-color-line);
+    /*
+      스크롤은 유지하고 막대만 감춘다. 표준 프로퍼티 하나로는 하한을 못 덮어
+      둘을 함께 쓴다 — scrollbar-width 는 Chrome 121·Firefox 64 부터라 이
+      저장소의 하한(Chrome 123·Firefox 121)을 덮지만, Safari 는 18.2 부터로
+      하한(17.5)보다 위다. ::-webkit-scrollbar 는 비표준이지만 Safari 전
+      버전과 Chrome 에서 동작해 그 구멍을 막는다.
+
+      :host-context() 를 금지한 이유와는 다르다 — 그것은 없으면 기능이
+      조용히 죽는다. 이것은 없어도 스크롤은 그대로 되고 막대만 보인다.
+      보이는 채로도 스크롤이 죽지 않고, scrollbar-width 와 짝지으면 명시한
+      하한 안에서는 애초에 빠지는 브라우저가 없다. 그래서 이 벤더 접두사는
+      전례가 되지 않는다 — 판단 기준은 "없으면 죽는가, 못생겨지는가" 이지
+      벤더 접두사 자체의 허용이 아니다.
+    */
+    scrollbar-width: none;
+  }
+
+  nav::-webkit-scrollbar {
+    display: none;
   }
 `;
