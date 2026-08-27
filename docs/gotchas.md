@@ -955,6 +955,8 @@ static override shadowRootOptions: ShadowRootInit = {
 - **`:host-context()`**가 정답처럼 보인다 — 자기 호스트가 다른 `ns-nav-group` 안에 있는지 셀렉터로 물을 수 있다. 하지만 이 저장소는 Chromium 전용 의사 클래스를 쓰지 않는다(위 "`:host-context()` 를 쓰지 않는다" 절 참고). Safari·Firefox 에서 항상 `false` 로 평가되므로 하위 카테고리가 최상위와 똑같이 보이는 결함이 그 두 엔진에서만 조용히 생긴다.
 - **`::slotted(ns-nav-group)` 로 부모가 자식 호스트에 들여쓰기를 주는 길**도 막혀 있다 — `border`·`margin`·`padding` 을 `:host` 에 두지 않는 것과 같은 함정이다. 자식 그룹의 호스트는 문서 트리에 있고, 부모 shadow 의 `::slotted` 규칙보다 소비자의 문서 규칙(Tailwind preflight 의 `*, ::before, ::after { margin: 0 }` 등)이 캐스케이드 순서로 이긴다. `::slotted` 는 특정도를 올려도 origin 이 다르면 지는 싸움이다.
 
+같은 패배가 `ns-nav-item` 에서는 설계 근거로 쓰였다. `leading`/`trailing` 슬롯의 크기 상한(`::slotted([slot="leading"])`·`::slotted([slot="trailing"])`)도 shadow 트리의 `::slotted` 규칙이라 소비자가 그 요소를 겨눈 문서 트리 규칙을 적으면 항상 진다. 여기서는 그것이 함정이 아니라 **탈출구다** — 상한을 지우지 못할까 걱정할 필요가 없으므로, 행 높이를 기본으로 가지런히 맞추는 상한을 그대로 두어도 소비자가 잃는 것이 없다.
+
 → 그래서 **판정은 JS 다.** `connectedCallback` 에서 `this.parentElement?.closest("ns-nav-group")` 로 자기 조상 중 가장 가까운 `ns-nav-group` 을 찾고, 있으면 자기 shadow wrapper 에 `nested` 클래스를 붙인다. 들여쓰기는 **자기 shadow 안**에서 그 클래스로 적용한다 — 부모의 shadow 가 자식의 shadow 를 볼 수 없으므로(캡슐화 경계), 들여쓰기를 줄 수 있는 쪽은 언제나 그 값을 필요로 하는 그룹 자신뿐이다.
 
 `connectedCallback` 은 Lit 의 첫 렌더보다 먼저 실행되므로 "펼쳐진 채로 그려졌다가 들여쓰기가 도착하는" 튐이 없다. 그룹을 DOM 안에서 다른 부모로 옮기면(예: 최상위 자리에서 하위 자리로) `connectedCallback` 이 옮길 때마다 다시 실행되므로 재판정된다 — 판정이 mount 시점 한 번으로 고정되지 않는다.
