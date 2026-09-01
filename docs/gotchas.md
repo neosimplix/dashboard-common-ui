@@ -1146,3 +1146,68 @@ light DOM 을 후보 탐색에서 보지 않는다. `confirm.ts` 의 주석이 *
 → **불변 규칙으로 올리지 않았다.** 모달이 하나뿐이라 사용처가 하나인 규칙이 되고,
 토큰에 대해 이미 갖고 있는 기준("사용처가 하나인 토큰을 만드는 것은 추측이다")을
 같은 모양으로 적용했다. 모달이 둘째로 생기는 날 이 절을 근거로 규칙으로 올린다.
+
+## `Field` 가 커스텀 엘리먼트 컨트롤과 조합되려면 이름이 아니라 마커가 필요하다
+
+`Field` 는 `<label for>` 로 컨트롤을 가리켜 접근성 이름을 만든다. 네이티브
+`<input>` 같은 labelable 엘리먼트에서는 호스트 자신에 `id` 를 주면 그것으로
+끝난다. 커스텀 엘리먼트는 **labelable 이 아니다** — 호스트에 `id` 를 얹어도
+`<label for>` 는 아무것도 가리키지 못한다. 실제 입력 요소는 shadow 안(또는
+light DOM 자식)에 있고, 거기로 가는 통로는 컴포넌트가 노출하는
+`input-id`·`input-describedby`·`input-invalid` 같은 `input*` 프로퍼티뿐이다.
+
+**태그 이름으로 커스텀 엘리먼트 컨트롤을 판별할 수 없다.** `Field` 는 `children`
+으로 받은 엘리먼트가 `<input>` 인지 `<ns-multi-select>` 인지 구분해 다른 주입
+경로를 타야 하는데, `@lit/react` 의 `createComponent` 가 반환하는 것은 문자열
+태그가 아니라 `forwardRef` 객체다 — `element.type` 이 `"ns-multi-select"` 로
+찍히지 않는다. **이것이 마커가 필요한 근본 이유다.** `elements.ts` 가 래퍼 옆에
+정적 `nsFieldControl` 프로퍼티를 붙이고, `Field` 는 `element.type.nsFieldControl`
+로만 그 존재와 내용을 확인한다 — 래퍼를 import 하지 않는다.
+
+→ **`satisfies Record<"id" | "describedby" | "invalid", keyof …Element>` 가
+막는 실패 모드.** 마커의 값은 `elements.ts` 가 손으로 적는 문자열이다. 이 제약이
+없으면 오타(`describedBy`, `"inputID"` 등)가 여기서도 `Field.tsx` 에서도 조용히
+컴파일된다 — `Field` 는 `if (marker)` 만 보고 참이면 그 문자열을 그대로 프로퍼티
+이름으로 써서 `cloneElement` 에 넘기므로, 존재하지 않는 프로퍼티 이름이면
+`@lit/react` 가 `undefined="…"` 같은 정크 속성을 렌더하고 아무 경고도 내지
+않는다. 마커가 아예 없었다면 네이티브 경로(`aria-*` 를 직접 다는 경로)로 빠지기라도
+했을 텐데, **틀린 마커는 그 폴백조차 막는다** — 마커가 없는 것보다 나쁘다.
+
+→ **받아들인 한계: `Field` 는 소비자가 준 `inputId` 를 덮는다.** `Field.tsx` 의
+`controlId = marker ? id : (element.props.id ?? id)` — 마커 경로에서는 언제나
+`Field` 가 생성한 `id`(React `useId`)를 쓴다. 소비자가 `inputId` 로 넘긴 값은
+버려진다. 네이티브 경로만 `element.props.id` 를 우선한다.
+
+→ **안쪽 input 에 소비자가 준 `id` 를 재사용하지 않는다.** 호스트에 붙은 `id` 는
+`cloneElement` 가 지우지 않으므로 그대로 남는다. 같은 값을 안쪽 input 에도 주면
+문서에 같은 `id` 가 둘 생기고, `<label for>` 는 문서 순서상 **첫 번째**를 잡는다
+— 그게 호스트다. 고치려던 결함(호스트는 labelable 이 아니라 `for` 가 아무것도
+못 가리킨다)이 그대로 돌아온다. **이 결함은 개발 중 한 번 재도입됐다** — 안쪽
+input 에 소비자의 `id` 를 그대로 물려주는 코드가 리뷰에서 걸렸고, 지금의 "언제나
+`Field` 가 생성한 id 를 쓴다" 로 정착했다.
+
+## `@ts-expect-error` 를 JSX 주석 안에서 언급하면 그 자체가 지시문이 된다
+
+JSX 주석 `{/* … */}` 안에 `@ts-expect-error` 라는 글자를 그대로 적으면 `tsc` 는
+그것을 **산문이 아니라 진짜 지시문**으로 읽는다. 바로 다음 표현식에 타입 에러가
+없으면 `TS2578: Unused '@ts-expect-error' directive` 가 뜨고, 있으면 그 에러를
+삼킨다. `docs/consumer-example.tsx` 는 `npm run check` 가
+`tsc -p tsconfig.consumer.json` 으로 실제로 컴파일하는 파일이라 이건 살아 있는
+함정이다 — 이 문자열을 **설명하려고** 산문으로 적기만 해도 실제 타입 에러
+유무와 무관하게 검사 결과가 틀어진다.
+
+→ **`verification.md` 가 이미 같은 모양의 함정을 하나 막고 있다.** 문서 HTML
+세 개(`index.html`·`guide.html`·`changelog.html`)의 구조 검사는 `<script>` 태그를
+**문자열로** 센다 — 그래서 산문에 그 태그 이름을 리터럴로 적으면 배선 개수로
+잘못 잡힌다(`changelog.html` 이 실제로 여기 걸려 문구를 고쳐 풀었다). 같은
+과다. **설명하려고 적은 문자열을, 그것을 실행하는 도구가 진짜 지시로 읽는다.**
+한쪽은 grep(카운팅), 한쪽은 `tsc`(컴파일)라는 도구만 다르다.
+
+→ **같은 메커니즘이 함정이자 도구다.** `docs/consumer-example.tsx` 의 다섯 번째
+회귀 바(`NsSkeleton`·`NsPagination`·`NsMultiSelect`·`PageHeading` 의
+`children?: never`)는 이 성질을 **의도적으로 이용한다.** `children?: never` 가
+살아있으면 그 주석 아래 자식이 실제로 타입 에러를 내 지시문이 정상 소비되고,
+`withoutChildren` 을 지우면 에러가 사라져 지시문이 `unused` 로 남아 `TS2578` 이
+뜬다. 함정과 바는 같은 사실의 양면이다 — 아무 때나 뜨는 것이 아니라 **문맥에
+진짜 에러가 있는지에 정확히 반응한다**는 것이 위험(무심코 언급하면 오탐)이자
+쓸모(의도하면 회귀 바가 된다)가 되는 지점이다.
