@@ -777,6 +777,7 @@
     background: var(--ns-color-surface);
     padding: var(--ns-card-padding);
     box-shadow: var(--ns-elevation-card);
+    box-sizing: border-box;
   }
 
   /*

@@ -191,6 +191,16 @@
     <strong>Safari 에서는 원래 이 링이 없었다</strong> — WebKit 은 모달의 초기
     포커스를 <code>:focus-visible</code> 로 치지 않는다.
   </p>
+  <p>
+    <strong><code>.ns-card</code> 가 컨테이너 밖으로 넘치던 것을 고쳤다.</strong>
+    <code>width: 100%</code> 에 테두리와 안쪽 여백을 얹으면서 <code>box-sizing</code>
+    이 빠져 있었다 — 같은 파일의 <code>.ns-button</code>·<code>.ns-input</code> 등
+    나머지 컨트롤은 전부 갖고 있던 속성이 <code>.ns-card</code> 하나만 없었다.
+    <strong><code>*</code> 리셋을 갖지 않은 순수 HTML 소비자에게만 영향이 있었다.</strong>
+    Tailwind 를 쓰는 소비자는 preflight 가 <code>box-sizing: border-box</code> 를
+    전역으로 공급해 이 자리를 대신 메워 줬으므로 아무 증상도 보지 못했다. 소비자가
+    할 일은 없다 — 설치하면 카드 폭이 컨테이너 안으로 들어온다.
+  </p>
 
   <h2 id="v0-5-2">v0.5.2</h2>
   <p class="dist"><code>dist/</code> 변경</p>

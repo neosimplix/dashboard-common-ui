@@ -1066,6 +1066,12 @@ header  { height: 100%; border-bottom: 1px solid var(--ns-color-line); }
 
 → **`check-tokens.mjs` 규칙 ④ 로는 못 잡는다.** 규칙 ④ 는 `:host` 블록 **안에 있는** 박스 속성을 찾는 검사이고, 이것은 `:host` 가 아닌 블록에 **없는** 속성이다. 없는 것을 찾으려면 "`height: 100%` 와 테두리를 함께 쓰는 shadow 블록" 이라는 짝을 CSS 문자열에서 판정해야 하는데, 그 짝은 `height` 가 다른 이름(`inset`·`aspect-ratio`)으로 오거나 테두리가 `outline`·`box-shadow` 로 오면 곧바로 새어 나간다. **검사가 될 만큼 좁지 않아 규칙과 이 절로 남긴다.**
 
+→ **후속(같은 릴리스, 0.5.3): 같은 실수가 문서 이름공간에도 있었다.** `header` 가 shadow 안이었던 것과 달리 `src/controls/controls.css` 의 `.ns-card` 는 문서 트리에 나가는 클래스다 — `width: 100%` 에 `border`·`padding` 을 얹으면서 `box-sizing` 을 빠뜨린 것은 글자 그대로 같은 실수이지만, 이번에는 shadow 경계가 아니라 **소비자가 리셋을 갖고 있느냐** 가 갈림길이다. 같은 파일 안의 `.ns-button`(~42행)과 `.ns-input`/`.ns-textarea`/`.ns-select`(~203행)는 이미 `box-sizing: border-box` 를 갖고 있었다 — `.ns-card` 만 빠졌다. Tailwind 소비자는 preflight 의 `*, ::before, ::after { box-sizing: border-box }` 가 이 자리를 대신 메워 줘서 한 번도 증상을 보지 않았고, `*` 리셋을 갖지 않는 순수 HTML 소비자에서만 카드가 컨테이너 밖으로 넘친다.
+
+→ **`guide.html` 은 이번에도 결함을 정상으로 보여줬지만, 이유는 헤더 때와 다르다.** 밑줄 결함은 덮을 배경이 없어 넘친 픽셀이 그대로 보였다. `.ns-card` 데모는 반대로 **`.demo { overflow: hidden }`** 안에 있다 — `getBoundingClientRect` 로 재면 카드 테두리 상자가 컨테이너보다 넓게 나오지만(895px 컨테이너에 929px 카드, 34px 오버플로), 넘친 오른쪽 가장자리는 `.demo` 패널이 조용히 잘라내 화면에는 아무 이상이 없다. 육안 확인은 클리핑된 상태를 정상으로 읽고, 측정만이 잡는다 — `verification.md` 가 말하는 "소비자 CSS 에 의존해 이 저장소가 볼 수 없는" 부류와는 또 다르다. 이번 것은 이 저장소 안에서 **재현은 되지만 눈으로는 안 보이는** 부류다.
+
+→ **고치는 것은 한 줄이다.** `.ns-card { box-sizing: border-box }`. `*` 리셋을 새로 들이는 것은 고려하지 않았다 — 이 라이브러리가 소유하지 않는 소비자 마크업까지 건드리게 된다.
+
 ## 모달의 초기 포커스는 골라지는 것이지 주어지는 것이 아니다
 
 대화상자를 열면 닫기 버튼에 검정 테두리가 생긴다는 보고를 받았다. 그 테두리는
