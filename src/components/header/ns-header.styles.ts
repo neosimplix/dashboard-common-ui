@@ -7,7 +7,16 @@ export const styles = css`
     height: var(--ns-header-height);
   }
 
+  /*
+    box-sizing 은 여기에도 있어야 한다. 문서의 * 리셋은 shadow 안에 닿지 않으므로
+    이 요소는 content-box 로 시작하고, 그러면 height: 100% 위에 border-bottom 이
+    1px 더해져 호스트의 --ns-header-height 를 넘친다. 넘친 1px 은 호스트 상자
+    바깥이라, 뒤에 오는 형제(셸·본문)의 배경이 트리 순서로 그 위에 칠해져
+    밑줄이 통째로 사라진다. ns-sidebar 의 nav 가 같은 짝(height: 100% +
+    테두리)이고 같은 이유로 border-box 다.
+  */
   header {
+    box-sizing: border-box;
     display: flex;
     height: 100%;
     align-items: center;
