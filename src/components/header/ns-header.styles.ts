@@ -13,7 +13,8 @@ export const styles = css`
     1px 더해져 호스트의 --ns-header-height 를 넘친다. 넘친 1px 은 호스트 상자
     바깥이라, 뒤에 오는 형제(셸·본문)의 배경이 트리 순서로 그 위에 칠해져
     밑줄이 통째로 사라진다. ns-sidebar 의 nav 가 같은 짝(height: 100% +
-    테두리)이고 같은 이유로 border-box 다.
+    테두리)이고 같은 이유로 border-box 다. guide.html 은 본문 배경이 투명해
+    이 결함이 있어도 선이 보였다 — 경위는 docs/gotchas.md 에 있다.
   */
   header {
     box-sizing: border-box;
