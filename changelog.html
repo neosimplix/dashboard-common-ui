@@ -118,7 +118,8 @@
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
     <ns-nav-group collapsible heading="0.5.x">
-      <ns-nav-item href="#v0-5-3" label="v0.5.3" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-4" label="v0.5.4" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-3" label="v0.5.3"></ns-nav-item>
       <ns-nav-item href="#v0-5-2" label="v0.5.2"></ns-nav-item>
       <ns-nav-item href="#v0-5-1" label="v0.5.1"></ns-nav-item>
       <ns-nav-item href="#v0-5-0" label="v0.5.0"></ns-nav-item>
@@ -150,6 +151,69 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-5-4">v0.5.4</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 하나</strong></p>
+  <p>
+    <strong>소비자 보고를 반영했다.</strong> <code>dashboard-shell</code> 이
+    프리미티브 17개를 이 패키지로 이관하면서 실측으로 찾아낸 것들이고, 네 가지가
+    이 태그에 들어갔다. 마크업을 고쳐야 하는 변경은 없다.
+  </p>
+  <p>
+    <strong>직접 넘긴 <code>aria-invalid</code> 가 컴포넌트의 <code>invalid</code>
+    프롭을 더 이상 무력화하지 않는다.</strong> <code>Input</code>·<code>Textarea</code>·
+    <code>Select</code> 셋 다 지역 계산이 나머지 props 를 펴는 <strong>앞</strong>에
+    있어서, 소비자가 <code>aria-invalid</code> 를 직접 넘기면 <code>{...rest}</code>
+    가 그 값을 덮어썼다. 이제 지역 계산을 편 <strong>뒤</strong>에 합치므로 소비자가
+    준 값이 살아남는다.
+  </p>
+  <p>
+    <strong><code>Field</code> 안의 동작은 이 태그로 바뀌지 않는다.</strong>
+    <code>Field</code> 는 오류가 있을 때 <code>aria-invalid: true</code> 하나만
+    주입하고, 뒤에서 합쳐도 <code>true</code> 는 여전히 <code>true</code> 다 — 오류가
+    있으면 항상 이긴다. <code>&lt;Field error&gt;&lt;Textarea invalid={false} /&gt;&lt;/Field&gt;</code>
+    가 invalid 로 보이는 것과, <code>Field</code> 안에서 <code>invalid</code> 를
+    넘겨도 차이가 없는 것 — 소비자가 보고한 두 증상 — 은 이 릴리스 뒤에도 그대로다.
+    오류가 있는 필드의 컨트롤은 invalid 여야 한다는 것이 애초에 의도한 동작이라
+    고칠 결함이 아니었다.
+  </p>
+  <p>
+    <strong><code>Field</code> 와 <code>ns-multi-select</code> 를 함께 쓸 수 있다.</strong>
+    커스텀 엘리먼트는 labelable 이 아니라 호스트에 <code>id</code> 를 얹어도
+    <code>label for</code> 가 닿지 않았다. <code>Field</code> 가 이제 안쪽 컨트롤의
+    프로퍼티(<code>inputId</code>·<code>inputDescribedby</code>·<code>inputInvalid</code>)로
+    내려보내므로 라벨과 오류 문구가 실제로 이어진다.
+  </p>
+  <p>
+    소비자가 호스트에 직접 준 <code>id</code> 는 안전하다 — <code>Field</code> 가 그
+    값을 더 이상 읽지 않고 안쪽 input 에는 스스로 만든 id 를 쓴다. 다만 소비자가
+    <code>inputId</code> 를 직접 넘기고 있었다면 <code>Field</code> 가 그것을
+    <strong>덮어쓴다.</strong> 그리고 <code>@lit/react</code> 가 반응형 프로퍼티를
+    <code>useLayoutEffect</code> 안에서 설정하고 <code>ns-multi-select</code> 의 업데이트
+    자체는 Lit 이 그 뒤 비동기로 돌리므로, 렌더 직후 <strong>동기</strong> 조회
+    (<code>getByLabelText</code> 등)는 아직 안 붙은 라벨을 보고 실패할 수 있다 —
+    <code>await findByLabelText</code> 를 쓴다.
+  </p>
+  <p>
+    <strong><code>ns-multi-select</code> 에 <code>input-invalid</code> 가 생겼다.</strong>
+    안쪽 검색 입력의 <code>aria-invalid</code> 를 세울 통로가 없었다.
+    <code>input-id</code>·<code>input-describedby</code> 와 짝을 맞춘다 — 바로 위
+    <code>Field</code> 연동이 오류 상태를 내려보낼 때 이 프로퍼티를 쓴다.
+  </p>
+
+  <h3>breaking — 자식을 받지 않는 래퍼가 타입으로 막힌다</h3>
+  <p>
+    <code>NsPagination</code>·<code>NsMultiSelect</code>·<code>NsSkeleton</code>·
+    <code>PageHeading</code> 넷에 <code>children?: never</code> 를 얹었다. 앞의 둘은
+    Light DOM 이라 자식이 덮여 런타임 에러가 났고, 뒤의 둘은 슬롯이 없어 조용히
+    사라졌다 — 문서가 경고하던 것을 컴파일러가 막는다.
+  </p>
+  <p>
+    <strong>타입 수준 변경이고 런타임 동작은 바뀌지 않는다.</strong> 오늘 빌드가
+    통과하는 소비자는 런타임에서 그대로 동작한다. 바뀌는 것은 이미 런타임에서
+    깨져 있던 마크업 — 예를 들어 <code>&lt;NsPagination&gt;…&lt;/NsPagination&gt;</code>
+    — 이 이제 컴파일 시점에 거부된다는 것뿐이다.
   </p>
 
   <h2 id="v0-5-3">v0.5.3</h2>

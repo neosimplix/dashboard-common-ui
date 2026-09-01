@@ -99,6 +99,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
+| [`v0.5.4`](./changelog.html#v0-5-4) | 변경 | **breaking 하나(타입만, 런타임 아님).** `Field` 안에서 컨트롤에 직접 넘긴 `aria-invalid` 가 더 이상 무력화되지 않고, `Field` + `ns-multi-select` 조합이 라벨을 잇는다. 자식을 안 받는 래퍼 넷은 `children?: never` 로 막는다 |
 | [`v0.5.3`](./changelog.html#v0-5-3) | 변경 | 없다. `ns-header` 밑줄이 소비자 셸에서 안 보이던 것, 대화상자를 열 때 닫기 버튼에 링이 뜨던 것, `*` 리셋 없는 순수 HTML 소비자에서 `.ns-card` 가 컨테이너 밖으로 넘치던 것을 고쳤다 |
 | [`v0.5.2`](./changelog.html#v0-5-2) | 변경 | 없다. 문서가 세 페이지로 나뉘고 사용 안내가 `guide.html` 로 옮겨갔다 — `dist/` 는 주석만 바뀐다 |
 | [`v0.5.1`](./changelog.html#v0-5-1) | 변경 | 접히는 사이드바가 글자를 찌그러뜨리지 않는다. 폭 손잡이는 `--ns-sidebar-width` 하나다 |
