@@ -86,6 +86,16 @@ export class NsMultiSelect extends LitElement {
   /** 검색 input 의 `aria-describedby`. `.ns-field__hint` 를 잇는 자리다. */
   @property({ type: String, attribute: "input-describedby" }) inputDescribedby = "";
 
+  /**
+   * 안쪽 검색 `input` 의 `aria-invalid`.
+   *
+   * 호스트가 아니라 안쪽 input 이 받아야 하는 이유는 `inputId` 와 같다 —
+   * 커스텀 엘리먼트는 labelable 이 아니고, 보조기술이 보는 컨트롤은 안쪽
+   * input 이다. `controls.css` 가 invalid 를 `[aria-invalid="true"]` 로만
+   * 잡으므로 이 이름이 스타일 훅도 겸한다.
+   */
+  @property({ type: Boolean, attribute: "input-invalid" }) inputInvalid = false;
+
   @state() private query = "";
 
   /*
@@ -212,6 +222,7 @@ export class NsMultiSelect extends LitElement {
         type="text"
         id=${this.inputId === "" ? nothing : this.inputId}
         aria-describedby=${this.inputDescribedby === "" ? nothing : this.inputDescribedby}
+        aria-invalid=${this.inputInvalid ? "true" : nothing}
         .value=${this.query}
         placeholder=${this.searchPlaceholder}
         @input=${(e: Event) => {

@@ -397,6 +397,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
               onNsMultiSelectChange={(e) => setOwners(e.detail.values)}
               searchPlaceholder="이름으로 검색"
             />
+            {/* ③ 회귀 바: 안쪽 input 의 aria-invalid 를 세울 통로가 있는지. */}
+            <NsMultiSelect options={[]} value={[]} inputInvalid />
             <div style={{ display: "flex", height: "6rem" }}>
               <Message>표시할 항목이 없습니다.</Message>
             </div>
