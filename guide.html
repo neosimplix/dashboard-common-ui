@@ -1753,6 +1753,15 @@
     제목 위에 마우스를 올리면 같은 글자가 툴팁으로 한 번 더 뜬다.
     React 프롭은 <code>title</code> 을 유지한다.
   </p>
+  <p>
+    <strong>자식을 받지 않는다.</strong> <code>h1</code> 과 <code>p</code> 를 shadow 안에서
+    직접 렌더할 뿐 슬롯이 없어 <code>&lt;ns-page-heading&gt;…&lt;/ns-page-heading&gt;</code>
+    사이에 쓴 것은 화면에 나타나지 않는다 — 렌더는 성공하고 에러도 없으므로
+    <strong>사라졌다는 신호 자체가 없다.</strong> <code>ns-skeleton</code> 과 같은 이유이고,
+    <code>ns-pagination</code>·<code>ns-multi-select</code> 의 <code>removeChild</code>
+    런타임 에러와는 다른 결함이다. <code>v0.5.4</code> 부터는 React 래퍼의 프롭 타입이
+    <code>children</code> 을 막아 컴파일 시점에 걸린다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">
@@ -1797,6 +1806,15 @@
   <p>
     <code>prefers-reduced-motion: reduce</code> 에서 맥박 애니메이션을 멈춘다.
     색은 유지한다 — 자리를 차지한다는 정보는 남아야 한다.
+  </p>
+  <p>
+    <strong>자식을 받지 않는다.</strong> shadow 안에 슬롯이 없어
+    <code>&lt;ns-skeleton&gt;…&lt;/ns-skeleton&gt;</code> 사이에 쓴 것은 어디에도 투영되지
+    않고 <strong>조용히 사라진다</strong> — 에러가 나지 않으므로 사라졌다는 사실 자체를
+    알아채기 어렵다. <code>ns-pagination</code>·<code>ns-multi-select</code> 가 겪는
+    <code>removeChild</code> 런타임 에러와는 다른 결함이다. <code>v0.5.4</code> 부터는
+    React 래퍼의 프롭 타입이 <code>children</code> 을 막아 이런 자식을 컴파일 타임에
+    거부한다.
   </p>
 
   <h3>데모</h3>
@@ -2641,6 +2659,16 @@
     <strong><code>options</code> 와 <code>value</code> 는 배열이라 속성으로 쓸 수 없다.</strong>
     순수 HTML 에서도 JS 로 대입한다.
   </p>
+  <p>
+    <strong>자식을 받지 않는다.</strong> Light DOM 에 칩·검색·목록을 이 컴포넌트가 직접
+    렌더해 넣으므로 <code>&lt;ns-multi-select&gt;…&lt;/ns-multi-select&gt;</code> 사이에 쓴
+    것은 첫 렌더에서 덮인다 — <code>ns-pagination</code> 과 같은 이유다.
+    <strong>React 에서는 조용히 덮이는 것으로 끝나지 않는다</strong> —
+    <code>&lt;NsMultiSelect&gt;{x}&lt;/NsMultiSelect&gt;</code> 처럼 자식을 주면 React 와
+    Lit 이 같은 노드를 두고 다투다 <code>removeChild</code> 계열 런타임 에러가 날 수 있다.
+    <strong><code>v0.5.4</code> 부터는 래퍼의 프롭 타입이 <code>children</code> 을 막아</strong>
+    이 문제가 런타임이 아니라 컴파일 타임에 걸린다. 항상 자기 닫는 태그로 쓴다.
+  </p>
 
   <h3>데모</h3>
   <template class="ex">
@@ -2668,6 +2696,7 @@
     <tr><td><code>emptyMessage</code></td><td><code>empty-message</code></td><td><code>"결과가 없습니다"</code></td><td></td></tr>
     <tr><td><code>inputId</code></td><td><code>input-id</code></td><td><code>""</code></td><td>검색 input 의 <code>id</code>. <code>.ns-field__label</code> 의 <code>for</code> 가 가리킬 곳</td></tr>
     <tr><td><code>inputDescribedby</code></td><td><code>input-describedby</code></td><td><code>""</code></td><td>검색 input 의 <code>aria-describedby</code></td></tr>
+    <tr><td><code>inputInvalid</code></td><td><code>input-invalid</code></td><td><code>false</code></td><td>검색 input 의 <code>aria-invalid</code>. <code>true</code> 면 <code>aria-invalid="true"</code> 를 세우고, <code>false</code> 면 <strong>아무것도 내지 않는다</strong> — <code>aria-invalid="false"</code> 는 속성이 없는 것과 다른 뜻이라서다. <code>controls.css</code> 가 invalid 상태를 <code>[aria-invalid="true"]</code> 로만 잡으므로, 이 프로퍼티가 없으면 이 컴포넌트에는 그 상태를 보여줄 방법이 없다</td></tr>
   </table>
 
   <h3>클래스</h3>
