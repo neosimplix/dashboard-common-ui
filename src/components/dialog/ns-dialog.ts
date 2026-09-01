@@ -149,6 +149,16 @@ export class NsDialog extends LitElement {
     }
   }
 
+  /*
+    제목이 tabindex="-1" 을 갖는 이유는 초기 포커스다. showModal() 은 대화상자의
+    첫 포커스 가능 자손을 고르는데, 그것이 헤더의 닫기 버튼이면 Chrome 이 그
+    포커스를 :focus-visible 로 쳐서 여는 순간 × 에 링이 뜬다. h2 가 DOM 순서상
+    닫기 버튼보다 앞이므로 tabindex 하나로 그 자리를 가져온다 — JS 는 필요 없다.
+
+    tabindex="-1" 은 탭 순서에 들어가지 않으므로 탭 순서는 바뀌지 않는다.
+    소비자가 슬롯 자식에 autofocus 를 주면 여전히 그쪽이 이긴다(Chrome).
+    경위와 두 엔진 측정값은 docs/gotchas.md 에 있다.
+  */
   override render() {
     return html`
       <dialog
@@ -158,7 +168,7 @@ export class NsDialog extends LitElement {
         @click=${this.#onClick}
       >
         <div class="header">
-          <h2 id="dialog-heading">${this.heading}</h2>
+          <h2 id="dialog-heading" tabindex="-1">${this.heading}</h2>
           <button class="close" type="button" aria-label="닫기" @click=${this.#onCloseButton}>
             <ns-icon name="close"></ns-icon>
           </button>

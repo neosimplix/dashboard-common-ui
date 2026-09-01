@@ -102,6 +102,20 @@ export const styles = css`
   }
 
   /*
+    되돌릴 규칙을 두지 않는다. "UA 기본값을 덮으면 되돌릴 규칙을 함께 둔다" 는
+    규칙이 막으려는 것은 키보드 사용자가 포커스 위치를 잃는 것인데, 이 h2 는
+    tabindex="-1" 이라 탭 순서에 없어 키보드로 도달하는 경로 자체가 없다.
+    되돌릴 대상이 없으므로 되돌릴 규칙도 없다 — 근거는 docs/gotchas.md 에 있다.
+
+    :focus-visible 이 아니라 :focus 다. 상위집합이라 엔진이 어느 쪽으로 링을
+    거는지에 의존하지 않는다 — Chrome 은 focus-visible 로, 다른 엔진은 :focus
+    로 걸 수 있다.
+  */
+  #dialog-heading:focus {
+    outline: none;
+  }
+
+  /*
     **flex: 1 이 아니라 flex: 1 1 auto 다.** 축약형 flex: 1 은 flex-basis: 0% 이고,
     그러면 본문의 flex base size 가 0 이다. 아래 min-height: 0 이 flex 항목의 자동
     최소 크기(auto)마저 꺼 두므로, 내용이 높이를 주장할 통로가 하나도 남지 않는다.
