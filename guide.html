@@ -1978,6 +1978,20 @@
     <li><strong>모서리 클릭.</strong> <code>border-radius</code> 모서리는 대화상자 자기 표면인데 타깃이 <code>&lt;dialog&gt;</code> 다. <code>e.target</code> 대신 좌표를 <code>getBoundingClientRect()</code> 와 비교한다</li>
   </ul>
 
+  <h3>초기 포커스</h3>
+  <p>
+    열리면 초기 포커스가 <strong>제목</strong>에 간다. 그래서 여는 순간 어떤 버튼도
+    눌린 것처럼 보이지 않는다. <code>showModal()</code> 은 포커스를 반드시 대화상자
+    안으로 옮기므로(포커스 트랩과 <code>Esc</code> 가 그것에 얹혀 있다) 포커스를
+    주지 않는 선택지는 없고, 바꿀 수 있는 것은 어디에 주느냐다. 제목이
+    <code>tabindex="-1"</code> 로 그 자리를 받는다.
+  </p>
+  <p>
+    <strong>탭 순서는 그대로다.</strong> <code>tabindex="-1"</code> 은 탭 순서에
+    들어가지 않으므로, 열린 뒤 <code>Tab</code> 을 누르면 닫기 버튼으로 간다.
+    스크린리더는 열릴 때 제목을 읽는다.
+  </p>
+
   <h3>HTML — 마크업</h3>
   <script type="text/plain">
     <button class="ns-button ns-button--outline ns-button--md" type="button" id="open-approve">

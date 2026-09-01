@@ -177,6 +177,19 @@
     <strong>헤더 높이와 본문 위치는 바뀌지 않는다.</strong> 넘쳤던 1px 은 원래
     레이아웃에 참여하지 않았으므로, 이 릴리스로 움직이는 것은 선 하나뿐이다.
   </p>
+  <p>
+    <strong>대화상자를 열 때 닫기 버튼에 검정 링이 뜨던 것을 고쳤다.</strong>
+    <code>showModal()</code> 이 첫 포커스 가능 자손인 닫기 버튼을 잡고, Chrome 이
+    그 포커스를 <code>:focus-visible</code> 로 쳐서 링을 그렸다. 밝은 모드의
+    <code>--ns-color-accent</code> 가 거의 검정이라 테두리처럼 보였다. 이제 초기
+    포커스가 제목으로 가고 그 요소의 링은 꺼진다.
+  </p>
+  <p>
+    <strong>탭 순서와 접근성은 그대로다.</strong> 제목은 탭 순서에 들어가지 않으므로
+    <code>Tab</code> 은 여전히 닫기 버튼으로 가고, 포커스는 대화상자 안에 머무른다.
+    <strong>Safari 에서는 원래 이 링이 없었다</strong> — WebKit 은 모달의 초기
+    포커스를 <code>:focus-visible</code> 로 치지 않는다.
+  </p>
 
   <h2 id="v0-5-2">v0.5.2</h2>
   <p class="dist"><code>dist/</code> 변경</p>
