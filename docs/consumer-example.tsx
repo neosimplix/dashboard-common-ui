@@ -258,6 +258,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
               {/* 3/4: Textarea 도 같은 처치를 받는다. */}
               <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} invalid={false} />
             </Field>
+            {/* ② 회귀 바: 같은 패키지의 두 export 가 조합되는지. */}
+            <Field label="담당자">
+              <NsMultiSelect options={[]} value={[]} />
+            </Field>
+            <Field label="담당자" error="필수입니다">
+              <NsMultiSelect options={[]} value={[]} />
+            </Field>
             <Accordion title="권한" summary="3개" defaultOpen>
               <Checkbox label="가입 승인" defaultChecked />
             </Accordion>

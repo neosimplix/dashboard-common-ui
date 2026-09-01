@@ -178,14 +178,40 @@ export const NsTabs = createComponent({
   shim 이 필요 없다. options·value 어느 것도 HTML 전역 속성과 충돌하지 않으므로
   평범한 래퍼를 그대로 공개한다 — 그래서 EventName<> 검사가 고전적인 경로로
   동작한다(docs/consumer-example.tsx 가 e.detail 을 직접 읽는다).
+
+  Field 가 이 래퍼를 만났을 때 무엇을 주입해야 하는지 여기 적는다. Field 는
+  래퍼를 import 하지 않고 element.type 에서 이 값을 읽으므로, 새 커스텀
+  엘리먼트 컨트롤이 생겨도 Field 를 고치지 않는다 — 지식이 래퍼 옆에 남는다.
+
+  하이픈으로 판별할 수 없기 때문에 마커가 필요하다. createComponent 는
+  forwardRef 객체를 반환하므로 element.type 이 문자열이 아니다.
+
+  describedby 가 오류 id 까지 받는다. ns-multi-select 에는 aria-errormessage
+  의 짝이 없고, 그 속성은 스크린리더 지원이 고르지 않아 describedby 가 오히려
+  더 안정적으로 읽힌다 — 네이티브 경로와 생기는 속성이 달라지는 것은 의도다.
+
+  satisfies Record<"id" | "describedby" | "invalid", keyof NsMultiSelectElement>
+  로 값을 제약한다. 이게 없으면 오타(describedBy, "inputID" 등)가 여기와
+  Field.tsx 양쪽에서 조용히 컴파일된다 — Field 는 이 값을 그대로 프로퍼티
+  이름으로 써서 cloneElement 에 넘기므로, 존재하지 않는 프로퍼티 이름이면
+  @lit/react 가 undefined="…" 같은 정크 속성을 렌더하고 아무 경고도 없다.
 */
-export const NsMultiSelect = createComponent({
-  react: React,
-  tagName: "ns-multi-select",
-  elementClass: NsMultiSelectElement,
-  events: {
-    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
-    onNsMultiSelectChange:
-      "ns-multi-select-change" as EventName<CustomEvent<NsMultiSelectChangeDetail>>,
+export const NsMultiSelect = Object.assign(
+  createComponent({
+    react: React,
+    tagName: "ns-multi-select",
+    elementClass: NsMultiSelectElement,
+    events: {
+      // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+      onNsMultiSelectChange:
+        "ns-multi-select-change" as EventName<CustomEvent<NsMultiSelectChangeDetail>>,
+    },
+  }),
+  {
+    nsFieldControl: {
+      id: "inputId",
+      describedby: "inputDescribedby",
+      invalid: "inputInvalid",
+    } satisfies Record<"id" | "describedby" | "invalid", keyof NsMultiSelectElement>,
   },
-});
+);
