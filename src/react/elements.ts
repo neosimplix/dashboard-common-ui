@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createComponent, type EventName } from "@lit/react";
+import { createComponent, type EventName, type ReactWebComponent } from "@lit/react";
 
 import { NsDialog as NsDialogElement } from "../components/dialog/ns-dialog.js";
 import { NsHeader as NsHeaderElement } from "../components/header/ns-header.js";
@@ -36,6 +36,27 @@ import type {
   프로퍼티 타입은 createComponent 가 Lit 클래스에서 자동으로 끌어온다.
   이벤트만 손으로 적는다.
 */
+
+/*
+  createComponent 의 반환 타입 ReactWebComponent<I, E> 는 WebComponentProps 를
+  거쳐 React.HTMLAttributes 를 그대로 물려받으므로 children 을 받는 타입이다.
+  자식을 받지 못하는 래퍼(NsPagination·NsSkeleton·NsMultiSelect)는 이 유틸로
+  감싸 children 을 never 로 좁힌다. Select.tsx 의 Omit<..., "children"> 과 같은
+  목적이고, 여기서는 createComponent 의 반환 타입을 직접 손으로 다시 적지
+  않기 위해 제네릭 함수로 뺐다 — I·E 는 인자에서 그대로 추론된다.
+
+  런타임은 넘어온 컴포넌트를 그대로 반환한다. 타입만의 캐스트이고 동작은
+  바뀌지 않는다.
+*/
+type NoChildren<C> = C extends React.ForwardRefExoticComponent<infer P>
+  ? React.ForwardRefExoticComponent<Omit<P, "children"> & { children?: never }>
+  : never;
+
+function withoutChildren<I extends HTMLElement, E extends Record<string, EventName | string>>(
+  component: ReactWebComponent<I, E>,
+): NoChildren<ReactWebComponent<I, E>> {
+  return component as NoChildren<ReactWebComponent<I, E>>;
+}
 
 export const NsHeader = createComponent({
   react: React,
@@ -113,12 +134,18 @@ export const NsPageHeadingBase = createComponent({
   events: {},
 });
 
-export const NsSkeleton = createComponent({
-  react: React,
-  tagName: "ns-skeleton",
-  elementClass: NsSkeletonElement,
-  events: {},
-});
+/*
+  자식을 받지 않는다. shadow 에 슬롯이 없어 자식이 조용히 사라진다 —
+  에러가 없어서 오히려 알아채기 어렵다.
+*/
+export const NsSkeleton = withoutChildren(
+  createComponent({
+    react: React,
+    tagName: "ns-skeleton",
+    elementClass: NsSkeletonElement,
+    events: {},
+  }),
+);
 
 /*
   소비자에게 직접 노출하지 않는다. tags/Dialog.tsx 가 감싸서 title/onClose/footer
@@ -150,15 +177,22 @@ export const NsTable = createComponent({
   },
 });
 
-export const NsPagination = createComponent({
-  react: React,
-  tagName: "ns-pagination",
-  elementClass: NsPaginationElement,
-  events: {
-    // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
-    onNsPageChange: "ns-page-change" as EventName<CustomEvent<NsPageChangeDetail>>,
-  },
-});
+/*
+  자식을 받지 않는다. Light DOM 에 자기 템플릿을 렌더하므로 React 가 넣은
+  자식과 다투다 removeChild 계열 런타임 에러가 난다. guide.html 이 이미
+  경고하던 것을 타입이 막는다.
+*/
+export const NsPagination = withoutChildren(
+  createComponent({
+    react: React,
+    tagName: "ns-pagination",
+    elementClass: NsPaginationElement,
+    events: {
+      // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+      onNsPageChange: "ns-page-change" as EventName<CustomEvent<NsPageChangeDetail>>,
+    },
+  }),
+);
 
 /*
   shim 이 필요 없다. active·defaultActive 어느 것도 HTML 전역 속성과 충돌하지
@@ -196,17 +230,24 @@ export const NsTabs = createComponent({
   이름으로 써서 cloneElement 에 넘기므로, 존재하지 않는 프로퍼티 이름이면
   @lit/react 가 undefined="…" 같은 정크 속성을 렌더하고 아무 경고도 없다.
 */
+/*
+  자식을 받지 않는다. Light DOM 에 자기 템플릿을 렌더하므로 React 가 넣은
+  자식과 다투다 removeChild 계열 런타임 에러가 난다. guide.html 이 이미
+  경고하던 것을 타입이 막는다.
+*/
 export const NsMultiSelect = Object.assign(
-  createComponent({
-    react: React,
-    tagName: "ns-multi-select",
-    elementClass: NsMultiSelectElement,
-    events: {
-      // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
-      onNsMultiSelectChange:
-        "ns-multi-select-change" as EventName<CustomEvent<NsMultiSelectChangeDetail>>,
-    },
-  }),
+  withoutChildren(
+    createComponent({
+      react: React,
+      tagName: "ns-multi-select",
+      elementClass: NsMultiSelectElement,
+      events: {
+        // EventName<> 브랜딩이 없으면 핸들러가 (e: Event) => void 로 타입된다.
+        onNsMultiSelectChange:
+          "ns-multi-select-change" as EventName<CustomEvent<NsMultiSelectChangeDetail>>,
+      },
+    }),
+  ),
   {
     nsFieldControl: {
       id: "inputId",

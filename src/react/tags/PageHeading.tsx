@@ -8,6 +8,11 @@ export type PageHeadingProps = {
   title: string;
   description?: string;
   className?: string;
+  /*
+    자식을 받지 않는다. shadow 에 슬롯이 없어 자식이 조용히 사라진다 —
+    에러가 없어서 오히려 알아채기 어렵다.
+  */
+  children?: never;
 };
 
 export function PageHeading({ title, description, className }: PageHeadingProps) {
