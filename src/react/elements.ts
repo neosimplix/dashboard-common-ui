@@ -209,6 +209,12 @@ export const NsTabs = createComponent({
 });
 
 /*
+  자식을 받지 않는다. Light DOM 에 자기 템플릿을 렌더하므로 React 가 넣은
+  자식과 다투다 removeChild 계열 런타임 에러가 난다. guide.html 의
+  ns-multi-select 절은 Light DOM 이라는 사실만 적을 뿐 자식 경고는 없다 —
+  ns-pagination 과 달리 문서가 먼저 경고하던 것을 타입이 뒤따르는 게 아니라,
+  이 제약은 여기서 처음 생긴다.
+
   shim 이 필요 없다. options·value 어느 것도 HTML 전역 속성과 충돌하지 않으므로
   평범한 래퍼를 그대로 공개한다 — 그래서 EventName<> 검사가 고전적인 경로로
   동작한다(docs/consumer-example.tsx 가 e.detail 을 직접 읽는다).
@@ -229,11 +235,6 @@ export const NsTabs = createComponent({
   Field.tsx 양쪽에서 조용히 컴파일된다 — Field 는 이 값을 그대로 프로퍼티
   이름으로 써서 cloneElement 에 넘기므로, 존재하지 않는 프로퍼티 이름이면
   @lit/react 가 undefined="…" 같은 정크 속성을 렌더하고 아무 경고도 없다.
-*/
-/*
-  자식을 받지 않는다. Light DOM 에 자기 템플릿을 렌더하므로 React 가 넣은
-  자식과 다투다 removeChild 계열 런타임 에러가 난다. guide.html 이 이미
-  경고하던 것을 타입이 막는다.
 */
 export const NsMultiSelect = Object.assign(
   withoutChildren(

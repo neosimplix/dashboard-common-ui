@@ -406,6 +406,36 @@ export function Shell({ children }: { children: React.ReactNode }) {
             />
             {/* ③ 회귀 바: 안쪽 input 의 aria-invalid 를 세울 통로가 있는지. */}
             <NsMultiSelect options={[]} value={[]} inputInvalid />
+            {/*
+              ⑤ 회귀 바: children?: never 가 살아있는지. elements.ts 의
+              withoutChildren 이 만드는 보장은 "자식을 주면 컴파일이 실패한다"
+              는 음성 명제라, 이 파일의 다른 예시가 전부 자식 없는 정상 사용인
+              것만으로는 npm run check 가 이 성질을 보지 못한다 — withoutChildren
+              을 네 래퍼 중 하나에서만 지워도 이 파일은 통째로 초록으로 남는다.
+
+              아래 넷(NsSkeleton·NsPagination·NsMultiSelect·PageHeading)은 일부러
+              자식을 주는, 틀린 사용이다. JSX 안의 주석이라도 `@ts-expect-error`
+              는 tsc 가 진짜 지시문으로 강제한다 — 그 자리에서 에러가 나지
+              않으면(지시문이 unused 가 되면) TS2578 로 컴파일이 실패한다. 즉
+              children?: never 가 없어지면 여기서 먼저 무너진다. 자식은 렌더에
+              아무것도 남기지 않는 {false} 를 썼다 — 여전히 자식 에러를 낸다.
+            */}
+            <NsSkeleton width="1rem" height="1rem">
+              {/* @ts-expect-error 자식을 받지 않는다 — 이 지시문이 unused 가 되면 제약이 풀린 것이다 */}
+              {false}
+            </NsSkeleton>
+            <NsPagination total={1} perPage={20}>
+              {/* @ts-expect-error 자식을 받지 않는다 — 이 지시문이 unused 가 되면 제약이 풀린 것이다 */}
+              {false}
+            </NsPagination>
+            <NsMultiSelect options={[]} value={[]}>
+              {/* @ts-expect-error 자식을 받지 않는다 — 이 지시문이 unused 가 되면 제약이 풀린 것이다 */}
+              {false}
+            </NsMultiSelect>
+            <PageHeading title="회귀 바 전용">
+              {/* @ts-expect-error 자식을 받지 않는다 — 이 지시문이 unused 가 되면 제약이 풀린 것이다 */}
+              {false}
+            </PageHeading>
             <div style={{ display: "flex", height: "6rem" }}>
               <Message>표시할 항목이 없습니다.</Message>
             </div>
