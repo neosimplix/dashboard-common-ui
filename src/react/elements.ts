@@ -211,9 +211,8 @@ export const NsTabs = createComponent({
 /*
   자식을 받지 않는다. Light DOM 에 자기 템플릿을 렌더하므로 React 가 넣은
   자식과 다투다 removeChild 계열 런타임 에러가 난다. guide.html 의
-  ns-multi-select 절은 Light DOM 이라는 사실만 적을 뿐 자식 경고는 없다 —
-  ns-pagination 과 달리 문서가 먼저 경고하던 것을 타입이 뒤따르는 게 아니라,
-  이 제약은 여기서 처음 생긴다.
+  ns-multi-select 절도 이제 이 경고를 담고 있다 — ns-pagination 과 마찬가지로
+  문서가 먼저 경고하던 것을 타입이 뒤따르는 경우다.
 
   shim 이 필요 없다. options·value 어느 것도 HTML 전역 속성과 충돌하지 않으므로
   평범한 래퍼를 그대로 공개한다 — 그래서 EventName<> 검사가 고전적인 경로로
