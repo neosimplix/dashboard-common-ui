@@ -224,9 +224,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <PageHeading title="사용자" description="가입 신청을 승인하고 권한을 관리합니다." />
             <NsSkeleton width="10rem" height="2.25rem" radius="pill" />
             {children}
-            <Input value="" onChange={(e) => log(e.target.value)} invalid />
+            {/*
+              ④ 회귀 바: Field.error 와 자식의 invalid 가 서로를 죽이지 않는지.
+              타입 검사만으로는 aria-invalid 의 계산 결과를 볼 수 없으므로, 여기서는
+              아래 네 Field 조합이 전부 렌더 트리 안에서 컴파일되는 것까지가 이
+              파일의 몫이다. 병합 결과는 Step 6 의 프로브가 본다.
+            */}
             <Field label="이메일" error="@neosimplix.com 계정만 사용할 수 있습니다.">
-              <Input value="" onChange={(e) => log(e.target.value)} />
+              {/* 1/4: error 가 있으면 자식이 invalid={false} 를 명시해도 오류가 이긴다. */}
+              <Input value="" onChange={(e) => log(e.target.value)} invalid={false} />
+            </Field>
+            <Field label="이름">
+              {/* 2/4: error 가 없으면 자식의 invalid 가 그대로 나간다. */}
+              <Input value="" onChange={(e) => log(e.target.value)} invalid />
             </Field>
             <Field label="직급" hint="관리자 승인 후 반영됩니다">
               <Select
@@ -236,7 +246,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 options={[{ value: "senior", label: "선임" }]}
               />
             </Field>
-            <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} />
+            <Field label="분류" error="필수입니다">
+              {/* 4/4: Select 도 같은 처치를 받는다. */}
+              <Select
+                onChange={(e) => log(e.target.value)}
+                options={[{ value: "senior", label: "선임" }]}
+                invalid={false}
+              />
+            </Field>
+            <Field label="메모" error="필수입니다">
+              {/* 3/4: Textarea 도 같은 처치를 받는다. */}
+              <Textarea value="" onChange={(e) => log(e.target.value)} rows={6} invalid={false} />
+            </Field>
             <Accordion title="권한" summary="3개" defaultOpen>
               <Checkbox label="가입 승인" defaultChecked />
             </Accordion>

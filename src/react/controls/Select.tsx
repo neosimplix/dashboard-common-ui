@@ -50,10 +50,11 @@ export function Select({
   return (
     <select
       className={cx("ns-select", className)}
-      aria-invalid={invalid || undefined}
       value={value}
       defaultValue={resolvedDefaultValue}
       {...rest}
+      // 순서의 이유는 Input.tsx 에 있다. 세 컨트롤이 같은 처치를 받는다.
+      aria-invalid={invalid || rest["aria-invalid"] || undefined}
     >
       {placeholder !== undefined && (
         <option value="" disabled>

@@ -17,9 +17,10 @@ export function Textarea({ invalid = false, className, rows = 3, ...rest }: Text
   return (
     <textarea
       className={cx("ns-textarea", className)}
-      aria-invalid={invalid || undefined}
       rows={rows}
       {...rest}
+      // 순서의 이유는 Input.tsx 에 있다. 세 컨트롤이 같은 처치를 받는다.
+      aria-invalid={invalid || rest["aria-invalid"] || undefined}
     />
   );
 }
