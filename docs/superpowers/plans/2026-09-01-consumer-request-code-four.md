@@ -8,9 +8,10 @@
 
 **Tech Stack:** Lit 3 · React 18/19 shim(`@lit/react`) · TypeScript. 테스트 러너 없음(설계 결정). 회귀 확인은 `npm run check`(소비자 관점 타입 검사 포함)와 헤드리스 브라우저 프로브다.
 
-**근거 문서:** 요청서와 그 답변이 이 계획의 spec 이다.
-- 요청서: `/private/tmp/claude-501/-Users-neosimplix-coding-dashboard-dashboard-shell/cb342958-847e-445d-b964-0242a0fd52ea/scratchpad/common-ui-수정요청서.md`
-- 답변: 같은 디렉터리의 `common-ui-수정요청서-답변.md`
+**근거 문서:** `dashboard-shell` 이 보낸 수정요청서(`common-ui-수정요청서.md`)와
+그에 대한 답변(`common-ui-수정요청서-답변.md`)이 이 계획의 spec 이다. 둘 다 이
+저장소 밖, 그 작업의 세션 스코프 스크래치패드에만 있었다 — 세션이 끝나면 사라지는
+경로라 여기 옮겨 적지 않는다. 이 계획과 각 Task 의 서술이 그 내용을 담아 옮긴다.
 
 ## Global Constraints
 

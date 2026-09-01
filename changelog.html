@@ -163,10 +163,12 @@
   <p>
     <strong>직접 넘긴 <code>aria-invalid</code> 가 컴포넌트의 <code>invalid</code>
     프롭을 더 이상 무력화하지 않는다.</strong> <code>Input</code>·<code>Textarea</code>·
-    <code>Select</code> 셋 다 지역 계산이 나머지 props 를 펴는 <strong>앞</strong>에
-    있어서, 소비자가 <code>aria-invalid</code> 를 직접 넘기면 <code>{...rest}</code>
-    가 그 값을 덮어썼다. 이제 지역 계산을 편 <strong>뒤</strong>에 합치므로 소비자가
-    준 값이 살아남는다.
+    <code>Select</code> 셋 다 <code>{...rest}</code> 를 지역 계산보다 <strong>앞</strong>에
+    펴서, 소비자가 <code>aria-invalid</code> 를 직접 넘기면 그 값이 지역 계산을
+    덮고 살아남았다. 이제 <code>{...rest}</code> 를 먼저 펴고 지역 계산을
+    <strong>뒤</strong>에서 합치므로 둘 중 하나라도 참이면 invalid 다 —
+    <code>invalid</code> 가 참인데 <code>aria-invalid={false}</code> 를 직접
+    넘긴 경우만 전과 달리 소비자의 값이 더 이상 이기지 못한다.
   </p>
   <p>
     <strong><code>Field</code> 안의 동작은 이 태그로 바뀌지 않는다.</strong>
@@ -206,8 +208,9 @@
   <p>
     <code>NsPagination</code>·<code>NsMultiSelect</code>·<code>NsSkeleton</code>·
     <code>PageHeading</code> 넷에 <code>children?: never</code> 를 얹었다. 앞의 둘은
-    Light DOM 이라 자식이 덮여 런타임 에러가 났고, 뒤의 둘은 슬롯이 없어 조용히
-    사라졌다 — 문서가 경고하던 것을 컴파일러가 막는다.
+    Light DOM 이라 자식이 덮여 런타임 에러가 났다 — 그중 <code>NsPagination</code>
+    은 문서가 이미 경고하던 것을 컴파일러가 막는 경우다. 뒤의 둘은 슬롯이 없어
+    조용히 사라졌다.
   </p>
   <p>
     <strong>타입 수준 변경이고 런타임 동작은 바뀌지 않는다.</strong> 오늘 빌드가
