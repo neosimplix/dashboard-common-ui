@@ -2367,8 +2367,8 @@
     첫 렌더에서 사라진다. slot 이 없다. <strong>React 에서는 조용히 사라지는 것으로 끝나지
     않는다</strong> — <code>&lt;NsPagination&gt;{x}&lt;/NsPagination&gt;</code> 처럼 자식을 주면
     React 와 Lit 이 같은 자식을 두고 다투다 <code>removeChild</code> 계열 런타임 에러가 날 수
-    있다. 래퍼의 프롭 타입은 <code>children</code> 을 막지 않으므로 타입 검사로도 걸리지 않는다.
-    항상 <strong>자기 닫는 태그</strong>로 쓴다.
+    있다. <strong><code>v0.5.4</code> 부터는 래퍼의 프롭 타입이 <code>children</code> 을 막아</strong>
+    이 문제가 런타임이 아니라 컴파일 타임에 걸린다. 항상 <strong>자기 닫는 태그</strong>로 쓴다.
   </p>
 
   <h3>데모</h3>
