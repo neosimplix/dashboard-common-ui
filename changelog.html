@@ -151,6 +151,33 @@
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
   </p>
 
+  <h2 id="v0-5-3">v0.5.3</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong><code>ns-header</code> 밑줄이 다시 보인다.</strong> 헤더 아래 경계선이
+    스타일시트에는 있는데 화면에 나오지 않던 것을 고쳤다. 소비자가 할 일은
+    없다 — 설치하면 선이 돌아온다.
+  </p>
+  <p>
+    shadow 안의 <code>header</code> 가 <code>box-sizing</code> 없이
+    <code>height: 100%</code> 를 쓰고 있었다. 문서의
+    <code>* { box-sizing: border-box }</code> 리셋은 shadow 경계를 넘지 못하므로
+    그 요소는 CSS 초기값인 content-box 로 시작하고, 밑줄 1px 이 콘텐츠 상자
+    <strong>바깥에</strong> 붙어 호스트의 <code>--ns-header-height</code> 를 넘쳤다.
+    호스트 높이가 고정이라 넘친 1px 은 아래를 밀지 않고, 그 자리에 뒤에 오는
+    형제의 배경이 트리 순서로 나중에 칠해져 선을 통째로 덮었다.
+  </p>
+  <p>
+    <strong>그래서 셸이 배경색을 가진 소비자에게만 보였다.</strong> 이 저장소의
+    <a href="./guide.html">사용 안내</a>는 본문 배경이 투명해 덮을 것이 없었고,
+    선이 제자리보다 1px 아래에 그려진 채로 계속 보이고 있었다 — 문서 페이지가
+    결함 있는 상태를 정상으로 보여준 셈이다.
+  </p>
+  <p>
+    <strong>헤더 높이와 본문 위치는 바뀌지 않는다.</strong> 넘쳤던 1px 은 원래
+    레이아웃에 참여하지 않았으므로, 이 릴리스로 움직이는 것은 선 하나뿐이다.
+  </p>
+
   <h2 id="v0-5-2">v0.5.2</h2>
   <p class="dist"><code>dist/</code> 변경</p>
   <p>
