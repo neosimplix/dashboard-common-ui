@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { NsSidebarBase } from "../elements.js";
 import type { NsNavigateDetail } from "../../types.js";
@@ -72,19 +72,43 @@ export function Sidebar({
     없다 — 프롭은 이미 도착해 있다. 판정은 엘리먼트가 쓰던 것과 같다: 둘 다
     undefined 면 #isOpen(open ?? #innerOpen)이 영원히 false 라 열 방법이 없다.
 
-    useRef 로 한 번만 경고한다. React 는 리렌더를 자유롭게 일으키므로 매 렌더
-    콘솔을 찍으면 스팸이 된다. 이펙트 안에 두지 않는 이유는 렌더 시점에 이미
-    프롭이 확정돼 있어 기다릴 시점 자체가 없기 때문이다 — 이펙트로 미루면
-    아무 이득 없이 한 틱만 늦어질 뿐이다.
+    판정 자체는 렌더 시점에 끝나지만, **경고를 내는 자리는 useEffect(…, [])
+    안이다.** 판정에 타이밍 의존이 없다는 것과, 부작용(console.warn)을 어디서
+    커밋하느냐는 별개의 문제다 — 후자를 렌더 바디에 두면 StrictMode 아래서
+    깨진다.
+
+    한 번만 경고하는 것은 useRef 가드가 한다. React 는 리렌더를 자유롭게
+    일으키므로 매 렌더 콘솔을 찍으면 스팸이 되기 때문이다. 그런데 이 가드가
+    렌더 바디에서 버티지 못한다 — StrictMode 는 마운트 시 렌더 함수를 커밋
+    전에 두 번 호출하고, 두 호출 다 아직 커밋되지 않은 상태이므로 각자
+    warned.current 를 false 로 새로 본다. 그 결과 두 렌더 패스가 각각
+    console.warn 을 부른다. 실측(React 18.3.1 dev, 실제 createRoot, 마운트 +
+    리렌더 두 번): 렌더 바디 + useRef 는 StrictMode 에서 2 회, 비-Strict 에서
+    1 회. Next.js App Router 는 dev 에서 StrictMode 를 기본으로 켜므로, 이
+    라이브러리를 쓰는 전형적인 dev 환경에서 소비자가 두 번 본다.
+
+    useEffect(…, []) 로 옮기면 1 회로 줄어든다. 이펙트는 커밋 이후에만
+    실행되므로, 그 시점에는 이미 한 번 커밋된 렌더의 훅 상태(= 이 useRef 가
+    가리키는 같은 객체)가 고정돼 있다. StrictMode 가 마운트 이펙트를
+    실행→정리→재실행으로 두 번 부르더라도 두 호출이 같은 ref 객체를 보므로,
+    첫 호출이 세운 warned.current = true 를 두 번째 호출이 그대로 이어받아
+    가드가 실제로 먹힌다. 잃는 것은 없다 — 프롭은 렌더 시점에 이미 확정돼
+    있으므로 판정을 미룰 이유도, 미뤄서 판정이 달라질 여지도 없다. 딱 하나
+    내주는 것은 SSR 노출이다: 이펙트는 클라이언트 전용이라 이 경고가 더는
+    렌더 패스(`next dev` 의 서버 터미널)에 찍히지 않고 브라우저 콘솔에서만
+    보인다. 결함(여닫을 수 없는 배선)은 여전히 브라우저에서 드러나므로 감수할
+    만한 손실이다.
   */
   const warned = useRef(false);
-  if (open === undefined && defaultOpen === undefined && !warned.current) {
-    warned.current = true;
-    console.warn(
-      "[ns-sidebar] open 도 defaultOpen 도 주지 않아 이 사이드바는 열 수 없습니다.\n" +
-        "  제어하려면 open 을, 비제어로 열어 두려면 defaultOpen 을 줍니다.",
-    );
-  }
+  useEffect(() => {
+    if (open === undefined && defaultOpen === undefined && !warned.current) {
+      warned.current = true;
+      console.warn(
+        "[ns-sidebar] open 도 defaultOpen 도 주지 않아 이 사이드바는 열 수 없습니다.\n" +
+          "  제어하려면 open 을, 비제어로 열어 두려면 defaultOpen 을 줍니다.",
+      );
+    }
+  }, []);
 
   return (
     <NsSidebarBase
