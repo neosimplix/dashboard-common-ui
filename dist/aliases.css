@@ -1,0 +1,75 @@
+/*
+  0.1.5 의 무접두사 토큰 이름 → 0.2.0 의 --ns- 이름.
+
+  **이 파일은 임포트하는 순간 0.1.5 의 이름 충돌을 그대로 재현한다. 그게
+  목적이다.** 무접두사 이름을 소비자 문서와 같은 :root 이름공간에 다시
+  정의하는 것이 하는 일의 전부이므로, 같은 이름을 다른 뜻으로 쓰는 CSS 가
+  하나라도 있으면 임포트 순서가 다시 화면을 정한다.
+
+  **이미 무접두사 이름을 직접 참조하는 CSS 가 있는 프로젝트만 임포트한다.**
+  새 프로젝트는 임포트하지 않는다. 경위는 저장소의 docs/gotchas.md 의
+  "토큰 이름을 소비자와 공유하면 라이브러리가 캐스케이드에 종속된다" 에 있다.
+
+  scripts/copy-css.mjs 가 tokens.css 에서 생성한다. 손으로 고치지 않는다.
+*/
+:root {
+  --color-surface: var(--ns-color-surface);
+  --color-surface-sunken: var(--ns-color-surface-sunken);
+  --color-surface-hover: var(--ns-color-surface-hover);
+  --color-line: var(--ns-color-line);
+  --color-line-strong: var(--ns-color-line-strong);
+  --color-overlay: var(--ns-color-overlay);
+  --color-fg: var(--ns-color-fg);
+  --color-fg-body: var(--ns-color-fg-body);
+  --color-fg-muted: var(--ns-color-fg-muted);
+  --color-fg-subtle: var(--ns-color-fg-subtle);
+  --color-accent: var(--ns-color-accent);
+  --color-disabled: var(--ns-color-disabled);
+  --color-danger: var(--ns-color-danger);
+  --color-danger-surface: var(--ns-color-danger-surface);
+  --color-warn: var(--ns-color-warn);
+  --color-warn-surface: var(--ns-color-warn-surface);
+  --color-success: var(--ns-color-success);
+  --color-success-surface: var(--ns-color-success-surface);
+  --space-1: var(--ns-space-1);
+  --space-1-5: var(--ns-space-1-5);
+  --space-2: var(--ns-space-2);
+  --space-2-5: var(--ns-space-2-5);
+  --space-3: var(--ns-space-3);
+  --space-4: var(--ns-space-4);
+  --space-5: var(--ns-space-5);
+  --space-6: var(--ns-space-6);
+  --space-8: var(--ns-space-8);
+  --radius-badge: var(--ns-radius-badge);
+  --radius-control: var(--ns-radius-control);
+  --radius-panel: var(--ns-radius-panel);
+  --radius-card: var(--ns-radius-card);
+  --radius-pill: var(--ns-radius-pill);
+  --font-size-2xs: var(--ns-font-size-2xs);
+  --line-height-2xs: var(--ns-line-height-2xs);
+  --font-size-xs: var(--ns-font-size-xs);
+  --line-height-xs: var(--ns-line-height-xs);
+  --font-size-sm: var(--ns-font-size-sm);
+  --line-height-sm: var(--ns-line-height-sm);
+  --font-size-base: var(--ns-font-size-base);
+  --line-height-base: var(--ns-line-height-base);
+  --font-size-lg: var(--ns-font-size-lg);
+  --line-height-lg: var(--ns-line-height-lg);
+  --font-size-xl: var(--ns-font-size-xl);
+  --line-height-xl: var(--ns-line-height-xl);
+  --weight-medium: var(--ns-weight-medium);
+  --weight-semibold: var(--ns-weight-semibold);
+  --header-height: var(--ns-header-height);
+  --sidebar-width: var(--ns-sidebar-width);
+  --sidebar-width-collapsed: var(--ns-sidebar-width-collapsed);
+  --page-padding-x: var(--ns-page-padding-x);
+  --page-padding-y: var(--ns-page-padding-y);
+  --card-padding: var(--ns-card-padding);
+  --control-height-sm: var(--ns-control-height-sm);
+  --control-height-md: var(--ns-control-height-md);
+  --scrollbar-width: var(--ns-scrollbar-width);
+  --scrollbar-thumb-inset: var(--ns-scrollbar-thumb-inset);
+  --elevation-card: var(--ns-elevation-card);
+  --transition-fast: var(--ns-transition-fast);
+  --transition-ease: var(--ns-transition-ease);
+}
