@@ -86,7 +86,13 @@
     line-height: var(--ns-line-height-sm);
     vertical-align: top;
   }
-  th:not(:where(.demo *, ns-dialog *)) { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); }
+  /* th 라벨은 전부 짧다(프로퍼티·속성·reflect·타입·기본값·설명). auto 표
+     레이아웃은 폭을 내용 기준으로 나누므로, 한 칸(설명)이 긴 문단을 담으면
+     그 칸이 폭을 독식하고 짧은 라벨 칸은 글자 하나마다 줄바꿈된다 — v0.5.5 가
+     reflect 열을 더하며 #ns-icon 프로퍼티 표에서 그렇게 됐다. nowrap 으로
+     헤더 칸의 줄바꿈만 막으면 그 칸들은 라벨 폭만큼만 차지하고, 남는 폭은
+     설명 칸으로 간다. */
+  th:not(:where(.demo *, ns-dialog *)) { color: var(--ns-color-fg-muted); font-weight: var(--ns-weight-semibold); white-space: nowrap; }
   td code { background: none; padding: 0; }
 
   /* 데모는 반드시 높이를 고정한다. tokens.css 의 ns-sidebar 규칙은 전역
