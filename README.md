@@ -99,6 +99,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
+| [`v0.5.5`](./changelog.html#v0-5-5) | 변경 | **breaking 없음.** `open`·`defaultOpen` 을 둘 다 안 주면 `ns-sidebar` 가 dev 콘솔에 경고한다(React shim 전용, 동작은 그대로). `guide.html` 에 「소비자가 테스트할 때」 절, 프로퍼티 표 `reflect` 칸, `Field` 의 커스텀 엘리먼트 조합 안내가 늘었다 |
 | [`v0.5.4`](./changelog.html#v0-5-4) | 변경 | **breaking 하나(타입만, 런타임 아님).** 컨트롤에 직접 넘긴 `aria-invalid` 가 더 이상 `invalid` 프롭을 무력화하지 않고, `Field` + `ns-multi-select` 조합이 라벨을 잇는다. 자식을 안 받는 래퍼 넷은 `children?: never` 로 막는다 |
 | [`v0.5.3`](./changelog.html#v0-5-3) | 변경 | 없다. `ns-header` 밑줄이 소비자 셸에서 안 보이던 것, 대화상자를 열 때 닫기 버튼에 링이 뜨던 것, `*` 리셋 없는 순수 HTML 소비자에서 `.ns-card` 가 컨테이너 밖으로 넘치던 것을 고쳤다 |
 | [`v0.5.2`](./changelog.html#v0-5-2) | 변경 | 없다. 문서가 세 페이지로 나뉘고 사용 안내가 `guide.html` 로 옮겨갔다 — `dist/` 는 주석만 바뀐다 |

@@ -118,7 +118,8 @@
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
     <ns-nav-group collapsible heading="0.5.x">
-      <ns-nav-item href="#v0-5-4" label="v0.5.4" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-5" label="v0.5.5" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-4" label="v0.5.4"></ns-nav-item>
       <ns-nav-item href="#v0-5-3" label="v0.5.3"></ns-nav-item>
       <ns-nav-item href="#v0-5-2" label="v0.5.2"></ns-nav-item>
       <ns-nav-item href="#v0-5-1" label="v0.5.1"></ns-nav-item>
@@ -151,6 +152,55 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-5-5">v0.5.5</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>문서 위주 릴리스지만 <code>dist/</code> 도 바뀐다.</strong> React
+    shim 하나가 소스를 바꿔서다 — <strong>breaking 은 없다.</strong>
+  </p>
+  <p>
+    <strong><code>ns-sidebar</code> 가 여닫을 수 없는 배선을 경고한다.</strong>
+    <code>open</code> 도 <code>defaultOpen</code> 도 주지 않으면 이 사이드바는
+    스스로 열 방법이 없다 — 자기를 여닫는 버튼이 <code>ns-header</code> 에 있고
+    사이드바 자신에는 없기 때문이다. 이제 그 배선을 dev 콘솔이 인스턴스마다
+    한 번 경고한다. <strong>동작은 바뀌지 않는다</strong> — 경고만 는다.
+  </p>
+  <p>
+    경고는 <strong>엘리먼트가 아니라 React shim</strong>(<code>Sidebar.tsx</code>)에
+    있다. 판정 자체(둘 다 <code>undefined</code> 인지)는 렌더 시점에 이미 끝나
+    있지만, 부작용을 커밋하는 자리는 <code>useEffect(…, [])</code> 다 — 렌더
+    바디에 두면 StrictMode 의 이중 호출로 두 번 찍힌다.
+  </p>
+  <p>
+    <strong>순수 HTML 소비자는 이 경고를 받지 않는다.</strong> 엘리먼트 쪽에
+    타이밍이 안전한 자리가 없어서다 — 지연 검사는 React 의 하이드레이션과
+    경합해 프로퍼티가 도착하기 전에 먼저 판정해 버린다. 엘리먼트 쪽 구현을
+    시도해 실측했더니 정상 배선에서도 거짓 양성이 났고, 그래서 뺐다. 순수
+    HTML 에서는 이 결함이 화면에서 곧바로 드러난다 — 사이드바가 그냥 닫힌
+    채로 열리지 않는다.
+  </p>
+  <p>
+    <strong>문서가 크게 늘었다</strong> — 전부 <code>guide.html</code> 안이다.
+    「소비자가 테스트할 때」 절이 새로 생겼다. <code>dashboard-shell</code> 이
+    자체 프리미티브 17개를 이 패키지로 이관하면서 실측으로 찾아낸 것을
+    허락을 받아 옮긴 것이고, 그 출처를 절 안에 그대로 밝힌다.
+  </p>
+  <p>
+    이 문서의 모든 컴포넌트 프로퍼티 표에 <strong><code>reflect</code> 칸</strong>이
+    생겼다 — 그 프로퍼티가 속성으로도 반영되는지, 그리고 <strong>반영에도
+    타이밍이 있다</strong>는 것(프로퍼티를 대입한 직후 동기로 읽으면 아직
+    없고 <code>updateComplete</code> 뒤에야 있다)을 함께 적는다.
+  </p>
+  <p>
+    React 의 <code>Field</code> 절에 <strong>커스텀 엘리먼트 자식과의 조합</strong>이
+    늘었다 — <code>inputId</code>·<code>inputDescribedby</code>·<code>inputInvalid</code>
+    로 라벨과 오류 문구를 커스텀 엘리먼트 안쪽 컨트롤까지 잇는 법, 렌더 직후
+    <strong>동기</strong> 조회가 실패하는 이유(반응형 프로퍼티가
+    <code>useLayoutEffect</code> 안에서만 세워지고 엘리먼트 갱신 자체는 그
+    뒤 비동기라서), 그리고 <code>Field</code> 는 클라이언트 컴포넌트 안에서
+    써야 한다는 것을 담았다.
   </p>
 
   <h2 id="v0-5-4">v0.5.4</h2>
