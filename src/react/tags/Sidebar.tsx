@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useRef } from "react";
 
 import { NsSidebarBase } from "../elements.js";
 import type { NsNavigateDetail } from "../../types.js";
@@ -58,6 +59,33 @@ export function Sidebar({
   className,
   style,
 }: SidebarProps) {
+  /*
+    여닫을 수 없는 배선(open 도 defaultOpen 도 없음) 경고는 원래 엘리먼트의
+    connectedCallback 에 있었다. 그쪽은 setTimeout(0) 으로 React 가 open 을
+    세울 때까지 기다렸지만, hydrateRoot 는 동기 커밋이 아니라 MessageChannel 로
+    스케줄되는 별도 매크로태스크다 — 타이머가 번들 평가 시점에 이미 걸려 있어
+    그 태스크보다 먼저 만료된다(실측: define→2.8ms, hydrateRoot 반환→3.2ms,
+    WARN→6.8ms, open 대입→8.2ms). 그래서 항상 닫힌 채로 시작하는 정상 배선
+    (`<Sidebar open={isOpen}>`, isOpen 초깃값 false)마다 거짓 양성이 났다.
+
+    이 shim 은 렌더 시점에 open·defaultOpen 을 직접 받으므로 기다릴 것이
+    없다 — 프롭은 이미 도착해 있다. 판정은 엘리먼트가 쓰던 것과 같다: 둘 다
+    undefined 면 #isOpen(open ?? #innerOpen)이 영원히 false 라 열 방법이 없다.
+
+    useRef 로 한 번만 경고한다. React 는 리렌더를 자유롭게 일으키므로 매 렌더
+    콘솔을 찍으면 스팸이 된다. 이펙트 안에 두지 않는 이유는 렌더 시점에 이미
+    프롭이 확정돼 있어 기다릴 시점 자체가 없기 때문이다 — 이펙트로 미루면
+    아무 이득 없이 한 틱만 늦어질 뿐이다.
+  */
+  const warned = useRef(false);
+  if (open === undefined && defaultOpen === undefined && !warned.current) {
+    warned.current = true;
+    console.warn(
+      "[ns-sidebar] open 도 defaultOpen 도 주지 않아 이 사이드바는 열 수 없습니다.\n" +
+        "  제어하려면 open 을, 비제어로 열어 두려면 defaultOpen 을 줍니다.",
+    );
+  }
+
   return (
     <NsSidebarBase
       open={open}

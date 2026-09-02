@@ -65,42 +65,22 @@ export class NsSidebar extends LitElement {
     return this.open ?? this.#innerOpen;
   }
 
-  /** 여닫기 배선 경고 타이머. 분리되면 취소한다. */
-  #wiringWarnTimer: ReturnType<typeof setTimeout> | undefined;
-
   override connectedCallback(): void {
     super.connectedCallback();
     warnIfTokensMissing();
     warnPropertyOnlyAttributes(this, { open: "default-open" });
 
     /*
-      open 도 default-open 도 없으면 #isOpen 이 영원히 false 라 열 방법이 없다.
-      거의 언제나 배선 실수다.
-
-      매크로태스크로 미루는 이유는 위 willUpdate 주석과 같다 — @lit/react 의
-      createComponent 는 반응형 프로퍼티를 useLayoutEffect 에서만 설정하고,
-      customElements.define 이 hydrateRoot 보다 먼저 실행되므로 그 useLayoutEffect
-      는 첫 업데이트의 마이크로태스크보다 뒤에 온다. connectedCallback 이나
-      firstUpdated 에서 즉시 재면 그 사이 창에서 React 소비자가 전부 거짓 양성이
-      된다 — open 을 나중에 프로퍼티로 세울 참인데 아직 세우지 못했을 뿐이다.
-
-      판정에 다른 컴포넌트를 보지 않는다. ns-toggle 은 ns-header 만 내므로
-      그것을 기다리면 "어느 헤더가 어느 사이드바를 겨냥하는가" 가 되살아난다 —
-      철회한 교차 검사가 이름만 바꿔 돌아오는 셈이다. 자기 프로퍼티 둘로 충분하다.
+      여닫을 수 없는 배선(open 도 default-open 도 없는 경우) 경고는 여기 두지
+      않는다. connectedCallback 은 React 가 open 을 useLayoutEffect 로 세우기
+      전에도 돈다 — 매크로태스크로 미뤄도 hydrateRoot 가 MessageChannel 로
+      스케줄하는 커밋을 이긴다는 보장이 없다(실측: define→3.2ms, WARN→6.8ms,
+      OPEN-SET→8.2ms — 경고가 먼저다). 그래서 React 소비자가 정상 배선이어도
+      거짓 양성을 받는다. 같은 판정을 렌더 시점에 open·defaultOpen 을 직접 보는
+      src/react/tags/Sidebar.tsx 로 옮겼다 — 타이밍이 아예 없는 자리다. 경위는
+      `docs/gotchas.md` 의 "ns-sidebar 가 여닫을 수 없는 배선을 경고하기까지" 에
+      있다.
     */
-    this.#wiringWarnTimer = setTimeout(() => {
-      if (this.open === undefined && !this.hasAttribute("default-open")) {
-        console.warn(
-          "[ns-sidebar] open 도 default-open 도 없어 이 사이드바는 열 수 없습니다. " +
-            "제어하려면 open 프로퍼티를, 비제어로 열어 두려면 default-open 속성을 씁니다.",
-        );
-      }
-    }, 0);
-  }
-
-  override disconnectedCallback(): void {
-    clearTimeout(this.#wiringWarnTimer);
-    super.disconnectedCallback();
   }
 
   /*
