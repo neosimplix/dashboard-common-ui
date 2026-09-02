@@ -74,8 +74,9 @@ export class NsSidebar extends LitElement {
       여닫을 수 없는 배선(open 도 default-open 도 없는 경우) 경고는 여기 두지
       않는다. connectedCallback 은 React 가 open 을 useLayoutEffect 로 세우기
       전에도 돈다 — 매크로태스크로 미뤄도 hydrateRoot 가 MessageChannel 로
-      스케줄하는 커밋을 이긴다는 보장이 없다(실측: define→3.2ms, WARN→6.8ms,
-      OPEN-SET→8.2ms — 경고가 먼저다). 그래서 React 소비자가 정상 배선이어도
+      스케줄하는 커밋을 이긴다는 보장이 없다(실측: define 완료→2.8ms,
+      hydrateRoot 반환→3.2ms, WARN→6.8ms, OPEN-SET→8.2ms — 경고가 먼저다).
+      그래서 React 소비자가 정상 배선이어도
       거짓 양성을 받는다. 같은 판정을 렌더 시점에 open·defaultOpen 을 직접 보는
       src/react/tags/Sidebar.tsx 로 옮겼다 — 타이밍이 아예 없는 자리다. 경위는
       `docs/gotchas.md` 의 "ns-sidebar 가 여닫을 수 없는 배선을 경고하기까지" 에
