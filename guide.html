@@ -1559,9 +1559,24 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>name</code></td><td><code>name</code></td><td>string</td><td><code>""</code></td><td>스프라이트의 키. <strong>자식이 있으면 읽히지 않는다</strong> — 슬롯 폴백이라 자식이 이긴다. 기본값인 빈 문자열은 "아직 정하지 않음"으로 보고 조용히 아무것도 그리지 않는다 — 경고가 없다. 값을 줬는데 스프라이트에 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>name</code></td><td><code>name</code></td><td>—</td><td>string</td><td><code>""</code></td><td>스프라이트의 키. <strong>자식이 있으면 읽히지 않는다</strong> — 슬롯 폴백이라 자식이 이긴다. 기본값인 빈 문자열은 "아직 정하지 않음"으로 보고 조용히 아무것도 그리지 않는다 — 경고가 없다. 값을 줬는데 스프라이트에 없는 이름이면 아무것도 그리지 않고 콘솔에 한 번 경고한다</td></tr>
   </table>
+  <p>
+    <strong><code>reflect</code> 칸이 <code>—</code> 면 그 프로퍼티는 속성으로
+    내려가지 않는다.</strong> <code>el.getAttribute("label")</code> 은
+    <code>null</code> 이다 — 프로퍼티로 읽는다(<code>el.label</code>).
+    <strong>프로퍼티로 읽는 것은 언제나 안전하다.</strong> 이 문서의 모든 프로퍼티
+    표에 같은 칸이 있고, 아래에서는 반복하지 않는다.
+  </p>
+  <p>
+    <strong><code>reflect</code> 하는 것에도 타이밍이 있다.</strong> lit 은 속성을
+    업데이트 주기 뒤에 쓰므로 프로퍼티를 대입한 직후 동기로 읽으면 아직 없다 —
+    <code>await el.updateComplete</code> 뒤에 읽는다. 같은 셸 쌍이라도
+    <code>ns-header</code> 의 <code>sidebar-open</code> 은 이 대기가 필요하고,
+    <code>ns-sidebar</code> 의 <code>data-ns-open</code> 은 React shim 이 직접
+    렌더해서 첫 커밋에 이미 있다 — <strong>둘의 타이밍이 다르다.</strong>
+  </p>
 
   <h3>크기</h3>
   <table>
@@ -1776,9 +1791,9 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td><code>h1</code> 의 내용</td></tr>
-    <tr><td><code>description</code></td><td><code>description</code></td><td>string</td><td><code>""</code></td><td>빈 문자열이면 <code>p</code> 를 렌더하지 않는다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>heading</code></td><td><code>heading</code></td><td>—</td><td>string</td><td><code>""</code></td><td><code>h1</code> 의 내용</td></tr>
+    <tr><td><code>description</code></td><td><code>description</code></td><td>—</td><td>string</td><td><code>""</code></td><td>빈 문자열이면 <code>p</code> 를 렌더하지 않는다</td></tr>
   </table>
   <p>
     마크업이 필요한 설명은 받지 않는다. 소비자 8곳의 <code>description</code> 이 전부
@@ -1829,10 +1844,10 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>width</code></td><td><code>width</code></td><td>string</td><td><code>100%</code></td><td>CSS 길이</td></tr>
-    <tr><td><code>height</code></td><td><code>height</code></td><td>string</td><td><code>1rem</code></td><td>CSS 길이</td></tr>
-    <tr><td><code>radius</code></td><td><code>radius</code></td><td>string</td><td><code>control</code></td><td><code>badge</code> <code>control</code> <code>panel</code> <code>card</code> <code>pill</code> 중 하나면 해당 토큰. 아니면 원시 CSS 값</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>width</code></td><td><code>width</code></td><td>—</td><td>string</td><td><code>100%</code></td><td>CSS 길이</td></tr>
+    <tr><td><code>height</code></td><td><code>height</code></td><td>—</td><td>string</td><td><code>1rem</code></td><td>CSS 길이</td></tr>
+    <tr><td><code>radius</code></td><td><code>radius</code></td><td>—</td><td>string</td><td><code>control</code></td><td><code>badge</code> <code>control</code> <code>panel</code> <code>card</code> <code>pill</code> 중 하나면 해당 토큰. 아니면 원시 CSS 값</td></tr>
   </table>
 
   <h3>접근성</h3>
@@ -1926,11 +1941,11 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td>제목. 대화상자의 accessible name 이므로 사실상 필수다</td></tr>
-    <tr><td><code>open</code></td><td>없음</td><td>boolean | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
-    <tr><td><code>defaultOpen</code></td><td><code>default-open</code></td><td>boolean</td><td><code>false</code></td><td>비제어 초기값</td></tr>
-    <tr><td><code>noBackdropClose</code></td><td><code>no-backdrop-close</code></td><td>boolean</td><td><code>false</code></td><td>backdrop 클릭 닫기를 끈다. 입력을 잃으면 안 되는 폼에서 쓴다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>heading</code></td><td><code>heading</code></td><td>—</td><td>string</td><td><code>""</code></td><td>제목. 대화상자의 accessible name 이므로 사실상 필수다</td></tr>
+    <tr><td><code>open</code></td><td>없음</td><td>—</td><td>boolean | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>defaultOpen</code></td><td><code>default-open</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>noBackdropClose</code></td><td><code>no-backdrop-close</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>backdrop 클릭 닫기를 끈다. 입력을 잃으면 안 되는 폼에서 쓴다</td></tr>
   </table>
 
   <h3>메서드</h3>
@@ -2200,12 +2215,12 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>sortKey</code></td><td>없음</td><td>string | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
-    <tr><td><code>sortDirection</code></td><td>없음</td><td>"ascending" | "descending" | "none" | undefined</td><td><code>undefined</code></td><td><code>sortKey</code> 와 짝</td></tr>
-    <tr><td><code>defaultSortKey</code></td><td><code>default-sort-key</code></td><td>string</td><td><code>""</code></td><td>비제어 초기값</td></tr>
-    <tr><td><code>defaultSortDirection</code></td><td><code>default-sort-direction</code></td><td>같음</td><td><code>"none"</code></td><td>비제어 초기값</td></tr>
-    <tr><td><code>selected</code></td><td>없음</td><td>string[] | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>비제어 초기 선택은 마크업의 <code>checked</code> 에서 온다</strong></td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>sortKey</code></td><td>없음</td><td>—</td><td>string | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>sortDirection</code></td><td>없음</td><td>—</td><td>"ascending" | "descending" | "none" | undefined</td><td><code>undefined</code></td><td><code>sortKey</code> 와 짝</td></tr>
+    <tr><td><code>defaultSortKey</code></td><td><code>default-sort-key</code></td><td>—</td><td>string</td><td><code>""</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>defaultSortDirection</code></td><td><code>default-sort-direction</code></td><td>—</td><td>같음</td><td><code>"none"</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>selected</code></td><td>없음</td><td>—</td><td>string[] | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>비제어 초기 선택은 마크업의 <code>checked</code> 에서 온다</strong></td></tr>
   </table>
 
   <h3>소비자가 쓰는 훅</h3>
@@ -2419,12 +2434,12 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>total</code></td><td><code>total</code></td><td>number</td><td><code>0</code></td><td>전체 <strong>항목</strong> 수. 페이지 수가 아니다</td></tr>
-    <tr><td><code>perPage</code></td><td><code>per-page</code></td><td>number</td><td><code>20</code></td><td></td></tr>
-    <tr><td><code>page</code></td><td>없음</td><td>number | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
-    <tr><td><code>defaultPage</code></td><td><code>default-page</code></td><td>number</td><td><code>1</code></td><td>비제어 초기값</td></tr>
-    <tr><td><code>pageWindow</code></td><td><code>page-window</code></td><td>number</td><td><code>7</code></td><td>이전·다음 사이 슬롯 수. <code>…</code> 칸도 센다. <strong>5 이상의 홀수</strong> — 아니면 경고 후 <code>7</code></td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>total</code></td><td><code>total</code></td><td>—</td><td>number</td><td><code>0</code></td><td>전체 <strong>항목</strong> 수. 페이지 수가 아니다</td></tr>
+    <tr><td><code>perPage</code></td><td><code>per-page</code></td><td>—</td><td>number</td><td><code>20</code></td><td></td></tr>
+    <tr><td><code>page</code></td><td>없음</td><td>—</td><td>number | undefined</td><td><code>undefined</code></td><td>제어 모드. <strong>속성이 아니라 프로퍼티다</strong></td></tr>
+    <tr><td><code>defaultPage</code></td><td><code>default-page</code></td><td>—</td><td>number</td><td><code>1</code></td><td>비제어 초기값</td></tr>
+    <tr><td><code>pageWindow</code></td><td><code>page-window</code></td><td>—</td><td>number</td><td><code>7</code></td><td>이전·다음 사이 슬롯 수. <code>…</code> 칸도 센다. <strong>5 이상의 홀수</strong> — 아니면 경고 후 <code>7</code></td></tr>
   </table>
 
   <h3>이벤트</h3>
@@ -2542,9 +2557,9 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>이름</th><th>속성</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>active</code></td><td>없음 (프로퍼티 전용)</td><td><code>undefined</code></td><td>제어 모드의 활성 탭. <strong><code>active="…"</code> 속성은 무시된다</strong></td></tr>
-    <tr><td><code>defaultActive</code></td><td><code>default-active</code></td><td><code>""</code></td><td>비제어 초기 탭. 비면 첫 번째 탭</td></tr>
+    <tr><th>이름</th><th>속성</th><th>reflect</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>active</code></td><td>없음 (프로퍼티 전용)</td><td>—</td><td><code>undefined</code></td><td>제어 모드의 활성 탭. <strong><code>active="…"</code> 속성은 무시된다</strong></td></tr>
+    <tr><td><code>defaultActive</code></td><td><code>default-active</code></td><td>—</td><td><code>""</code></td><td>비제어 초기 탭. 비면 첫 번째 탭</td></tr>
   </table>
 
   <h3>탭 버튼이 갖는 것</h3>
@@ -2688,15 +2703,15 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>이름</th><th>속성</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>options</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td><code>{ value, label, meta? }[]</code>. 받은 순서를 건드리지 않는다. <strong><code>value</code> 는 유일해야 한다</strong> — 목록과 칩 줄의 렌더 키라 겹치면 렌더가 어긋나고 칩도 겹친 수만큼 생긴다</td></tr>
-    <tr><td><code>value</code></td><td>없음 (프로퍼티 전용)</td><td><code>undefined</code></td><td>제어 모드의 선택 집합</td></tr>
-    <tr><td><code>defaultValue</code></td><td>없음 (프로퍼티 전용)</td><td><code>[]</code></td><td>비제어 초기 선택. <strong>사용자가 처음 만지기 전까지 유효하다</strong> — 늦게 대입해도 반영된다</td></tr>
-    <tr><td><code>searchPlaceholder</code></td><td><code>search-placeholder</code></td><td><code>"검색"</code></td><td></td></tr>
-    <tr><td><code>emptyMessage</code></td><td><code>empty-message</code></td><td><code>"결과가 없습니다"</code></td><td></td></tr>
-    <tr><td><code>inputId</code></td><td><code>input-id</code></td><td><code>""</code></td><td>검색 input 의 <code>id</code>. <code>.ns-field__label</code> 의 <code>for</code> 가 가리킬 곳</td></tr>
-    <tr><td><code>inputDescribedby</code></td><td><code>input-describedby</code></td><td><code>""</code></td><td>검색 input 의 <code>aria-describedby</code></td></tr>
-    <tr><td><code>inputInvalid</code></td><td><code>input-invalid</code></td><td><code>false</code></td><td>검색 input 의 <code>aria-invalid</code>. <code>true</code> 면 <code>aria-invalid="true"</code> 를 세우고, <code>false</code> 면 <strong>아무것도 내지 않는다</strong> — <code>aria-invalid="false"</code> 는 속성이 없는 것과 다른 뜻이라서다. <code>controls.css</code> 가 invalid 상태를 <code>[aria-invalid="true"]</code> 로만 잡으므로, 이 프로퍼티가 없으면 이 컴포넌트에는 그 상태를 보여줄 방법이 없다</td></tr>
+    <tr><th>이름</th><th>속성</th><th>reflect</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>options</code></td><td>없음 (프로퍼티 전용)</td><td>—</td><td><code>[]</code></td><td><code>{ value, label, meta? }[]</code>. 받은 순서를 건드리지 않는다. <strong><code>value</code> 는 유일해야 한다</strong> — 목록과 칩 줄의 렌더 키라 겹치면 렌더가 어긋나고 칩도 겹친 수만큼 생긴다</td></tr>
+    <tr><td><code>value</code></td><td>없음 (프로퍼티 전용)</td><td>—</td><td><code>undefined</code></td><td>제어 모드의 선택 집합</td></tr>
+    <tr><td><code>defaultValue</code></td><td>없음 (프로퍼티 전용)</td><td>—</td><td><code>[]</code></td><td>비제어 초기 선택. <strong>사용자가 처음 만지기 전까지 유효하다</strong> — 늦게 대입해도 반영된다</td></tr>
+    <tr><td><code>searchPlaceholder</code></td><td><code>search-placeholder</code></td><td>—</td><td><code>"검색"</code></td><td></td></tr>
+    <tr><td><code>emptyMessage</code></td><td><code>empty-message</code></td><td>—</td><td><code>"결과가 없습니다"</code></td><td></td></tr>
+    <tr><td><code>inputId</code></td><td><code>input-id</code></td><td>—</td><td><code>""</code></td><td>검색 input 의 <code>id</code>. <code>.ns-field__label</code> 의 <code>for</code> 가 가리킬 곳</td></tr>
+    <tr><td><code>inputDescribedby</code></td><td><code>input-describedby</code></td><td>—</td><td><code>""</code></td><td>검색 input 의 <code>aria-describedby</code></td></tr>
+    <tr><td><code>inputInvalid</code></td><td><code>input-invalid</code></td><td>—</td><td><code>false</code></td><td>검색 input 의 <code>aria-invalid</code>. <code>true</code> 면 <code>aria-invalid="true"</code> 를 세우고, <code>false</code> 면 <strong>아무것도 내지 않는다</strong> — <code>aria-invalid="false"</code> 는 속성이 없는 것과 다른 뜻이라서다. <code>controls.css</code> 가 invalid 상태를 <code>[aria-invalid="true"]</code> 로만 잡으므로, 이 프로퍼티가 없으면 이 컴포넌트에는 그 상태를 보여줄 방법이 없다</td></tr>
   </table>
 
   <h3>클래스</h3>
@@ -2980,9 +2995,9 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>projectName</code></td><td><code>project-name</code></td><td>string</td><td><code>""</code></td><td>토글 버튼 옆에 표시할 제목</td></tr>
-    <tr><td><code>sidebarOpen</code></td><td><code>sidebar-open</code></td><td>boolean</td><td><code>false</code></td><td>토글 버튼의 <code>aria-expanded</code> 와 <code>aria-label</code> 을 결정한다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>projectName</code></td><td><code>project-name</code></td><td>—</td><td>string</td><td><code>""</code></td><td>토글 버튼 옆에 표시할 제목</td></tr>
+    <tr><td><code>sidebarOpen</code></td><td><code>sidebar-open</code></td><td>reflect</td><td>boolean</td><td><code>false</code></td><td>토글 버튼의 <code>aria-expanded</code> 와 <code>aria-label</code> 을 결정한다</td></tr>
   </table>
 
   <h3>slot</h3>
@@ -3081,9 +3096,9 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>open</code></td><td>—</td><td>boolean</td><td><code>undefined</code></td><td><strong>프로퍼티 전용.</strong> 주면 제어 모드다. HTML 에서는 <code>default-open</code> 을 쓴다</td></tr>
-    <tr><td><code>defaultOpen</code></td><td><code>default-open</code></td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 열린 채로 시작한다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>open</code></td><td>—</td><td>—</td><td>boolean</td><td><code>undefined</code></td><td><strong>프로퍼티 전용.</strong> 주면 제어 모드다. HTML 에서는 <code>default-open</code> 을 쓴다</td></tr>
+    <tr><td><code>defaultOpen</code></td><td><code>default-open</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 열린 채로 시작한다</td></tr>
   </table>
 
   <h3>slot</h3>
@@ -3310,11 +3325,11 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>heading</code></td><td><code>heading</code></td><td>string</td><td><code>""</code></td><td>그룹 제목. 헤딩 줄에 보이고 <code>[role="group"]</code> 의 <code>aria-label</code> 로도 실린다. <code>collapsible</code> 이면 이 줄이 토글 버튼이 된다</td></tr>
-    <tr><td><code>collapsible</code></td><td><code>collapsible</code></td><td>boolean</td><td><code>false</code></td><td>헤딩 줄을 토글 버튼으로 만든다. <strong>단을 가리지 않는다</strong> — 최상위 그룹에 쓰면 그 그룹 전체가, 하위 그룹에 쓰면 그 카테고리만 접힌다. 쓰지 않으면 렌더 결과가 0.4.0 과 같다</td></tr>
-    <tr><td><code>open</code></td><td>없음 (프로퍼티 전용)</td><td>boolean</td><td><code>undefined</code></td><td>설정하면 제어 모드가 되어 컴포넌트가 스스로 접지 않는다. HTML 에서는 <code>default-collapsed</code> 를 쓴다</td></tr>
-    <tr><td><code>defaultCollapsed</code></td><td><code>default-collapsed</code></td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 나중에 바꾸면 <strong>아직 토글되지 않은 그룹에만</strong> 반영된다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>heading</code></td><td><code>heading</code></td><td>—</td><td>string</td><td><code>""</code></td><td>그룹 제목. 헤딩 줄에 보이고 <code>[role="group"]</code> 의 <code>aria-label</code> 로도 실린다. <code>collapsible</code> 이면 이 줄이 토글 버튼이 된다</td></tr>
+    <tr><td><code>collapsible</code></td><td><code>collapsible</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>헤딩 줄을 토글 버튼으로 만든다. <strong>단을 가리지 않는다</strong> — 최상위 그룹에 쓰면 그 그룹 전체가, 하위 그룹에 쓰면 그 카테고리만 접힌다. 쓰지 않으면 렌더 결과가 0.4.0 과 같다</td></tr>
+    <tr><td><code>open</code></td><td>없음 (프로퍼티 전용)</td><td>—</td><td>boolean</td><td><code>undefined</code></td><td>설정하면 제어 모드가 되어 컴포넌트가 스스로 접지 않는다. HTML 에서는 <code>default-collapsed</code> 를 쓴다</td></tr>
+    <tr><td><code>defaultCollapsed</code></td><td><code>default-collapsed</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>비제어 초기값. 나중에 바꾸면 <strong>아직 토글되지 않은 그룹에만</strong> 반영된다</td></tr>
   </table>
 
   <h3>slot</h3>
@@ -3433,10 +3448,10 @@
 
   <h3>프로퍼티</h3>
   <table>
-    <tr><th>프로퍼티</th><th>속성</th><th>타입</th><th>기본값</th><th>설명</th></tr>
-    <tr><td><code>href</code></td><td><code>href</code></td><td>string</td><td><code>""</code></td><td>라우팅 키. 이벤트에 그대로 실린다</td></tr>
-    <tr><td><code>label</code></td><td><code>label</code></td><td>string</td><td><code>""</code></td><td>행에 보이는 라벨. 한 줄 말줄임. 링크의 접근성 이름이 되고 <code>title</code> 속성으로도 실려 말줄임된 글자가 툴팁으로 보이므로 사실상 필수다</td></tr>
-    <tr><td><code>active</code></td><td><code>active</code></td><td>boolean</td><td><code>false</code></td><td>활성 여부. 컴포넌트가 스스로 바꾸지 않는다</td></tr>
+    <tr><th>프로퍼티</th><th>속성</th><th>reflect</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code>href</code></td><td><code>href</code></td><td>—</td><td>string</td><td><code>""</code></td><td>라우팅 키. 이벤트에 그대로 실린다</td></tr>
+    <tr><td><code>label</code></td><td><code>label</code></td><td>—</td><td>string</td><td><code>""</code></td><td>행에 보이는 라벨. 한 줄 말줄임. 링크의 접근성 이름이 되고 <code>title</code> 속성으로도 실려 말줄임된 글자가 툴팁으로 보이므로 사실상 필수다</td></tr>
+    <tr><td><code>active</code></td><td><code>active</code></td><td>reflect</td><td>boolean</td><td><code>false</code></td><td>활성 여부. 컴포넌트가 스스로 바꾸지 않는다</td></tr>
   </table>
 
   <h3>slot</h3>
