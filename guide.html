@@ -1572,8 +1572,8 @@
     <code>position</code> 도 reflect 하지만, 이 라이브러리는
     <code>&lt;ns-toast&gt;</code> 를 마크업에 직접 쓰지 않으므로(<a
     href="#overlays"><code>nsToast()</code> 함수로만 다룬다</a>) 그 컴포넌트에는
-    이 문서에 실린 프로퍼티 표 자체가 없다 — 이 표에 <code>reflect</code> 셀이
-    둘만 보여도 셋 중 하나가 빠진 것이 아니다.
+    이 문서에 실린 프로퍼티 표 자체가 없다 — 이 문서의 프로퍼티 표를 통틀어
+    <code>reflect</code> 칸이 둘만 보여도 셋 중 하나가 빠진 것이 아니다.
   </p>
   <p>
     <strong><code>reflect</code> 하는 것에도 타이밍이 있다.</strong> lit 은 속성을
@@ -3660,7 +3660,9 @@
     대부분의 프로퍼티는 속성으로 반영되지 않는다(<code>el.getAttribute("label")</code>
     이 <code>null</code>). 반영되는 것은 <code>ns-header.sidebarOpen</code> ·
     <code>ns-nav-item.active</code> · <code>ns-toast.position</code> 셋뿐이다 —
-    이 문서의 각 컴포넌트 프로퍼티 표에 있는 <code>reflect</code> 칸과 같다.
+    이 문서의 각 컴포넌트 프로퍼티 표에 있는 <code>reflect</code> 칸과 같다. 다만
+    <code>ns-toast.position</code> 은 표 자체가 없는 예외다(<a
+    href="#ns-icon"><code>ns-icon</code> 프로퍼티 표 설명</a> 참고).
     <strong>프로퍼티로 읽는 것은 항상 안전하다.</strong>
   </p>
 
@@ -3692,30 +3694,37 @@
         <a href="#ns-page-heading"><code>ns-page-heading</code></a> ·
         <a href="#ns-header"><code>ns-header</code></a>(<code>projectName</code> ·
         토글) · <a href="#ns-sidebar"><code>ns-sidebar</code></a>/<a
-        href="#ns-nav-group"><code>ns-nav-*</code></a>(라벨 · 그룹 제목)
+        href="#ns-nav-group"><code>ns-nav-*</code></a>(라벨 · 그룹 제목) ·
+        <a href="#ns-icon"><code>ns-icon</code></a> ·
+        <a href="#ns-skeleton"><code>ns-skeleton</code></a> ·
+        <a href="#overlays-toast"><code>ns-toast</code></a>(메시지 문구)
       </td>
     </tr>
   </table>
+  <p>
+    지금까지 나온 것이 이 라이브러리의 컴포넌트 전체다 — 왼쪽 넷은 Light DOM,
+    오른쪽 아홉이 shadow다. <code>ns-icon</code> 과 <code>ns-skeleton</code> 은
+    소비자가 텍스트로 조회할 문구 자체가 거의 없어 실제로 부딪힐 일이 드물지만,
+    <code>ns-toast</code> 는 다르다.
+  </p>
+  <p>
+    <strong><code>ns-toast</code> 가 특히 걸리기 쉽다.</strong> 슬롯이 없고
+    메시지 문구(<code>&lt;span class="message"&gt;</code>)가 shadow 안에서
+    그려진다. <code>nsToast("저장됨")</code> 뒤에 <code>getByText("저장됨")</code>
+    를 쓰면 실패한다 — <code>nsToast()</code> 가 돌려주는 것은 닫는 함수뿐이라
+    문구를 대신 갖고 있지 않으므로, 문구를 확인해야 하면
+    <code>document.querySelector("ns-toast")</code> 의 <code>shadowRoot</code>
+    를 직접 조회한다.
+  </p>
   <p>
     <strong>슬롯으로 넘긴 자식은 예외다.</strong> 소비자가 슬롯에 넣은 자식은
     shadow 안이 아니라 호스트의 light DOM 자식으로 남으므로,
     <code>within(host)</code> 범위가 그대로 보존된다.
   </p>
   <p>
-    shadow 안으로 들어가야 하는 접근은 한 종류만 예외로 둔다 — 네이티브
+    shadow 안으로 들어가는 접근이 실제로 성립하는 자리가 하나 있다 — 네이티브
     <code>&lt;dialog&gt;</code> 의 <code>open</code> 속성. 다른 관찰 경로가 없기
-    때문이다. <strong>"유일한 자리" 가 아니라 "유일한 종류"</strong> 라는 점은
-    구분해 둔다 — 열림 · 닫힘을 함께 보는 짝이 있으면 한 파일에 이 접근이 둘
-    이상 있는 것이 정상이다.
-  </p>
-
-  <h4 id="consumer-testing-events">이벤트로 배선을 확인한다</h4>
-  <p>
-    shadow 안의 버튼을 직접 클릭하지 않고, 호스트에 라이브러리 이벤트를 올려
-    확인한다(<code>ns-dialog-close</code> · <code>ns-toggle</code> ·
-    <code>ns-navigate</code>). <strong>그 테스트는 「누르면 이벤트가 난다」를
-    증명하지 않는다</strong> — 그것은 라이브러리와 브라우저의 일이다. 그래서
-    테스트 제목에 "누르면" 을 쓰지 않는다.
+    때문이다.
   </p>
 
   <h4 id="consumer-testing-false">선택 프롭의 부재와 <code>false</code> 가 같은 DOM 을 만들 수 있다</h4>
@@ -3745,17 +3754,28 @@
     </li>
     <li>
       <strong>shadow 접근은 한 종류만 허용한다</strong> — 위
-      <code>&lt;dialog&gt;</code> 의 <code>open</code>. 다른 관찰 경로가 없는
-      경우로 한정하는 판단이다.
+      <code>&lt;dialog&gt;</code> 의 <code>open</code>, 다른 관찰 경로가 없는
+      경우로 한정하는 판단이다. <strong>"유일한 자리" 가 아니라 "유일한
+      종류"</strong> 라는 점은 구분해 둔다 — 열림 · 닫힘을 함께 보는 짝이 있으면
+      한 파일에 이 접근이 둘 이상 있는 것이 정상이다.
     </li>
   </ul>
+
+  <h4 id="consumer-testing-events">이벤트로 배선을 확인한다</h4>
+  <p>
+    shadow 안의 버튼을 직접 클릭하지 않고, 호스트에 라이브러리 이벤트를 올려
+    확인한다(<code>ns-dialog-close</code> · <code>ns-toggle</code> ·
+    <code>ns-navigate</code>). <strong>그 테스트는 「누르면 이벤트가 난다」를
+    증명하지 않는다</strong> — 그것은 라이브러리와 브라우저의 일이다. 그래서
+    테스트 제목에 "누르면" 을 쓰지 않는다.
+  </p>
 
   <h3 id="consumer-testing-field">Field 관련 두 가지</h3>
   <p>
     커스텀 엘리먼트를 <a href="#ns-field"><code>Field</code></a> 로 감쌀 때는
     동기 조회가 안 되어 <code>await findByLabelText</code> 가 필요하고,
-    <code>Field</code> 는 서버 컴포넌트에서 쓸 수 없다 — 두 항목 모두
-    <a href="#ns-field"><code>.ns-field</code></a> 절에서 자세히 다룬다.
+    <code>Field</code> 는 클라이언트 컴포넌트 안에서 쓴다 — 두 항목 모두
+    <code>Field</code> 절에서 자세히 다룬다.
   </p>
   </main>
 </div>
