@@ -192,6 +192,7 @@
     </ns-nav-group>
     <ns-nav-group collapsible heading="예시">
       <ns-nav-item href="#full" label="전체 셸 조합"></ns-nav-item>
+      <ns-nav-item href="#consumer-testing" label="소비자가 테스트할 때"></ns-nav-item>
     </ns-nav-group>
   </ns-sidebar>
 
@@ -1567,7 +1568,12 @@
     내려가지 않는다.</strong> <code>el.getAttribute("label")</code> 은
     <code>null</code> 이다 — 프로퍼티로 읽는다(<code>el.label</code>).
     <strong>프로퍼티로 읽는 것은 언제나 안전하다.</strong> 이 문서의 모든 프로퍼티
-    표에 같은 칸이 있고, 아래에서는 반복하지 않는다.
+    표에 같은 칸이 있고, 아래에서는 반복하지 않는다. <code>ns-toast</code> 의
+    <code>position</code> 도 reflect 하지만, 이 라이브러리는
+    <code>&lt;ns-toast&gt;</code> 를 마크업에 직접 쓰지 않으므로(<a
+    href="#overlays"><code>nsToast()</code> 함수로만 다룬다</a>) 그 컴포넌트에는
+    이 문서에 실린 프로퍼티 표 자체가 없다 — 이 표에 <code>reflect</code> 셀이
+    둘만 보여도 셋 중 하나가 빠진 것이 아니다.
   </p>
   <p>
     <strong><code>reflect</code> 하는 것에도 타이밍이 있다.</strong> lit 은 속성을
@@ -3585,6 +3591,172 @@
       router.push(e.detail.href);
     });
   </script>
+
+  <h2 id="consumer-testing">소비자가 테스트할 때</h2>
+  <p>
+    이 절은 <code>dashboard-shell</code> 이 자체 프리미티브 17개를 이 패키지로
+    이관하면서 열 태스크에 걸쳐 <strong>실측으로 알아낸 것</strong>을 옮긴 것이다.
+    적어 두지 않으면 다음 소비자가 처음부터 다시 겪는다.
+  </p>
+  <p>
+    아래는 <strong>실측</strong>(테스트를 실제로 돌려서 확인한 사실)과
+    <strong>추론</strong>(그 실측 위에서 고른 방침)을 나눠 적는다 — 이 문서의
+    다른 절과 같은 관례다.
+  </p>
+
+  <h3 id="consumer-testing-measured">실측</h3>
+
+  <h4 id="consumer-testing-vitest-node">① vitest(jsdom) 이 프로퍼티를 조용히 버린다</h4>
+  <p>
+    이관 과정에서 <strong>가장 값어치가 컸던 발견</strong>이다. vitest(jsdom)
+    환경에서 React shim(클래스 래퍼)에 넘긴 프로퍼티가 <strong>하나도 반영되지
+    않고</strong>, 에러도 경고도 없이 컴포넌트 기본값 그대로 렌더된다.
+  </p>
+  <p>
+    원인은 <code>@lit/react</code> 의 <code>node</code> export 조건이다. 이
+    저장소에서도 같은 조건이 확인된다.
+  </p>
+  <script type="text/plain">
+    node -p "JSON.stringify(require('./node_modules/@lit/react/package.json').exports['.'], null, 1)"
+  </script>
+  <p>
+    vitest 는 테스트를 Node 위에서 돌리므로 <code>node</code> 조건이 걸리고, 그
+    빌드의 <code>createComponent</code> 에는 <strong>프로퍼티를 엘리먼트에 세우는
+    경로가 아예 없다</strong> — 모아 둔 프로퍼티를 <code>litPatchedCreateElement</code>
+    이거나 <code>globalThis.litSsrReactEnabled</code> 일 때만 <code>_$litProps$</code>
+    로 실어 보내고, 그 조건이 아니면 그 자리에서 버린다. <strong>타이밍 문제가
+    아니다</strong> — 나중에 반영되는 것이 아니라 애초에 실리지 않으므로,
+    <code>act()</code> 나 flush, 어떤 대기로도 고칠 수 없다. 소비자가 실제로 그
+    시도에 시간을 썼다.
+  </p>
+  <p>
+    처방은 <code>vitest.config.ts</code> <strong>최상위</strong>다
+    (<code>test</code> 블록 안이 아니다).
+  </p>
+  <script type="text/plain">
+    ssr: { resolve: { conditions: ["module", "browser", "node", "development|production"] } },
+  </script>
+  <p>
+    <strong><code>node</code> 를 조건 목록에서 빼면 안 된다</strong> —
+    <code>react-dom/server</code> 처럼 browser/node 빌드가 실제로 갈리는
+    패키지가 조용히 틀린 쪽을 잡는다. <code>server.deps.inline</code> 도
+    효과가 없다 — 인라인은 파일을 번들에 포함시킬 뿐 export 조건 해석 자체를
+    바꾸지 않는다.
+  </p>
+
+  <h4 id="consumer-testing-showmodal">jsdom 에는 <code>showModal()</code> 이 없다</h4>
+  <p>
+    이 라이브러리의 결함이 아니라 jsdom 자체의 한계지만, <a
+    href="#ns-dialog"><code>ns-dialog</code></a> 를 쓰는 순간 걸린다. 테스트
+    환경에 프로토타입 스텁이 필요하다 — <strong>스텁이지 구현이 아니다.</strong>
+    <code>open</code> 속성을 켜고 끄는 최소한만 흉내 내고, 포커스 트랩 ·
+    <code>::backdrop</code> · <kbd>Esc</kbd> 는 흉내 내지 않는다. 그것들까지
+    폴리필로 재현하기 시작하면 연극이 되고, 초록으로 실행된 것이 "검증됐다"
+    로 오해된다.
+  </p>
+
+  <h4 id="consumer-testing-reflect">reflect 여부는 컴포넌트마다 다르다</h4>
+  <p>
+    대부분의 프로퍼티는 속성으로 반영되지 않는다(<code>el.getAttribute("label")</code>
+    이 <code>null</code>). 반영되는 것은 <code>ns-header.sidebarOpen</code> ·
+    <code>ns-nav-item.active</code> · <code>ns-toast.position</code> 셋뿐이다 —
+    이 문서의 각 컴포넌트 프로퍼티 표에 있는 <code>reflect</code> 칸과 같다.
+    <strong>프로퍼티로 읽는 것은 항상 안전하다.</strong>
+  </p>
+
+  <h4 id="consumer-testing-microtask">shadow 내용은 마이크로태스크 뒤에 나온다</h4>
+  <p>
+    lit 은 shadow 내용을 마이크로태스크에서 그린다. <code>render()</code> 직후
+    동기 조회로는 아직 빈 엘리먼트다. 테스트 유틸에 이미 있는 대기 수단
+    (<code>findBy*</code>, <code>waitFor</code> 등)을 쓰고, <strong>새 헬퍼를
+    만들지 않는다.</strong>
+  </p>
+
+  <h4 id="consumer-testing-visibility">무엇이 보이고 무엇이 안 보이는가</h4>
+  <p>
+    테스트가 <code>getByText</code> 같은 쿼리로 찾을 수 있는 것은 light DOM
+    뿐이다. 이 라이브러리는 컴포넌트마다 그 경계가 다르다.
+  </p>
+  <table>
+    <tr><th>보인다</th><th>안 보인다</th></tr>
+    <tr>
+      <td>
+        네이티브 요소 클래스 래퍼 전부 · <a href="#ns-tabs"><code>ns-tabs</code></a> ·
+        <a href="#ns-table-tag"><code>ns-table</code></a> ·
+        <a href="#ns-multi-select"><code>ns-multi-select</code></a> ·
+        <a href="#ns-pagination"><code>ns-pagination</code></a>
+        (넷 다 Light DOM)
+      </td>
+      <td>
+        <a href="#ns-dialog"><code>ns-dialog</code></a>(제목 · 닫기 버튼) ·
+        <a href="#ns-page-heading"><code>ns-page-heading</code></a> ·
+        <a href="#ns-header"><code>ns-header</code></a>(<code>projectName</code> ·
+        토글) · <a href="#ns-sidebar"><code>ns-sidebar</code></a>/<a
+        href="#ns-nav-group"><code>ns-nav-*</code></a>(라벨 · 그룹 제목)
+      </td>
+    </tr>
+  </table>
+  <p>
+    <strong>슬롯으로 넘긴 자식은 예외다.</strong> 소비자가 슬롯에 넣은 자식은
+    shadow 안이 아니라 호스트의 light DOM 자식으로 남으므로,
+    <code>within(host)</code> 범위가 그대로 보존된다.
+  </p>
+  <p>
+    shadow 안으로 들어가야 하는 접근은 한 종류만 예외로 둔다 — 네이티브
+    <code>&lt;dialog&gt;</code> 의 <code>open</code> 속성. 다른 관찰 경로가 없기
+    때문이다. <strong>"유일한 자리" 가 아니라 "유일한 종류"</strong> 라는 점은
+    구분해 둔다 — 열림 · 닫힘을 함께 보는 짝이 있으면 한 파일에 이 접근이 둘
+    이상 있는 것이 정상이다.
+  </p>
+
+  <h4 id="consumer-testing-events">이벤트로 배선을 확인한다</h4>
+  <p>
+    shadow 안의 버튼을 직접 클릭하지 않고, 호스트에 라이브러리 이벤트를 올려
+    확인한다(<code>ns-dialog-close</code> · <code>ns-toggle</code> ·
+    <code>ns-navigate</code>). <strong>그 테스트는 「누르면 이벤트가 난다」를
+    증명하지 않는다</strong> — 그것은 라이브러리와 브라우저의 일이다. 그래서
+    테스트 제목에 "누르면" 을 쓰지 않는다.
+  </p>
+
+  <h4 id="consumer-testing-false">선택 프롭의 부재와 <code>false</code> 가 같은 DOM 을 만들 수 있다</h4>
+  <p>
+    <a href="#ns-sidebar"><code>ns-sidebar</code></a> 의 <code>open</code> 이
+    그렇다. <strong>음성 단언만 두면</strong> — "닫힌 상태를 나타내는 무언가가
+    없다" 만 확인하면 — 배선이 통째로 빠져도 통과한다. 음성과 양성 단언을
+    함께 둔다.
+  </p>
+
+  <h4 id="consumer-testing-empty-guard">순회형 헬퍼에는 비어 있지 않음 가드를 넣는다</h4>
+  <p>
+    목록을 돌며 단언하는 헬퍼는 목록이 비면 루프가 한 번도 안 돌아, 아무것도
+    단언하지 않은 채로 통과한다.
+  </p>
+
+  <h3 id="consumer-testing-judgment">추론(방침)</h3>
+  <p>
+    아래는 실측이 아니라 그 위에서 고른 테스트 작성 방침이다.
+  </p>
+  <ul>
+    <li>
+      <strong>우리가 소유한 계약을 단언한다.</strong> 넘긴 프롭과 받은 이벤트를
+      본다. 라이브러리가 그리는 내부 마크업에는 의존하지 않는다 — 그쪽이
+      <code>&lt;h2&gt;</code> 를 <code>&lt;h1&gt;</code> 으로 바꾸는 날 깨지는
+      것은 소비자의 버그가 아니다.
+    </li>
+    <li>
+      <strong>shadow 접근은 한 종류만 허용한다</strong> — 위
+      <code>&lt;dialog&gt;</code> 의 <code>open</code>. 다른 관찰 경로가 없는
+      경우로 한정하는 판단이다.
+    </li>
+  </ul>
+
+  <h3 id="consumer-testing-field">Field 관련 두 가지</h3>
+  <p>
+    커스텀 엘리먼트를 <a href="#ns-field"><code>Field</code></a> 로 감쌀 때는
+    동기 조회가 안 되어 <code>await findByLabelText</code> 가 필요하고,
+    <code>Field</code> 는 서버 컴포넌트에서 쓸 수 없다 — 두 항목 모두
+    <a href="#ns-field"><code>.ns-field</code></a> 절에서 자세히 다룬다.
+  </p>
   </main>
 </div>
 
