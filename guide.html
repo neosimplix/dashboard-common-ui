@@ -979,11 +979,14 @@
     <li>그다음 Lit 의 갱신이 마이크로태스크에서 돌아 안쪽 <code>&lt;input&gt;</code> 에 <code>id</code> 를 쓴다</li>
   </ol>
   <p>
-    그래서 <code>render()</code> 직후에는 호스트에 <code>input-id</code> 속성조차
-    없다 — 동기 조회는 두 단계 중 어느 쪽도 끝나기 전에 읽는 것이라 항상
-    실패한다. 테스트에서는 <code>await findByLabelText(...)</code> 처럼 두
-    단계 모두를 넘는 대기가 필요하고, 이걸 알면 "왜 한 번 기다려도 안 되나"
-    가 헷갈리지 않는다.
+    <code>inputId</code> 는 <code>reflect: true</code> 가 아니라서 호스트의
+    <code>input-id</code> 속성은 애초에 언제 봐도 나타나지 않는다 — 그 부재는
+    타이밍의 증거가 아니다. 실제로 관찰되는 "아직 없음"은 안쪽
+    <code>&lt;input&gt;</code> 의 <code>id</code> 쪽이다. 그 값이 찍히려면
+    위 두 단계가 <strong>모두</strong> 끝나야 하므로, <code>render()</code>
+    직후 동기 조회는 둘 중 어느 쪽이 아직 남아 있어도 실패한다. 테스트에서는
+    <code>await findByLabelText(...)</code> 처럼 두 단계 모두를 넘는 대기가
+    필요하고, 이걸 알면 "왜 한 번 기다려도 안 되나" 가 헷갈리지 않는다.
   </p>
 
   <h3><code>Field</code> 와 서버 컴포넌트</h3>
