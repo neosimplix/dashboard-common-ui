@@ -1232,3 +1232,38 @@ JSX 주석 `{/* … */}` 안에서 공백을 걷어낸 **맨 앞**이 `@ts-expec
 뜬다. 함정과 바는 같은 사실의 양면이다 — 아무 때나 뜨는 것이 아니라 **문맥에
 진짜 에러가 있는지에 정확히 반응한다**는 것이 위험(무심코 언급하면 오탐)이자
 쓸모(의도하면 회귀 바가 된다)가 되는 지점이다.
+
+## 컴파일러 출력을 grep 하는 검사는 그 출력의 찍힘새에 결합된다
+
+`v0.5.4` 태그를 자른 뒤 `releasing` 스킬의 산출물 검사(`git show vX.Y.Z:dist/react/elements.d.ts | grep -cE 'onNs[A-Za-z]+:'`)가 **11 이 아니라 9** 를 내놓았다. 태그는 멀쩡했다 — 깨진 것은 검사였다.
+
+**무슨 일이 있었나.** `v0.5.4` 는 `NsPagination`·`NsMultiSelect` 에 `children?: never` 를 더하려고 이 둘의 export 를 `withoutChildren()` 헬퍼로 감쌌다(`src/react/elements.ts:55`). 이벤트를 가진 래퍼를 이 헬퍼로 감싸면 `tsc` 가 `.d.ts` 를 찍을 때 그 래퍼의 타입을 더 이상 `ReactWebComponent<Element, { onNsX: EventName<CustomEvent<D>> }>` 꼴로 압축하지 않는다 — **props 를 펼쳐서** 찍는다. 그래서 이 두 이벤트는
+
+```ts
+onNsPageChange?: ((e: CustomEvent<NsPageChangeDetail>) => void) | undefined;
+onNsMultiSelectChange?: ((e: CustomEvent<NsMultiSelectChangeDetail>) => void) | undefined;
+```
+
+로 나왔다. 검사의 grep 패턴 `onNs[A-Za-z]+:` 는 이름 바로 뒤에 콜론을 요구하는데, 펼쳐진 형태는 `onNsPageChange?:` 처럼 물음표가 콜론 앞에 낀다 — 매칭 실패. 이벤트를 가진 래퍼 전체(아홉)가 내는 열한 개 매핑 줄 중 정확히 이 둘만 안 잡혀 11 − 2 = 9 가 됐다.
+
+**하지만 브랜딩의 효과는 그대로 살아 있었다.** 펼쳐진 형태는 결함이 아니라 `EventName<>` 이 만들려는 타입 그 자체다 — 압축된 표기(`onNsX: EventName<CustomEvent<D>>`)와 펼친 표기(`onNsX?: ((e: CustomEvent<D>) => void) | undefined`)는 같은 타입의 다른 출력 모양일 뿐이다. 콜드 설치(scratch 프로젝트에 태그를 `npm i git+file://…#v0.5.4` 로 설치하고 소비자 파일을 타입체크)로 직접 확인했다: `const n: string = e.detail.page` 는 `TS2322`(number 를 string 에 못 넣는다), `e.detail.nope` 는 `TS2339`(그런 프로퍼티 없음), `<NsPagination>{"x"}</NsPagination>` 는 `TS2322`(`children` 자리에 문자열을 못 넣는다) — 셋 다 기대한 대로 에러가 났다. 즉 `e.detail` 은 구체 타입을 유지했고 `children?: never` 도 살아 있었다. 검사만 그 사실을 못 읽었다.
+
+**고친 검사 둘.**
+
+```sh
+# 패턴에 물음표를 허용 — 11 로 돌아온다
+git show v0.5.4:dist/react/elements.d.ts | grep -cE 'onNs[A-Za-z]+\??:'
+
+# 찍힘새 자체에 결합되지 않는, 더 강한 검사 — 출력 없음이 정상
+git show v0.5.4:dist/react/elements.d.ts | grep -E 'onNs[A-Za-z]+\??:' | grep -vE 'EventName<|CustomEvent<'
+```
+
+뒤의 검사는 개수를 세지 않고 **모든 매핑 줄이 `EventName<` 이나 `CustomEvent<` 중 하나를 담고 있는지**만 본다 — 압축되든 펼쳐지든 둘 중 하나는 항상 남으므로, `tsc` 가 또 다른 찍힘새를 고르더라도 이 검사는 버틴다. 개수 검사는 여전히 유용하다(래퍼나 이벤트가 통째로 빠지는 것은 이쪽이 더 직접적으로 잡는다), 다만 등장 모양에 대한 가정을 줄여야 했다.
+
+**이 저장소에서 세 번째로 같은 모양을 만난 함정이다** — 도구가 우리가 다른 목적으로 적어둔(또는 컴파일러가 다른 목적으로 찍어낸) 문자열을, 그 문자열의 **형태**로 읽는다는 점에서 같은 과다.
+
+1. `verification.md` 의 문서 HTML 구조 검사 — `<script>` 태그를 문자열로 세므로, 산문이 그 태그 이름을 리터럴로 적으면 배선 개수로 잘못 잡힌다.
+2. `@ts-expect-error` 가 JSX 주석의 첫 토큰이면 지시문으로 소비된다(바로 위 절) — `tsc` 가 주석의 **위치** 를 읽는다.
+3. 이번 것 — `tsc` 가 같은 타입을 **어떤 모양으로 찍을지**는 감싸는 헬퍼 하나로 바뀌고, 그 모양에 결합된 grep 은 소스가 옳아도 실패한다.
+
+셋 다 "도구가 다른 목적의 문자열을 읽는다" 는 같은 뿌리이고, 대응은 매번 달랐다 — ①은 그 단어를 산문에서 피하고, ②는 지시문을 문장 중간 인용으로 옮기고, ③은 패턴을 형태 무관 검사로 대체했다. **패턴이 컴파일러 출력의 한 형태에 맞춰 짜여 있으면, 소스가 바뀌지 않아도 컴파일러가 형태를 바꾸는 것만으로 검사가 깨질 수 있다** — 이번에는 `withoutChildren()` 이 그 계기였고, 다음은 다른 계기일 수 있다. 형태 자체를 전제하지 않는 검사(위 두 번째 명령)를 곁들이는 것이 재발을 막는다.

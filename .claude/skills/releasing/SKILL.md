@@ -52,15 +52,25 @@ npm run release -- 0.1.4
 **타입만 바뀐 수정도 태그를 다시 잘라야 한다.** `as EventName<...>` 같은 타입 어노테이션은 런타임 JS 에서 지워지지만 `.d.ts` 에는 남는다. 소스를 고쳐놓고 재발행하지 않으면 소비자는 깨진 타입을 계속 받는다.
 
 ```sh
-git show v0.1.4:dist/react/elements.d.ts | grep -E 'onNs[A-Za-z]+:'
-git show v0.1.4:dist/react/elements.d.ts | grep -cE 'onNs[A-Za-z]+:'   # 11 이어야 한다
+git show v0.1.4:dist/react/elements.d.ts | grep -E 'onNs[A-Za-z]+\??:'
+git show v0.1.4:dist/react/elements.d.ts | grep -cE 'onNs[A-Za-z]+\??:'   # 11 이어야 한다
 ```
 
-**줄이 정확히 열한 개여야 하고**, 전부 `EventName<CustomEvent<...>>` 여야 한다. **세는 단위는 래퍼가 아니라 이벤트 매핑 줄이다** — 래퍼는 아홉인데 줄이 열하나인 이유가 둘이다. `ns-nav-group` 과 `ns-table` 이 각각 이벤트를 둘씩 내고, `onNsNavigate` 는 세 래퍼(`ns-sidebar`·`ns-nav-group`·`ns-nav-item`)가 공유하는데 이 grep 은 중복을 줄이지 않는다. 숫자의 출처는 `src/react/elements.ts` 에서 `events` 가 비어 있지 않은 `createComponent` 호출이 내는 이벤트 전부이고, 래퍼나 이벤트를 더하면 이 숫자와 `.claude/rules/verification.md` 의 숫자를 **함께** 고친다. **`EventName` 브랜딩은 `dist/react/index.d.ts` 가 아니라 `elements.d.ts` 에 있다** — `index.d.ts` 를 대상으로 grep 하면 아무 줄도 안 나오고 그 상태로 항상 "통과"하므로 검사가 아니다.
+**줄이 정확히 열한 개여야 하고**, 전부 `EventName<...>` 이거나 `CustomEvent<...>` 를 담아야 한다. **세는 단위는 래퍼가 아니라 이벤트 매핑 줄이다** — 래퍼는 아홉인데 줄이 열하나인 이유가 둘이다. `ns-nav-group` 과 `ns-table` 이 각각 이벤트를 둘씩 내고, `onNsNavigate` 는 세 래퍼(`ns-sidebar`·`ns-nav-group`·`ns-nav-item`)가 공유하는데 이 grep 은 중복을 줄이지 않는다. 숫자의 출처는 `src/react/elements.ts` 에서 `events` 가 비어 있지 않은 `createComponent` 호출이 내는 이벤트 전부이고, 래퍼나 이벤트를 더하면 이 숫자와 `.claude/rules/verification.md` 의 숫자를 **함께** 고친다. **`EventName` 브랜딩은 `dist/react/index.d.ts` 가 아니라 `elements.d.ts` 에 있다** — `index.d.ts` 를 대상으로 grep 하면 아무 줄도 안 나오고 그 상태로 항상 "통과"하므로 검사가 아니다.
 
-나쁜 결과는 둘이다. ① 어떤 줄이 `onNsToggle: string;` 처럼 `EventName<...>` 없이 맨 `string` 으로 끝난다 — 그 이벤트의 캐스트가 소스에서 빠졌거나 약해졌다는 뜻이다. ② **줄 수가 열하나가 아니다.** 적으면 이벤트 매핑이 사라진 것이고(래퍼가 통째로 빠진 것과 래퍼는 남은 채 이벤트 하나만 빠진 것이 여기서 같은 모양으로 드러난다), 많으면 소스에 없는 매핑이 태그에 들어간 것이다.
+패턴이 `\??` 로 물음표를 허용하는 이유가 셋째 나쁜 결과와 맞물려 있다 — 아래에서 함께 설명한다.
 
-**하한이 아니라 등식으로 본다.** "열 개보다 적게" 같은 하한은 이벤트 하나가 조용히 사라진 상태를 통과시킨다 — 그리고 이것이 태그 앞의 마지막 검사이고 태그는 되돌릴 수 없다. 숫자가 어긋나면 먼저 `src/react/elements.ts` 를 다시 세어 **어느 쪽이 옳은지** 정하고, 이 문단과 `verification.md` 를 고친 뒤에 태그를 자른다.
+나쁜 결과는 셋이다. ① 어떤 줄이 `onNsToggle: string;` 처럼 `EventName<...>` 도 `CustomEvent<...>` 도 없이 맨 `string` 으로 끝난다 — 그 이벤트의 캐스트가 소스에서 빠졌거나 약해졌다는 뜻이다. ② **줄 수가 열하나가 아니다.** 적으면 이벤트 매핑이 사라진 것이고(래퍼가 통째로 빠진 것과 래퍼는 남은 채 이벤트 하나만 빠진 것이 여기서 같은 모양으로 드러난다), 많으면 소스에 없는 매핑이 태그에 들어간 것이다. ③ **찍히는 모양 자체가 바뀔 수 있다 — 이것은 결함이 아니라 컴파일러의 정상 동작이다.** `v0.5.4` 는 `NsPagination`·`NsMultiSelect` 를 `children?: never` 를 더하려고 `withoutChildren()` 으로 감쌌다(`src/react/elements.ts:55`). 그 결과 이 둘의 래퍼 타입은 `ReactWebComponent<Element, { onNsX: EventName<...> }>` 형태로 압축되지 않고 **props 가 펼쳐져서** `onNsPageChange?: ((e: CustomEvent<NsPageChangeDetail>) => void) | undefined;` 처럼 나온다. 물음표가 `:` 앞에 끼어들어 `onNs[A-Za-z]+:` 로는 이 두 줄을 못 잡는다 — 그래서 `v0.5.4` 태그에서 실제로 9 가 나왔다(11 이 아니라). 이 두 줄은 소스와 어긋난 게 아니다 — 펼쳐진 형태가 바로 `EventName<>` 가 만들어내려는 그 타입이고, `e.detail` 은 여전히 구체 타입이며 `children` 은 여전히 막혀 있다(콜드 설치로 확인, 아래 참고). **하지만 grep 패턴이 한 가지 찍힘새에 결합돼 있으면 이걸 "매핑 빠짐" 으로 오판한다.**
+
+**하한이 아니라 등식으로 본다.** "열 개보다 적게" 같은 하한은 이벤트 하나가 조용히 사라진 상태를 통과시킨다 — 그리고 이것이 태그 앞의 마지막 검사이고 태그는 되돌릴 수 없다. 숫자가 어긋나면 먼저 `src/react/elements.ts` 를 다시 세어 **어느 쪽이 옳은지** 정하고, 이 문단과 `verification.md` 를 고친 뒤에 태그를 자른다. **숫자가 어긋났다고 바로 소스를 의심하지 않는다** — 위 ③ 처럼 찍힘새만 바뀐 것일 수 있으므로, 먼저 아래의 형태 무관 검사로 실제 브랜딩이 살아있는지부터 본다.
+
+찍힘새가 바뀌어도 살아남는 더 강한 검사는 이거다 — 개수를 세는 대신 **모든 매핑 줄이 타입 있는 detail 을 달고 있는지**만 본다.
+
+```sh
+git show v0.1.4:dist/react/elements.d.ts | grep -E 'onNs[A-Za-z]+\??:' | grep -vE 'EventName<|CustomEvent<'
+```
+
+출력이 없어야 정상이다 — 있으면 그 줄이 ①(브랜딩 없는 `string`)에 해당한다. 개수 검사가 원래 대신 재려던 성질이 바로 이것이라, 찍힘새가 또 바뀌어도 이 검사는 버틴다.
 
 ### 태그 안의 문서가 자기 버전을 가리키는가
 
