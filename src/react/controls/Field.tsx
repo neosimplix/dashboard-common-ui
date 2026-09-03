@@ -58,8 +58,41 @@ export function Field({ label, hint, error, children }: FieldProps) {
     Sidebar 와 같다: StrictMode 이중 렌더에 두 번 나온다(실측 2 → 1).
   */
   const injectable = isValidElement(children);
+
+  /*
+    자리가 둘인 이유. 게이트가 거짓이 되는 시점이 환경마다 다르다.
+
+    RSC 경로에서는 서버 패스에서만 거짓이다 — Next 의 페이로드가 자식을
+    React.lazy 참조로 넘기고, 클라이언트에서는 그것이 풀려 평범한 엘리먼트로
+    도착한다. 그런데 아래 이펙트는 클라이언트에서만 돌고 그때 게이트는 이미
+    참이므로, 0.5.6 의 경고는 정작 그 사고에서 뜨지 않았다(소비자가 next dev
+    에서 확인해 알려줬다).
+
+    서버 렌더에는 이펙트가 없으므로 렌더 본문에서 낸다. 렌더 본문에서
+    console.warn 하는 것은 순수성 위반이지만, 서버 렌더는 한 번만 돌고
+    StrictMode 도 서버에서는 두 번 부르지 않으므로 중복이 없다
+    (실측: renderToString 은 본문 1회·이펙트 0회, StrictMode 로 감싸도 같다).
+    이펙트는 서버에서 안 돌고 서버 전용 훅도 없어 대안이 없다.
+
+    문구를 아래 클라이언트 경고와 다르게 쓴다 — 진단이 다르므로 처방도 다르다.
+    여기는 "자식이 서버에서 만들어져 lazy 로 왔다", 아래는 "자식이 단일
+    엘리먼트가 아니다" 다. 하나로 합치면 RSC 사고를 만난 사람이 엉뚱한 것을
+    의심한다.
+  */
+  if (!injectable && typeof window === "undefined") {
+    console.warn(
+      `[ns-field] label="${label}" 의 자식이 서버 렌더에서 React 엘리먼트가 ` +
+        "아니라 id 를 주입하지 못했습니다. 서버 컴포넌트가 만든 자식이 RSC " +
+        "페이로드에서 lazy 참조로 도착하면 이렇게 됩니다 — 자식을 클라이언트 " +
+        "컴포넌트에서 만들거나 이 파일에 use client 를 붙이세요.",
+    );
+  }
+
   const warnedRef = useRef(false);
   useEffect(() => {
+    // 자리가 둘이다 — 위는 서버 렌더 본문, 여기는 클라이언트 이펙트다.
+    // RSC 경로에서는 서버 패스에서만 게이트가 거짓이고 클라이언트에서는
+    // 이미 참이라 위쪽만 뜬다. 두 조건은 환경으로 갈리므로 겹쳐 뜨지 않는다.
     if (injectable || warnedRef.current) return;
     warnedRef.current = true;
     console.warn(
