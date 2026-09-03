@@ -1016,11 +1016,12 @@
   </script>
   <p>
     <strong>프로덕션 빌드에서는 나지 않는다</strong> — 배포된 화면의 접근성이
-    깨지지는 않는다. <code>v0.5.7</code> 이전에는 <strong>자동화된 잡을
-    수단도 없었다.</strong> jsdom 테스트에는 이 경계가 없어 원리적으로 못
-    잡고, 프로덕션 빌드도 정상이라 CI 로도 못 잡는다. 그때 유일한 감지
-    경로는 사람의 눈뿐이었다 — 개발 서버에서 보는 하이드레이션 경고, 그리고
-    Chrome 이 스스로 내는 이슈:
+    깨지지는 않는다. 이 RSC 경로에는 <strong>자동화된 잡을 수단이 없다</strong>
+    — jsdom 테스트에는 이 경계가 없어 원리적으로 못 잡고, 프로덕션 빌드도
+    정상이라 CI 가 돌리는 <code>next build</code> 로도 못 잡는다.
+    <code>v0.5.7</code> 이 더한 서버 경고도 이 사정을 바꾸지 않는다 — 이유는
+    아래 문단에 있다. 유일한 감지 경로는 사람의 눈뿐이다 — 개발 서버에서
+    보는 하이드레이션 경고, 그리고 Chrome 이 스스로 내는 이슈:
   </p>
   <script type="text/plain">
     Incorrect use of <label for=FORM_ELEMENT>
@@ -1075,23 +1076,41 @@
     으로 찍는다. 그 외의 경우 — 자식이 <code>null</code>·배열·문자열이거나
     감싸지 않은 lazy 참조 자체라 애초에 단일 React 엘리먼트가 아닌 경우 —
     는 그대로 이펙트에서, 인스턴스당 <strong>정확히 한 번</strong> 찍힌다
-    (StrictMode 이중 렌더에서도 한 번). <strong>두 자리는 뜨는 콘솔이
-    다르다</strong> — 어느 쪽을 봐야 하는지가 바로 소비자가 시간을 버린
-    지점이었다.
+    (StrictMode 이중 렌더에서도 한 번). <strong>두 자리는 렌더 패스 하나로
+    보면 배타적이다</strong> — 이펙트는 서버에서 돌지 않고,
+    <code>typeof window === "undefined"</code> 는 클라이언트에서 결코 참이
+    되지 않는다. 그런데 <strong>SSR 앱(즉 Next 는 항상)은 같은 트리를 두
+    패스 모두로 렌더한다</strong> — RSC 로 lazy 참조가 도착하는 경로만
+    클라이언트에서 풀려 서버 쪽만 뜨고, 그 외(자식이 <code>null</code>·
+    배열·문자열이거나 감싸지 않은 lazy 참조 자체인 경우)는 서버 패스와
+    클라이언트 패스 둘 다에서 게이트가 거짓이라 <strong>두 메시지가 다른
+    곳에 함께 뜬다.</strong> 어느 쪽을 봐야 하는지가 바로 소비자가 시간을
+    버린 지점이었다.
   </p>
   <table>
     <tr><th>경로</th><th>뜨는 곳</th></tr>
-    <tr><td>RSC(자식이 서버에서 만들어짐)</td><td><code>next dev</code> <strong>터미널</strong> — 브라우저 콘솔이 아니다</td></tr>
-    <tr><td>클라이언트(<code>null</code>·배열·문자열·감싸지 않은 lazy 참조)</td><td><strong>브라우저 콘솔</strong></td></tr>
+    <tr><td>RSC(자식이 서버에서 만들어져 클라이언트에서 풀림)</td><td><code>next dev</code> <strong>터미널만</strong></td></tr>
+    <tr><td>비-엘리먼트(<code>null</code>·배열·문자열·감싸지 않은 lazy 참조)</td><td><strong>터미널과 브라우저 콘솔 둘 다</strong>(SSR 앱)</td></tr>
   </table>
   <p>
+    <strong>터미널 메시지의 문구를 곧이곧대로 믿지 않는다.</strong> 그 문구는
+    RSC/lazy 를 흔한 원인으로 짚지만, 자식이 <code>null</code> 이거나 배열·
+    문자열이면 원인은 그것이지 RSC 가 아니다 — 터미널이 RSC 를 말해도 자식의
+    실제 모양을 먼저 본다.
+  </p>
+  <p>
     위 증상을 다시 만나면(터미널이든 브라우저든) 이제 <code>Field</code> 를
-    의심할 근거가 생긴 것이다. 서버 경고는 <code>next dev</code> 터미널의
-    로그로 남으므로 <strong>CI 로도 잡을 수 있다</strong> — <code>v0.5.7</code>
-    이전에는 없던 수단이다. <strong>다만 이 경고는 범위가 있다</strong> —
-    자식이 엘리먼트이긴 하지만 그 래퍼가 주입받은 프롭을 labelable 요소까지
-    넘기지 않고 삼키면 똑같이 라벨이 끊기는데, 이 경우는 어느 쪽 경고도
-    뜨지 않는다. 경고가 없다고 해서 라벨이 실제로 이어졌다는 확인은 아니다.
+    의심할 근거가 생긴 것이다. <strong>CI 가 잡을 수 있는 범위가 넓어진
+    것은 비-엘리먼트 자식 클래스뿐이다</strong> — 이 서버 경고는
+    <code>next build</code> 에도 그대로 남는 <code>console.warn</code> 이라
+    <code>next build</code> 를 돌리는 CI 파이프라인의 stderr 에 찍힌다.
+    <strong>RSC 경로는 여전히 CI 로 못 잡는다</strong> — 프로덕션 빌드에서는
+    청크 경계가 달라 게이트가 애초에 참이 되므로(위 「Field 와 서버 컴포넌트」
+    문단 참고), <code>next build</code> 는 이 경로를 재현하지 않는다.
+    <strong>다만 이 경고는 범위가 있다</strong> — 자식이 엘리먼트이긴 하지만
+    그 래퍼가 주입받은 프롭을 labelable 요소까지 넘기지 않고 삼키면 똑같이
+    라벨이 끊기는데, 이 경우는 어느 쪽 경고도 뜨지 않는다. 경고가 없다고
+    해서 라벨이 실제로 이어졌다는 확인은 아니다.
   </p>
 
   <h2 id="ns-table">.ns-table</h2>

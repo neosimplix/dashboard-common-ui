@@ -180,9 +180,12 @@
     도착하는데, 경고는 그 클라이언트 이펙트에만 있었으니 <strong>양쪽 다
     조용했다.</strong> <code>dashboard-shell</code> 이 <code>next dev</code>
     에서 이 배선을 다시 띄우고 확인했다 — 브라우저 콘솔을 <code>ns-field</code>
-    로 걸러도 0건, 개발 서버 터미널도 0건. 원인과 이번 확인 둘 다 이 팀이
-    자기 Next 앱의 <code>node_modules</code> 안 <code>Field</code> 에 로그를
-    심어 계측해 알려준 것이다 — 이 저장소에는 Next 앱이 없어 우리가 직접
+    로 걸러도 0건, 개발 서버 터미널도 0건. 원인(<code>$$typeof</code> 가
+    <code>Symbol(react.lazy)</code>)은 이 팀이 자기 Next 앱의
+    <code>node_modules</code> 안 <code>Field</code> 에 로그를 심어 계측해
+    찾아낸 것이고, 이번 0건 확인은 그 계측이 아니라 브라우저 콘솔을 걸러
+    보고 개발 서버 터미널을 읽은 것이다 — 원인과 확인 둘 다 이 팀이 알려준
+    것이지만 방법은 다르다. 이 저장소에는 Next 앱이 없어 우리가 직접
     재현한 것은 아니다.
   </p>
   <p>
@@ -192,20 +195,25 @@
     <code>typeof window === "undefined"</code> 로 가른다. <code>v0.5.6</code>
     의 이펙트 경고는 그대로 남는다 — 자식이 <code>null</code>·배열·문자열이거나
     감싸지 않은 lazy 참조 자체라 애초에 단일 React 엘리먼트가 아닌 경우는
-    여전히 이 경고가 잡고, 인스턴스당 정확히 한 번 뜬다. <strong>둘은 뜨는
-    콘솔이 다르다</strong> — RSC 경로의 서버 경고는 <code>next dev</code>
-    <strong>터미널</strong>에, 나머지 클라이언트 쪽 경우는 <strong>브라우저
-    콘솔</strong>에 남는다. 어느 쪽을 봐야 하는지가 바로 소비자가 시간을
-    버린 지점이었다.
+    여전히 이 경고가 잡고, 인스턴스당 정확히 한 번 뜬다. <strong>두 자리는
+    렌더 패스 하나로 보면 배타적이지만, SSR 앱(Next 는 항상)은 같은 트리를
+    두 패스로 렌더하므로 비-엘리먼트 자식은 터미널과 브라우저 콘솔에 함께
+    뜬다</strong> — RSC 경로만 클라이언트에서 풀려 터미널에만 남는다. 자세한
+    경로별 대조는 <code>guide.html</code> 의 <code>Field</code> 절에 있다.
   </p>
   <p>
-    <strong>이제 CI 로 잡을 수 있다.</strong> 서버 경고가 <code>next dev</code>
-    터미널의 로그로 남기 때문이다 — 이 결함의 가장 나쁜 성질은 <code>v0.5.6</code>
-    까지도 자동화된 감지 수단이 전혀 없던 것이었고, 이번 태그가 그 자리를
-    메운다. <strong>여전히 잡지 못하는 것도 있다</strong> — 자식이 엘리먼트이긴
-    하지만 그 래퍼가 주입받은 프롭을 labelable 요소까지 넘기지 않고 삼키면
-    똑같이 라벨이 끊기는데, 이 경우는 어느 쪽 경고도 뜨지 않는다.
-    <code>v0.5.6</code> 절의 한계와 같다 — 과대 포장하지 않는다.
+    <strong>CI 가 잡을 수 있는 범위가 넓어진다 — 비-엘리먼트 자식 클래스만.</strong>
+    서버 경고는 <code>console.warn</code> 이라 <code>next build</code> 에도
+    그대로 남으므로, 그 stderr 를 보는 CI 파이프라인이면 잡을 수 있다.
+    <strong>RSC 경로(자식이 서버에서 만들어져 lazy 로 도착하는 경우)는 여전히
+    CI 로 못 잡는다</strong> — 프로덕션 빌드에서는 청크 경계가 달라 게이트가
+    애초에 참이 되므로, <code>next build</code> 는 이 경로를 재현하지 않는다.
+    이 결함의 가장 나쁜 성질(<code>v0.5.6</code> 까지 자동화된 감지 수단이
+    전혀 없던 것)은 RSC 경로에는 그대로 남는다. <strong>여전히 잡지 못하는
+    것도 있다</strong> — 자식이 엘리먼트이긴 하지만 그 래퍼가 주입받은
+    프롭을 labelable 요소까지 넘기지 않고 삼키면 똑같이 라벨이 끊기는데, 이
+    경우는 어느 쪽 경고도 뜨지 않는다. <code>v0.5.6</code> 절의 한계와 같다 —
+    과대 포장하지 않는다.
   </p>
   <p>
     증상·계측 로그·경로별 콘솔 대조표, 그리고 Chrome 이 스스로 내는
@@ -232,14 +240,17 @@
     <code>guide.html</code> 의 「번호 윈도우」는 이 태그 전까지 접근 가능한
     이름을 전혀 언급하지 않았다. 그런데도 breaking 으로 적는 이유는 문서
     여부가 아니라 <strong>관찰 가능한 동작이 바뀌었다는 사실</strong>이다 —
-    <code>getByRole("button", { name: "3" })</code> 처럼 역할과 이름으로 번호
-    버튼을 고르던 테스트나 자동화는 이 태그를 받으면 실제로 깨진다. 이제 이
+    <code>getByRole("button", { name: "3" })</code> 처럼 <strong>정확히 일치하는
+    문자열</strong>로 이름을 고르던 테스트나 자동화는 이 태그를 받으면 깨질 수
+    있다 — <code>getByRole("button", { name: /3/ })</code> 나
+    <code>getByText("3")</code> 처럼 부분 일치나 화면 텍스트로 고르는 코드는
+    그대로 통과한다. 이제 이
     이름은 <code>guide.html</code> 의 「번호 윈도우」에 <strong>공개 계약으로</strong>
     적혀 있다 — 다음에 다시 바뀌면 그때는 이 절이 이미 있던 계약을 깨는
     것이다.
   </p>
 
-  <h3>그 밖의 <code>ns-pagination</code> 변경 — 문서만 바뀐다</h3>
+  <h3>그 밖의 <code>ns-pagination</code> 변경 — 경고 문구와 문서</h3>
   <p>
     <strong>범위 밖 <code>page</code> 의 clamp 는 누구 책임인가.</strong> 제어
     모드에서 <code>page</code> 가 범위를 벗어나면 컴포넌트는 표시용으로만

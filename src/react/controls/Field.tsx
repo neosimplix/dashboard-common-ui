@@ -54,8 +54,10 @@ export function Field({ label, hint, error, children }: FieldProps) {
 
     판정을 렌더 시점 값(injectable)으로 하고 이펙트는 언제 찍을지만
     정한다 — 타이밍 의존이 없다. isValidElement 를 두 번 부르지 않도록
-    이 값을 아래 이펙트와 공유한다. 렌더 본문에서 찍지 않는 이유는
-    Sidebar 와 같다: StrictMode 이중 렌더에 두 번 나온다(실측 2 → 1).
+    이 값을 아래 이펙트와 공유한다. 클라이언트 쪽(아래 이펙트)이 렌더
+    본문에서 찍지 않는 이유는 Sidebar 와 같다: StrictMode 이중 렌더에
+    두 번 나온다(실측 2 → 1). 서버 쪽은 이펙트 자체가 없어 사정이 다르다
+    — 아래 참조.
   */
   const injectable = isValidElement(children);
 
@@ -82,17 +84,23 @@ export function Field({ label, hint, error, children }: FieldProps) {
   if (!injectable && typeof window === "undefined") {
     console.warn(
       `[ns-field] label="${label}" 의 자식이 서버 렌더에서 React 엘리먼트가 ` +
-        "아니라 id 를 주입하지 못했습니다. 서버 컴포넌트가 만든 자식이 RSC " +
-        "페이로드에서 lazy 참조로 도착하면 이렇게 됩니다 — 자식을 클라이언트 " +
-        "컴포넌트에서 만들거나 이 파일에 use client 를 붙이세요.",
+        "아니라 id 를 주입하지 못했습니다. 흔한 원인은 서버 컴포넌트가 만든 " +
+        "자식이 RSC 페이로드에서 lazy 참조로 도착하는 경우입니다 — 자식을 " +
+        "클라이언트 컴포넌트에서 만들거나 이 파일에 use client 를 붙이세요.",
     );
   }
 
   const warnedRef = useRef(false);
   useEffect(() => {
     // 자리가 둘이다 — 위는 서버 렌더 본문, 여기는 클라이언트 이펙트다.
-    // RSC 경로에서는 서버 패스에서만 게이트가 거짓이고 클라이언트에서는
-    // 이미 참이라 위쪽만 뜬다. 두 조건은 환경으로 갈리므로 겹쳐 뜨지 않는다.
+    // 두 조건은 렌더 패스 하나로 보면 배타적이다 — 이 이펙트는 서버에서
+    // 돌지 않고, typeof window === "undefined" 는 클라이언트에서 결코
+    // 참이 되지 않는다. 하지만 SSR 앱은 같은 트리를 서버 패스와 클라이언트
+    // 패스 둘 다로 렌더한다 — 자식이 null·배열·문자열이거나 감싸지 않은
+    // lazy 참조 자체처럼 애초에 단일 엘리먼트가 아니면 두 패스 모두에서
+    // 게이트가 거짓이라, 두 메시지가 각자 다른 곳(터미널과 브라우저 콘솔)에
+    // 함께 뜬다. RSC 경로(자식이 클라이언트에서는 풀려 도착)만 서버에서만
+    // 거짓이라 위쪽만 뜬다.
     if (injectable || warnedRef.current) return;
     warnedRef.current = true;
     console.warn(
