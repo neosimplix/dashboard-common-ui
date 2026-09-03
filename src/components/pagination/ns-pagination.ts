@@ -293,10 +293,17 @@ export class NsPagination extends LitElement {
         지목할 프로퍼티가 모드마다 다르다. 비제어에서 raw 는 소비자가 쓴
         page 가 아니라 내부 값이므로 page 를 탓하면 없는 프로퍼티를 가리키게
         된다. 그때 실제로 어긋난 것은 total·per-page 로 계산된 페이지 수다.
+
+        **할 일을 적는 것도 제어 모드에만 있다.** 비제어에서는 소비자가 고칠
+        것이 없다 — page 를 넘기는 경로 자체가 없고, 표시와 이후 클릭은
+        clamp 된 값을 기준으로 이어져 스스로 회복한다. 그 자리에 "이렇게
+        고쳐라" 를 적으면 존재하지 않는 조치를 지시하게 된다. 제어 모드는
+        반대다. 컴포넌트가 page 를 쓰지 않으므로(제어 규칙이다) 범위 밖 값은
+        소비자가 고치지 않으면 그대로 남는다.
       */
       console.warn(
         this.#controlled
-          ? `[ns-pagination] page=${raw} 가 1..${pages} 범위를 벗어났습니다. 표시용으로 ${clamped} 로 보정합니다.`
+          ? `[ns-pagination] page=${raw} 가 1..${pages} 범위를 벗어났습니다. 표시용으로만 ${clamped} 로 보정하고 이벤트로 교정하지는 않습니다 — 소비자가 page 를 1..${pages} 로 clamp 해서 넘겨야 합니다.`
           : `[ns-pagination] 현재 페이지 ${raw} 가 total=${this.total} · per-page=${this.perPage} 로 계산된 페이지 수(${pages})를 벗어났습니다. 표시용으로 ${clamped} 로 보정합니다.`,
       );
     }
