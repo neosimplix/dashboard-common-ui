@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, useId } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 
 export type FieldProps = {
@@ -41,7 +41,35 @@ export function Field({ label, hint, error, children }: FieldProps) {
   let control: ReactNode = children;
   let controlId = id;
 
-  if (isValidElement(children)) {
+  /*
+    자식이 React 엘리먼트가 아니면 이 게이트가 거짓이 되어 아래 주입 블록
+    전체가 조용히 건너뛰어진다 — label 은 위 useId 값을 갖는데 자식은
+    아무것도 못 받아 label 이 아무것도 가리키지 않는다. 조용히 깨지므로
+    경고가 유일한 감지 수단이다.
+
+    Next 의 RSC 페이로드가 자식을 React.lazy 참조로 넘기면 이렇게 된다
+    (isValidElement=false, $$typeof=Symbol(react.lazy)). lazy 로 감싸일지는
+    청크 경계가 정하고 next dev 에서만 나므로, 테스트도 프로덕션 빌드도
+    못 잡는다.
+
+    판정을 렌더 시점 값(injectable)으로 하고 이펙트는 언제 찍을지만
+    정한다 — 타이밍 의존이 없다. isValidElement 를 두 번 부르지 않도록
+    이 값을 아래 이펙트와 공유한다. 렌더 본문에서 찍지 않는 이유는
+    Sidebar 와 같다: StrictMode 이중 렌더에 두 번 나온다(실측 2 → 1).
+  */
+  const injectable = isValidElement(children);
+  const warnedRef = useRef(false);
+  useEffect(() => {
+    if (injectable || warnedRef.current) return;
+    warnedRef.current = true;
+    console.warn(
+      `[ns-field] label="${label}" 의 자식이 React 엘리먼트가 아니라 id 를 ` +
+        "주입하지 못했습니다. label 이 아무것도 가리키지 않습니다 — 자식을 " +
+        "클라이언트 컴포넌트에서 만들거나 수동 .ns-field 마크업을 쓰세요.",
+    );
+  }, [injectable, label]);
+
+  if (injectable) {
     const element = children as ReactElement<ControlProps>;
 
     // cloneElement 는 값이 undefined 인 키도 그대로 얹어 기존 prop 을 지운다.
