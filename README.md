@@ -99,7 +99,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
-| [`v0.5.7`](./changelog.html#v0-5-7) | 변경 | **breaking 없음.** RSC 경로(자식이 서버에서 `React.lazy` 참조로 도착)에서도 이제 `Field` 가 경고한다 — 서버 경고는 `next dev` 터미널, 기존 클라이언트 경고는 브라우저 콘솔. `v0.5.6` 의 경고를 옮긴 것이 아니라 자리를 하나 더한 것이고, 프롭을 삼키는 래퍼는 여전히 잡지 못한다 |
+| [`v0.5.7`](./changelog.html#v0-5-7) | 변경 | **breaking 하나(`ns-pagination` 번호 버튼의 접근 가능한 이름이 `"3"` → `"3페이지"` 로 바뀐다 — 역할+이름으로 집던 테스트가 깨질 수 있다).** 그 밖에 `ns-pagination` 은 범위 밖 `page` 의 clamp 책임(제어 모드는 소비자 몫)과 경고가 인스턴스당 한 번이라는 것, 폭 고정이 소비자 글꼴의 `tabular-nums` 지원에 달렸다는 것을 문서로 밝힌다. 무관하게 `Field` 는 RSC 경로(자식이 서버에서 `React.lazy` 참조로 도착)에서도 이제 경고한다 — 서버 경고는 `next dev` 터미널, 기존 클라이언트 경고는 브라우저 콘솔. `v0.5.6` 의 경고를 옮긴 것이 아니라 자리를 하나 더한 것이고, 프롭을 삼키는 래퍼는 여전히 잡지 못한다 |
 | [`v0.5.6`](./changelog.html#v0-5-6) | 변경 | **breaking 없음.** React 의 `Field` 가 자식에 `id` 를 주입하지 못하면(자식이 React 엘리먼트가 아닐 때) 콘솔에 한 번 경고한다 — 동작은 그대로다. 프롭을 삼키는 래퍼는 이 경고가 잡지 못한다 |
 | [`v0.5.5`](./changelog.html#v0-5-5) | 변경 | **breaking 없음.** `open`·`defaultOpen` 을 둘 다 안 주면 `ns-sidebar` 가 콘솔에 경고한다(React shim 전용, 동작은 그대로). `guide.html` 에 「소비자가 테스트할 때」 절, 프로퍼티 표 `reflect` 칸, `Field` 의 커스텀 엘리먼트 조합 안내가 늘었다 |
 | [`v0.5.4`](./changelog.html#v0-5-4) | 변경 | **breaking 하나(타입만, 런타임 아님).** 컨트롤에 직접 넘긴 `aria-invalid` 가 더 이상 `invalid` 프롭을 무력화하지 않고, `Field` + `ns-multi-select` 조합이 라벨을 잇는다. 자식을 안 받는 래퍼 넷은 `children?: never` 로 막는다 |

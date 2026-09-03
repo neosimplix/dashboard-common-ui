@@ -157,7 +157,15 @@
   </p>
 
   <h2 id="v0-5-7">v0.5.7</h2>
-  <p class="dist"><code>dist/</code> 변경</p>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 하나</strong></p>
+  <p>
+    <strong>이 태그에는 서로 무관한 두 작업이 함께 들어간다.</strong>
+    <code>Field</code> 의 서버 렌더 경고와, 이 저장소에서 동시에 진행되던
+    <code>ns-pagination</code> 변경 셋이다. breaking 은 <code>ns-pagination</code>
+    쪽에 하나 있고 <code>Field</code> 쪽에는 없다 — 아래 두 절로 나눠 적는다.
+  </p>
+
+  <h3><code>Field</code> — 서버 렌더 경로 경고</h3>
   <p>
     <strong><code>Field</code> 의 서버 렌더 경로에 경고 자리를 하나 더 둔다.</strong>
     React 컴포넌트 하나가 소스를 바꿔서 <code>dist/</code> 가 바뀌지만
@@ -204,6 +212,58 @@
     <code>Incorrect use of &lt;label for=FORM_ELEMENT&gt;</code> 감지 경로와
     자리가 둘인 근거는 <a href="./guide.html#ns-field">사용 안내의
     <code>Field</code> 절</a>과 <code>docs/gotchas.md</code> 에 있다.
+  </p>
+
+  <h3>breaking — <code>ns-pagination</code> 번호 버튼의 접근 가능한 이름이 바뀐다</h3>
+  <p>
+    번호 버튼은 지금까지 보이는 글자 그대로 <code>"3"</code> 을 접근 가능한
+    이름으로 썼다. 이제 <code>aria-label</code> 이 그 이름을
+    <code>"3페이지"</code> 로 바꾼다 — 보이는 글자는 그대로 <code>3</code> 이다.
+    화면낭독기가 맥락 없는 "3" 대신 무엇의 3인지 읽고, 소비자가
+    <code>getByRole("button", { name: "3페이지" })</code> 처럼 역할과 이름으로
+    특정 페이지 버튼을 집을 수 있다 — 이름이 <code>"3"</code> 이면 화면의 다른
+    버튼(행 수 "3" 같은 것)과 겹쳐 그 수단이 무너진다. 실제 소비자가 이 충돌을
+    겪고 문서화되지 않은 <code>data-ns-page</code> 속성으로 내려갔었다 —
+    <code>data-ns-page</code> 는 포커스 복원에 쓰는 내부 훅이라 공개 계약이
+    아니다.
+  </p>
+  <p>
+    <strong>이 이름은 이전 태그까지 문서화된 계약이 아니었다</strong> —
+    <code>guide.html</code> 의 「번호 윈도우」는 이 태그 전까지 접근 가능한
+    이름을 전혀 언급하지 않았다. 그런데도 breaking 으로 적는 이유는 문서
+    여부가 아니라 <strong>관찰 가능한 동작이 바뀌었다는 사실</strong>이다 —
+    <code>getByRole("button", { name: "3" })</code> 처럼 역할과 이름으로 번호
+    버튼을 고르던 테스트나 자동화는 이 태그를 받으면 실제로 깨진다. 이제 이
+    이름은 <code>guide.html</code> 의 「번호 윈도우」에 <strong>공개 계약으로</strong>
+    적혀 있다 — 다음에 다시 바뀌면 그때는 이 절이 이미 있던 계약을 깨는
+    것이다.
+  </p>
+
+  <h3>그 밖의 <code>ns-pagination</code> 변경 — 문서만 바뀐다</h3>
+  <p>
+    <strong>범위 밖 <code>page</code> 의 clamp 는 누구 책임인가.</strong> 제어
+    모드에서 <code>page</code> 가 범위를 벗어나면 컴포넌트는 표시용으로만
+    clamp 하고 이벤트로 교정하지 않는다 — 제어 중인 값을 컴포넌트가 바꾸지
+    않는다는 규칙 그대로다. 그래서 목록에서 행이 지워져 페이지 수가 줄면,
+    소비자가 <code>page</code> 를 새 범위로 clamp 해서 넘겨야 화면과 상태가
+    다시 맞는다. 콘솔 경고 문구가 이제 그 사실과 유효 범위를 함께 말한다.
+    비제어 모드는 문구가 그대로다 — <code>page</code> 를 넘기는 경로 자체가
+    없어 소비자가 고칠 것이 없고, 표시와 이후 클릭이 clamp 된 값을 기준으로
+    이어져 스스로 회복한다. <strong>경고는 엘리먼트 인스턴스당 한 번</strong>
+    이라는 것도 <code>guide.html</code> 에 함께 적었다 — 값이 바뀌어 다시
+    범위를 벗어나도 두 번째 경고는 뜨지 않는다.
+  </p>
+  <p>
+    <strong>폭 고정은 소비자 글꼴에 달렸다.</strong>
+    <code>.ns-pagination-pages</code> 의 폭 고정은 마지막 페이지 번호가 언제나
+    가장 넓은 항목이어야 성립하고, 그 전제를 세우는 <code>tabular-nums</code> 는
+    소비자가 준 글꼴에 <code>tnum</code> 이 있을 때만 실제로 먹는다 — 없으면
+    선언은 남고 효과만 사라져 창에 든 번호에 따라 "이전"·"다음" 이 움직인다.
+    헤드리스 Blink 실측으로 110페이지에서 최대 26px, 12페이지에서도 10px
+    움직였다. <code>guide.html</code> 자신은 <code>system-ui</code> 가 첫
+    순위라 육안 확인으로는 드러나지 않는다 — 큰 목록에 붙이기 전에 소비자
+    자신의 글꼴로 확인해야 한다. 실측 대조표는 <code>docs/gotchas.md</code>
+    에 있다.
   </p>
 
   <h2 id="v0-5-6">v0.5.6</h2>
