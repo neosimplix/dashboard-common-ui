@@ -2612,6 +2612,8 @@
     <li><strong>슬롯 수는 언제나 <code>min(페이지 수, page-window)</code> 다.</strong> 현재 페이지가 어디에 있든 달라지지 않는다 — 그래야 "이전"·"다음" 이 제자리에 있다. <strong>폭까지 고정하는 것은 <code>.ns-pagination-pages</code> 가 맡는다</strong>. 둘 중 하나만으로는 진폭만 줄고 여전히 움직인다</li>
     <li>페이지 수 ≤ <code>page-window</code> 면 전부 표시. 그 외에는 <strong>앞쪽</strong>(<code>1 … n</code> · <code>…</code> · 마지막) · <strong>가운데</strong>(<code>1</code> · <code>…</code> · 현재±h · <code>…</code> · 마지막) · <strong>뒤쪽</strong>(<code>1</code> · <code>…</code> · 끝의 n개) 셋 중 하나다. <code>h = (page-window - 5)/2</code> 라 <code>page-window</code> 가 <strong>5 이상의 홀수</strong>여야 한다</li>
     <li>현재 페이지는 <code>--outline</code> + <code>aria-current="page"</code>. <strong>비활성화하지 않는다</strong> — 탭 순서에서 빠지면 키보드 사용자가 위치를 잃는다</li>
+    <li><strong>번호 버튼의 접근 가능한 이름은 <code>"3페이지"</code> 형태다</strong> — 보이는 글자는 <code>3</code> 이지만 <code>aria-label</code> 이 이름을 대신한다. 화면낭독기가 맥락 없는 "3" 대신 무엇의 3인지 읽고, 소비자가 <code>getByRole("button", { name: "3페이지" })</code> 로 특정 페이지를 집을 수 있다 — 이름이 <code>"3"</code> 이면 화면의 다른 버튼(행 수 "3" 같은 것)과 겹쳐 그 수단이 무너진다. <strong>이 이름은 공개 계약이다</strong></li>
+    <li><strong>컴포넌트가 렌더하는 <code>data-ns-page</code>·<code>data-ns-nav</code> 에는 의존하지 않는다.</strong> <code>updated()</code> 가 포커스를 되돌릴 때 쓰는 내부 훅이라 예고 없이 바뀐다. 특정 버튼을 집어야 하면 위의 접근 가능한 이름을 쓴다</li>
     <li>이전·다음은 양 끝에서 <code>aria-disabled="true"</code> 다. <strong><code>disabled</code> 가 아니다</strong> — 포커스된 버튼이 <code>disabled</code> 되면 브라우저가 blur 시켜, "다음" 을 눌러 마지막 페이지에 닿는 순간 포커스가 <code>body</code> 로 떨어진다. 위 항목과 같은 이유다. 눌러도 아무 일도 일어나지 않고, <code>.ns-button</code> 이 <code>:disabled</code> 와 같은 회색·<code>not-allowed</code> 를 준다</li>
   </ul>
 

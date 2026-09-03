@@ -402,7 +402,15 @@ export class NsPagination extends LitElement {
 
       data-ns-page / data-ns-nav 는 updated() 가 포커스를 되돌릴 때 쓰는 훅이다.
       Light DOM 이라 문서 이름공간에 들어가므로 접두사를 붙인다. Lit 이 이
-      요소의 내용을 통째로 소유하므로 소비자가 쓰는 속성은 아니다.
+      요소의 내용을 통째로 소유하므로 소비자가 쓰는 속성은 아니다 — 특정
+      버튼을 집는 공개 수단은 아래 번호 버튼의 aria-label 이다.
+
+      번호 버튼의 접근 가능한 이름을 글자 그대로의 번호가 아니라 "3페이지" 로
+      두는 이유가 둘이다. 화면낭독기가 맥락 없는 "3" 대신 무엇의 3인지 읽고,
+      소비자가 역할과 이름으로 버튼을 집을 수 있다 — 이름이 "3" 이면 화면의
+      다른 버튼(예: 행 수 "3")과 겹쳐 그 수단이 무너지고, 소비자는 문서화되지
+      않은 data-ns-page 로 내려갈 수밖에 없다. 실제 소비자가 그 경로를 겪었다.
+      그래서 이 이름은 공개 계약이고 guide.html 의 「번호 윈도우」에 적혀 있다.
     */
     return html`
       <nav aria-label="페이지 이동">
@@ -445,6 +453,7 @@ export class NsPagination extends LitElement {
                       : "ns-button ns-button--ghost ns-button--sm"}
                     type="button"
                     data-ns-page=${entry}
+                    aria-label=${`${entry}페이지`}
                     aria-current=${entry === current ? "page" : nothing}
                     @click=${() => this.#activate(entry, entry)}
                   >
