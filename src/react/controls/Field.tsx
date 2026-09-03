@@ -63,9 +63,10 @@ export function Field({ label, hint, error, children }: FieldProps) {
     if (injectable || warnedRef.current) return;
     warnedRef.current = true;
     console.warn(
-      `[ns-field] label="${label}" 의 자식이 React 엘리먼트가 아니라 id 를 ` +
-        "주입하지 못했습니다. label 이 아무것도 가리키지 않습니다 — 자식을 " +
-        "클라이언트 컴포넌트에서 만들거나 수동 .ns-field 마크업을 쓰세요.",
+      `[ns-field] label="${label}" 의 자식이 단일 React 엘리먼트가 아니라 ` +
+        "id 를 주입하지 못했습니다. label 이 아무것도 가리키지 않습니다 — " +
+        "자식을 엘리먼트 하나로 두세요(예: 클라이언트 컴포넌트에서 만들기). " +
+        "그 외에는 수동 .ns-field 마크업을 쓰세요.",
     );
   }, [injectable, label]);
 
