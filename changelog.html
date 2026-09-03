@@ -118,7 +118,8 @@
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
     <ns-nav-group collapsible heading="0.5.x">
-      <ns-nav-item href="#v0-5-5" label="v0.5.5" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-6" label="v0.5.6" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-5" label="v0.5.5"></ns-nav-item>
       <ns-nav-item href="#v0-5-4" label="v0.5.4"></ns-nav-item>
       <ns-nav-item href="#v0-5-3" label="v0.5.3"></ns-nav-item>
       <ns-nav-item href="#v0-5-2" label="v0.5.2"></ns-nav-item>
@@ -152,6 +153,46 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-5-6">v0.5.6</h2>
+  <p class="dist"><code>dist/</code> 변경</p>
+  <p>
+    <strong>React 의 <code>Field</code> 가 자식에 <code>id</code> 를 주입하지
+    못하면 경고한다.</strong> React shim 하나가 소스를 바꿔서 <code>dist/</code>
+    가 바뀌지만 <strong>breaking 은 없다.</strong> <strong>런타임 동작은
+    바뀌지 않는다</strong> — 경고만 는다.
+  </p>
+  <p>
+    <code>Field</code> 는 자식이 <code>isValidElement</code> 를 통과할 때만
+    <code>id</code>·<code>aria-describedby</code> 등을 <code>cloneElement</code>
+    로 주입한다. 자식이 React 엘리먼트가 아니면 이 게이트가 거짓이 되어 주입
+    블록 전체가 조용히 건너뛰어지고, <code>&lt;label htmlFor&gt;</code> 는
+    아무것도 가리키지 않는다. <strong>그전에는 이것을 잡을 수단이 전혀
+    없었다</strong> — jsdom 테스트에는 그 경계 자체가 없고 프로덕션 빌드는
+    정상이라 CI 도 못 잡는다. 이제 게이트가 거짓이면 이펙트에서 인스턴스마다
+    <strong>정확히 한 번</strong> <code>console.warn</code> 이 찍힌다.
+  </p>
+  <p>
+    <strong>잡지 못하는 것도 있다.</strong> 자식이 엘리먼트이긴 하지만 그
+    래퍼가 주입받은 프롭을 labelable 요소까지 넘기지 않고 삼키면 똑같이
+    라벨이 끊기는데, 이 경고는 그것을 잡지 못한다. 자식이 프롭을 실제로
+    전달하는지는 <strong>정적으로 알 수 없다.</strong> 결과 검사(주입 후
+    <code>document.getElementById</code> 로 확인)도 시도했지만, 안쪽
+    컨트롤이 커스텀 엘리먼트인 경로에서 <code>id</code> 가 Lit 의
+    마이크로태스크 뒤에야 찍혀 정상 배선을 거짓 양성으로 잡았다 — 그래서
+    범위를 <code>!isValidElement(children)</code> 하나로 좁혔다.
+  </p>
+  <p>
+    원인은 <code>dashboard-shell</code> 이 자기 Next.js 앱의
+    <code>node_modules</code> 안 <code>Field</code> 에 로그를 심어 계측해
+    찾아준 것이다 — 이 저장소에는 Next 앱이 없어 우리가 직접 재현한 것은
+    아니다. Next 의 RSC 페이로드가 자식을 <code>React.lazy</code> 참조로
+    넘기는 경로가 있고, 그것이 청크 경계(<code>next dev</code> 에서만 나뉘는
+    경계)를 타면 게이트가 거짓이 된다. 자세한 증상·계측 로그·경고 범위를
+    잰 대조표는 <a href="./guide.html#ns-field">사용 안내의 <code>Field</code>
+    절</a>과 <code>docs/gotchas.md</code> 의 「<code>Field</code> 경고를
+    <code>!isValidElement</code> 하나로 좁힌 이유」에 있다.
   </p>
 
   <h2 id="v0-5-5">v0.5.5</h2>
