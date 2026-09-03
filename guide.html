@@ -1016,11 +1016,20 @@
   </script>
   <p>
     <strong>프로덕션 빌드에서는 나지 않는다</strong> — 배포된 화면의 접근성이
-    깨지지는 않는다. <code>v0.5.6</code> 이전에는 <strong>자동화된 잡을
+    깨지지는 않는다. <code>v0.5.7</code> 이전에는 <strong>자동화된 잡을
     수단도 없었다.</strong> jsdom 테스트에는 이 경계가 없어 원리적으로 못
-    잡고, 프로덕션 빌드도 정상이라 CI 로도 못 잡는다. 개발 서버에서 사람이
-    하이드레이션 경고를 보는 것이 그때는 유일한 감지 경로였다 — 실제로
-    소비자가 이 결함을 찾아낸 경로도 그것이다.
+    잡고, 프로덕션 빌드도 정상이라 CI 로도 못 잡는다. 그때 유일한 감지
+    경로는 사람의 눈뿐이었다 — 개발 서버에서 보는 하이드레이션 경고, 그리고
+    Chrome 이 스스로 내는 이슈:
+  </p>
+  <script type="text/plain">
+    Incorrect use of <label for=FORM_ELEMENT>
+  </script>
+  <p>
+    이 둘이 겹쳐 뜨는 것이 <code>v0.5.7</code> 전까지는 <strong>유일한</strong>
+    감지 경로였다 — 끊어진 라벨을 잡아 낼 계측이 <code>Field</code> 안에 아직
+    없던 때 Chrome 이 대신 잡아 준 것이다. 실제로 소비자가 이 결함을 찾아낸
+    경로도 그것이다.
   </p>
   <p>
     <strong>이제 원인이 밝혀졌다.</strong> 이 저장소에는 Next 앱이 없어
@@ -1050,17 +1059,39 @@
     빌드가 정상이었던 이유가 같은 사실 하나라는 설명이다.
   </p>
   <p>
-    <strong><code>v0.5.6</code> 부터는 경고가 난다.</strong> 게이트가
-    거짓이면 <code>Field</code> 가 이펙트에서 한 번
+    <strong><code>v0.5.6</code> 은 이펙트에 경고를 하나 넣었지만, 정작 위
+    증상(RSC 경로)에서는 뜨지 않았다.</strong> 소비자가 <code>next dev</code>
+    에서 그 배선을 다시 띄우고 확인한 것이다 — 브라우저 콘솔을
+    <code>ns-field</code> 로 걸러도 0건, 서버 터미널도 0건. 이유는 자리다.
+    RSC 페이로드가 자식을 <code>lazy</code> 참조로 넘기는 것은 서버 렌더
+    순간이고, 클라이언트에서는 이미 풀려 평범한 엘리먼트로 도착한다. 그런데
+    이펙트는 클라이언트에서만 돌고 그때는 게이트가 이미 참이라 조용했다.
+  </p>
+  <p>
+    <strong><code>v0.5.7</code> 은 경고 자리를 하나 더 둔다.</strong> 게이트가
+    거짓인 채로 <strong>서버에서</strong> 렌더되면(자식이 RSC 로 만들어져
+    lazy 로 도착한 경우) 렌더 본문에서 곧바로
     <code>[ns-field] label="…"</code> 로 시작하는 메시지를 <code>console.warn</code>
-    으로 찍는다 — <code>label</code> 값이 들어가 화면에 <code>Field</code> 가
-    여럿이어도 어느 것인지 알 수 있고, 인스턴스당 <strong>정확히 한 번</strong>만
-    찍힌다(StrictMode 이중 렌더에서도 한 번). 위 증상을 다시 만나면 이제
-    <code>Field</code> 를 의심할 근거가 생긴 것이다. <strong>다만 이 경고는
-    범위가 있다</strong> — 자식이 엘리먼트이긴 하지만 그 래퍼가 주입받은
-    프롭을 labelable 요소까지 넘기지 않고 삼키면 똑같이 라벨이 끊기는데,
-    이 경우는 경고가 뜨지 않는다. 경고가 없다고 해서 라벨이 실제로 이어졌다는
-    확인은 아니다.
+    으로 찍는다. 그 외의 경우 — 자식이 <code>null</code>·배열·문자열이거나
+    감싸지 않은 lazy 참조 자체라 애초에 단일 React 엘리먼트가 아닌 경우 —
+    는 그대로 이펙트에서, 인스턴스당 <strong>정확히 한 번</strong> 찍힌다
+    (StrictMode 이중 렌더에서도 한 번). <strong>두 자리는 뜨는 콘솔이
+    다르다</strong> — 어느 쪽을 봐야 하는지가 바로 소비자가 시간을 버린
+    지점이었다.
+  </p>
+  <table>
+    <tr><th>경로</th><th>뜨는 곳</th></tr>
+    <tr><td>RSC(자식이 서버에서 만들어짐)</td><td><code>next dev</code> <strong>터미널</strong> — 브라우저 콘솔이 아니다</td></tr>
+    <tr><td>클라이언트(<code>null</code>·배열·문자열·감싸지 않은 lazy 참조)</td><td><strong>브라우저 콘솔</strong></td></tr>
+  </table>
+  <p>
+    위 증상을 다시 만나면(터미널이든 브라우저든) 이제 <code>Field</code> 를
+    의심할 근거가 생긴 것이다. 서버 경고는 <code>next dev</code> 터미널의
+    로그로 남으므로 <strong>CI 로도 잡을 수 있다</strong> — <code>v0.5.7</code>
+    이전에는 없던 수단이다. <strong>다만 이 경고는 범위가 있다</strong> —
+    자식이 엘리먼트이긴 하지만 그 래퍼가 주입받은 프롭을 labelable 요소까지
+    넘기지 않고 삼키면 똑같이 라벨이 끊기는데, 이 경우는 어느 쪽 경고도
+    뜨지 않는다. 경고가 없다고 해서 라벨이 실제로 이어졌다는 확인은 아니다.
   </p>
 
   <h2 id="ns-table">.ns-table</h2>
