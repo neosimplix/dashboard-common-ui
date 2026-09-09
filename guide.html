@@ -1127,14 +1127,33 @@
   <p>
     <strong>대가가 하나 있다. <code>overflow-x: auto</code> 는 세로축까지 클리핑으로 만든다.</strong>
     CSS 규격상 한 축이 <code>visible</code> 이 아니면 다른 축의 <code>visible</code> 은
-    <code>auto</code> 로 계산되므로, <code>ns-table</code> 은 <strong>양방향</strong> 스크롤
-    컨테이너다. 결과로 두 가지가 표 밖으로 나가지 못한다 — 첫 행 정렬 버튼의
+    <code>auto</code> 로 계산되므로, 세로축은 <code>overflow-y: hidden</code> 으로 못박았다.
+    <strong>클리핑은 그대로다</strong> — 결과로 두 가지가 표 밖으로 나가지 못한다 — 첫 행 정렬 버튼의
     <code>outline-offset: 2px</code> 포커스 링 윗변이 잘리고, 셀 안에 절대 위치로 띄운
     <strong>행 액션 드롭다운·툴팁</strong>이 표 경계에서 잘린다.
     대시보드 표에서 흔한 조합이라 미리 적어 둔다. 그런 오버레이가 필요하면
     <code>ns-table</code> 안이 아니라 <strong>바깥(예: <code>ns-dialog</code>, 또는 body 로 띄우는
     팝오버)</strong>에 두어야 한다. 스크롤 컨테이너를 없애면 좁은 화면에서 표가 부모를
     밀어내는 문제가 돌아오므로, 둘 중 하나를 고르는 거래다.
+  </p>
+  <p>
+    <strong>세로축을 못박는 이유는 WebKit 이다.</strong> 쓰지 않으면 계산값이
+    <code>auto</code> 라 세로로 스크롤할 수 있는 상자가 되는데, WebKit 은
+    flex·grid 항목이 된 스크롤 상자에 가로 스크롤바가 붙을 때 <strong>그 두께를 항목
+    높이에 더하지 않는다</strong>. 두께만큼 세로로 넘치고, 그 넘침이 아무도 켜지 않은
+    세로 스크롤바를 부른다. Blink 는 두께를 더하므로 이 결함이 없다.
+    그래서 <strong>표는 세로로 스크롤하지 않는다</strong> — 높이가 제한된 상자에 넣으면
+    스크롤이 아니라 잘린다. 「본문만 스크롤하는 표」가 필요해지면 그때 옵트인으로 받는다.
+  </p>
+  <p>
+    <strong><code>flex-shrink: 0</code> 도 함께 선언한다.</strong> 스크롤 상자는 flex 항목으로서
+    자동 최소 크기가 0 으로 풀리므로, 확정 높이의 flex column 사슬에 부족분이 내려오면
+    사슬에서 줄어들 수 있는 유일한 것이 표가 된다 — 내용은 그대로인 채 상자만 눌려
+    <strong>스크롤바만 남는다</strong>. 위의 <code>overflow-y</code> 가 이것을 대신하지 못한다:
+    <code>hidden</code> 도 스크롤 상자라 자동 최소 크기는 여전히 0 이다. 이제 부족분은 표가 아니라
+    <strong>조상</strong>이 받으므로, 표가 눌리던 자리에서는 조상이 넘치거나 스크롤한다.
+    되돌리려면 <strong>레이어 밖 규칙</strong>으로 덮는다 — <code>controls.css</code> 는
+    <code>@layer ns-controls</code> 안에 있다.
   </p>
 
   <h3>데모</h3>
