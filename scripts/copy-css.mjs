@@ -4,6 +4,8 @@
   tokens.css   — 어느 환경에서든 반드시 불러야 한다. 컴포넌트 스타일이 이
                  파일의 변수를 폴백 없이 참조한다.
   controls.css — 네이티브 요소용 클래스. 순수 HTML 소비자가 직접 링크한다.
+  brand.css    — 옵트인 브랜드 테마. tokens.css 의 색 토큰만 덮는다.
+                 안 부르면 중립 팔레트 그대로다.
 */
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
@@ -12,6 +14,7 @@ mkdirSync("dist", { recursive: true });
 for (const [from, to] of [
   ["src/tokens/tokens.css", "dist/tokens.css"],
   ["src/controls/controls.css", "dist/controls.css"],
+  ["src/tokens/brand.css", "dist/brand.css"],
 ]) {
   copyFileSync(from, to);
   console.log(`복사 완료: ${to}`);

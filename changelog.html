@@ -157,6 +157,66 @@
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
   </p>
 
+  <h2 id="v0-6-0">v0.6.0</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 없음</strong></p>
+  <p>
+    <strong>브랜드 테마 파일 <code>brand.css</code> 를 더한다.</strong>
+    기존 파일은 하나도 바뀌지 않는다 — 임포트하지 않으면 화면이 그대로다.
+    minor 를 올린 것은 공개 진입점(<code>exports</code>)이 하나 늘었기 때문이다.
+  </p>
+
+  <h3>무엇인가</h3>
+  <p>
+    <code>tokens.css</code> 의 <strong>색 토큰 23 개를 Dr. Reju-All 브랜드
+    팔레트로 덮는</strong> 옵트인 파일이다. 치수·타이포·radius 토큰은 건드리지
+    않는다 — 브랜드와 무관하고 컴포넌트가 자기 여백 계산에 쓰는 값이라
+    바꾸면 레이아웃이 어긋난다.
+  </p>
+  <pre><code>@import "@neosimplix/common-ui/tokens.css";
+@import "@neosimplix/common-ui/brand.css";     /* 이 한 줄 */
+@import "@neosimplix/common-ui/controls.css";</code></pre>
+  <p>
+    <strong><code>tokens.css</code> 다음에 온다.</strong> 같은 <code>:root</code>
+    에 같은 이름을 다시 정의하는 것이 하는 일의 전부이므로 순서가 곧 결과다.
+  </p>
+
+  <h3>왜 기본 팔레트를 바꾸지 않았나</h3>
+  <p>
+    <code>tokens.css</code> 는 441 줄 중 <strong>340 줄이 주석</strong>이고,
+    그 안에 대비비 21 개와 밝기 참조 86 개가 값에 매여 있다 — "87.1% 는
+    <code>--ns-color-fg-body</code> 의 다크값이라 한 글자도 다르지 않다",
+    "포커스 링이 surface 에 11.99:1" 같은 문장들이다. 값만 갈아끼우면
+    <strong>그 백 개 넘는 사실 진술이 조용히 거짓이 된다.</strong>
+    이 저장소가 값 옆에 근거를 적어 온 이유가 바로 그 조용함을 막으려는
+    것이었으므로, 검증된 중립 팔레트와 그 추론을 그대로 두고 브랜드는 자기
+    근거를 자기 파일에 갖게 했다.
+  </p>
+  <p>
+    소비자 선택권도 함께 남는다 — 브랜드가 아닌 화면(내부 도구·데모)은
+    임포트하지 않으면 중립 팔레트 그대로다.
+  </p>
+
+  <h3>다크 절반은 브랜드북에 없던 것이다</h3>
+  <p>
+    라이트 절반은 Dr. Reju-All 2026 Brand Principle Book 값 그대로다.
+    <strong>다크 절반은 유도한 것이다</strong> — 브랜드 팔레트가 자기 어두운 색
+    (essential-black · night-brown · earth-brown)을 이미 갖고 있어 그것을
+    바닥으로 쓰고 ivory·beige 를 글자로 뒤집었다. 파일 안의 대비비는 전부
+    WCAG 2.1 상대휘도로 계산한 실측값이다.
+  </p>
+  <p>
+    <strong>브랜드 승인 절차가 있다면 다크 팔레트로 한 번 확인받아야 한다.</strong>
+  </p>
+
+  <h3>알아둘 것 — 상태색은 글자에 못 쓴다</h3>
+  <p>
+    라이트에서 흰 배경 대비 <code>danger</code> 4.85 는 통과하지만
+    <code>warn</code> 2.16 · <code>success</code> 2.56 은 미달이다. 원천이
+    마케팅 팔레트라 UI 전경 대비를 겨냥해 고른 색이 아니기 때문이고,
+    브랜드 팔레트의 성질이지 이 파일의 결함이 아니다. 배지처럼 테두리·점·배경
+    조합으로 의미를 주고 글자는 본문색으로 둔다.
+    <strong>다크에서는 한 단계 밝은 accent-300 을 쓰므로 셋 다 통과한다</strong>
+    (6.91 · 9.95 · 8.76).
   <h2 id="v0-5-8">v0.5.8</h2>
   <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
   <p>
