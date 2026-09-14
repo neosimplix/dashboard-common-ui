@@ -117,8 +117,12 @@
     않게 한다. 둘 중 하나만 두면 그 구간에 폭이 튄다.
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
+    <ns-nav-group collapsible heading="0.6.x">
+      <ns-nav-item href="#v0-6-1" label="v0.6.1" active></ns-nav-item>
+      <ns-nav-item href="#v0-6-0" label="v0.6.0"></ns-nav-item>
+    </ns-nav-group>
     <ns-nav-group collapsible heading="0.5.x">
-      <ns-nav-item href="#v0-5-8" label="v0.5.8" active></ns-nav-item>
+      <ns-nav-item href="#v0-5-8" label="v0.5.8"></ns-nav-item>
       <ns-nav-item href="#v0-5-7" label="v0.5.7"></ns-nav-item>
       <ns-nav-item href="#v0-5-6" label="v0.5.6"></ns-nav-item>
       <ns-nav-item href="#v0-5-5" label="v0.5.5"></ns-nav-item>
@@ -155,6 +159,58 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-6-1">v0.6.1</h2>
+  <p class="dist"><code>dist/</code> 그대로 · <strong>breaking 없음</strong></p>
+  <p>
+    <strong>문서만 바뀐다.</strong> <code>v0.6.0</code> 이 <code>brand.css</code> 를
+    더했으나 <code>guide.html</code> 에는 그 이름이 <strong>한 번도 나오지
+    않았다</strong> — <code>README.md</code> 와 이 페이지에만 있었다. 안내서만 보는
+    소비자는 파일이 있다는 것을 알 방법이 없었다.
+  </p>
+  <p>
+    <strong>이 기록에서 처음으로 <code>dist/</code> 가 그대로인 태그다.</strong>
+    <code>src/</code> 를 한 줄도 고치지 않았고, 빌드 산출물을 <code>v0.6.0</code> 의
+    것과 <code>diff -rq</code> 해 전부 같음을 확인했다. 설치해도 화면은 그대로다 —
+    <strong>받는 것은 <code>node_modules</code> 안의 안내서뿐이다.</strong>
+  </p>
+
+  <h3>무엇이 늘었나</h3>
+  <p>
+    <code>guide.html</code> 네 자리에 <code>brand.css</code> 연결법이 생겼다.
+    <strong>설치</strong> 절은 <code>aliases.css</code> 옆에 선택 파일로,
+    <strong>환경별 연동</strong> 은 세 예시 앞에 자리가 어디든 같다는 한 문단으로,
+    <strong>순수 HTML</strong> 의 link 목록은 <code>tokens.css</code> 다음 줄로,
+    그리고 <strong>디자인 토큰 → 브랜드 테마</strong>(<code>#tokens-brand</code>)가
+    본진이다.
+  </p>
+  <p>
+    가장 크게 적은 것은 <strong>순서가 곧 결과라는 것</strong>이다. 두 파일 다
+    <code>:root</code> 에 같은 이름을 선언하므로 특정도가 무승부이고 승자를 문서
+    순서가 정한다 — <code>tokens.css</code> 앞에 두면 아무 일도 일어나지 않는다.
+    <code>aliases.css</code> 와 <code>color-scheme</code> 에 이어
+    <strong>순서 종속이 남은 세 번째 자리</strong>다.
+  </p>
+  <p>
+    <strong>안내서 자신은 <code>brand.css</code> 를 부르지 않는다.</strong> 브랜드가
+    아닌 화면(내부 도구·데모)은 부르지 않는다는 <code>v0.6.0</code> 의 지침에 데모가
+    해당하므로, 그 사실을 절 안에 밝혀 두 문서가 다른 말을 하지 않게 했다.
+  </p>
+
+  <h3>곁들여 고친 것 둘</h3>
+  <p>
+    <strong>이 페이지의 사이드바에 <code>v0.6.0</code> 항목이 없었다.</strong> 절은
+    있는데 목록에 오르지 않아, 가장 새 릴리스로 가는 링크만 빠져 있었다.
+    <code>0.6.x</code> 그룹을 만들어 둘을 함께 담는다.
+  </p>
+  <p>
+    <code>guide.html</code> 의 스타일 주석이 <code>#tokens</code> 절 스와치를
+    <strong>19 개</strong>라고 두 번 적었으나 실제 배열은 <strong>21 개</strong>다.
+    <code>code</code> 에만 <code>.demo</code> 가드를 붙이지 않는 이유를 적은 자리이고,
+    근거의 하나가 "가드를 붙이면 그 라벨들이 칩 모양을 잃는다" 라 개수가 판단의
+    무게를 싣는다. 드리프트가 아니라 처음부터 틀린 숫자였다 — 주석과 배열이 같은
+    커밋에서 함께 들어왔다.
   </p>
 
   <h2 id="v0-6-0">v0.6.0</h2>
@@ -217,6 +273,8 @@
     조합으로 의미를 주고 글자는 본문색으로 둔다.
     <strong>다크에서는 한 단계 밝은 accent-300 을 쓰므로 셋 다 통과한다</strong>
     (6.91 · 9.95 · 8.76).
+  </p>
+
   <h2 id="v0-5-8">v0.5.8</h2>
   <p class="dist"><code>dist/</code> 변경 · <strong>breaking 둘</strong></p>
   <p>
