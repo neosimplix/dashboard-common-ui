@@ -269,6 +269,27 @@
     @import "@neosimplix/common-ui/aliases.css";
   </script>
 
+  <h3>브랜드 테마도 선택이고, 한 줄이다</h3>
+  <p>
+    Dr. Reju-All 팔레트를 쓰려면 <code>brand.css</code> 를 더한다.
+    <strong><code>tokens.css</code> 다음에 온다</strong> — 같은 <code>:root</code> 에
+    같은 이름을 다시 정의하는 것이 하는 일의 전부라 <strong>순서가 곧 결과다.</strong>
+    앞에 두면 <code>tokens.css</code> 가 도로 덮어 아무 일도 일어나지 않는다.
+    <code>controls.css</code> 와의 앞뒤는 상관없다 — 그 파일은 토큰을 읽기만 한다.
+  </p>
+  <script type="text/plain">
+    @import "@neosimplix/common-ui/tokens.css";
+    @import "@neosimplix/common-ui/brand.css";     /* 이 한 줄 */
+    @import "@neosimplix/common-ui/controls.css";
+  </script>
+  <p>
+    <strong>색 토큰 23 개만 덮는다.</strong> 치수·타이포·radius 는 그대로다 — 브랜드와
+    무관하고 컴포넌트가 자기 여백 계산에 쓰는 값이라 바꾸면 레이아웃이 어긋난다.
+    <strong>임포트하지 않으면 중립 팔레트 그대로다.</strong> 무엇이 어떻게 바뀌는지,
+    그리고 쓰기 전에 알아야 할 것 둘은
+    <a href="#tokens-brand">디자인 토큰 → 브랜드 테마</a> 에 있다.
+  </p>
+
   <h3>Tailwind 를 쓰면 레이어 순서를 선언해야 한다</h3>
   <p>
     Tailwind v4 는 preflight 를 <code>@layer base</code>, 유틸을
@@ -300,6 +321,12 @@
     무너진다. <code>tokens.css</code> 가 빠지면 콘솔에 경고가 뜨지만,
     <code>controls.css</code> 가 빠진 것은 <strong>감지되지 않는다</strong> —
     경고는 <code>--ns-color-line</code> 하나만 확인한다.
+  </p>
+  <p>
+    <strong>브랜드 테마를 쓰면 그 사이에 <code>brand.css</code> 한 줄이 들어간다.</strong>
+    자리는 어느 환경이든 같다 — <code>tokens.css</code> 바로 다음이다. 아래 세 예시는
+    중립 팔레트 기준이라 그 줄이 없고, 넣는 법과 근거는
+    <a href="#tokens-brand">브랜드 테마</a> 에 있다.
   </p>
 
   <h3>Next.js (App Router)</h3>
@@ -456,6 +483,12 @@
   </p>
   <ul>
     <li><code>dist/tokens.css</code> 를 <code>&lt;link rel="stylesheet"&gt;</code> 로</li>
+    <li>
+      <strong>선택</strong> — 브랜드 테마를 쓰면 <code>dist/brand.css</code> 를
+      <code>tokens.css</code> <strong>다음</strong> 줄에 같은 방식으로. link 의 문서
+      순서가 곧 캐스케이드 순서라, 이 목록에서의 위아래가 <code>@import</code> 순서와
+      같은 뜻이다
+    </li>
     <li><code>dist/controls.css</code> 를 <code>&lt;link rel="stylesheet"&gt;</code> 로</li>
     <li><code>dist/bundle.umd.js</code> 를 <code>&lt;script src&gt;</code> 로 (<code>type</code> 없이)</li>
   </ul>
@@ -533,6 +566,43 @@
   <div class="demo block" style="padding: var(--ns-space-4)">
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--ns-space-2)"></div>
   </div>
+
+  <h3 id="tokens-brand">브랜드 테마 — brand.css (선택)</h3>
+  <p>
+    바로 위는 소비자가 자기 값을 직접 적는 방법이고, <strong>브랜드 팔레트는 파일로
+    온다.</strong> <code>brand.css</code> 는 Dr. Reju-All 팔레트로
+    <strong>색 토큰 23 개를 덮는</strong> <code>:root</code> 블록 하나가 전부다.
+    치수·타이포·radius 는 건드리지 않는다 — 브랜드와 무관하고 컴포넌트가 자기 여백
+    계산에 쓰는 값이라 바꾸면 레이아웃이 어긋난다.
+  </p>
+  <script type="text/plain">
+    @import "@neosimplix/common-ui/tokens.css";
+    @import "@neosimplix/common-ui/brand.css";     /* 이 한 줄 */
+    @import "@neosimplix/common-ui/controls.css";
+  </script>
+  <p>
+    <strong>순서가 곧 결과다.</strong> 두 파일 다 <code>:root</code> 에 같은 이름을
+    선언하므로 특정도가 무승부이고, 승자를 문서 순서가 정한다 —
+    <code>tokens.css</code> 앞에 두면 아무 일도 일어나지 않는다.
+    <strong>토큰 이름에서 없앤 순서 종속이 여기에는 그대로 남아 있다</strong>:
+    <code>aliases.css</code> 와 <code>color-scheme</code> 에 이어 세 번째 자리다.
+    순수 HTML 이면 <code>&lt;link&gt;</code> 의 위아래가 같은 역할을 한다.
+  </p>
+  <p>
+    <strong>임포트하지 않으면 중립 팔레트 그대로다.</strong> 브랜드가 아닌
+    화면(내부 도구·데모)은 부르지 않는다 — <strong>이 안내서가 그 경우다.</strong>
+    위 스와치가 보여주는 것은 중립 팔레트 값이고, 브랜드를 켜면 그중 색 23 개가
+    바뀐다.
+  </p>
+  <p>
+    <strong>쓰기 전에 알아야 할 것 둘.</strong> 먼저, <strong>라이트에서
+    <code>--ns-color-warn</code>·<code>--ns-color-success</code> 는 글자색으로 쓸 수
+    없다</strong> — 흰 배경 대비가 2.16 · 2.56 이다. 배지처럼 테두리·점·배경 조합으로
+    의미를 주고 글자는 본문색으로 둔다. 다크에서는 한 단계 밝은 값이라 셋 다 통과한다.
+    그리고 <strong>다크 절반은 브랜드북에 없던 값을 유도한 것</strong>이라, 승인 절차가
+    있는 조직이면 확인이 필요하다. 값의 출처와 대비 실측치는
+    <code>src/tokens/brand.css</code> 의 주석에 있다.
+  </p>
 
   <h3 id="tokens-dark-mode">다크모드</h3>
   <p>
