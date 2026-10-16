@@ -134,6 +134,20 @@
   .shell { display: flex; flex: 1; min-height: 0; }
   main { flex: 1; overflow-y: auto; max-width: none; }
   main > * { max-width: 56rem; }
+  /* 차트 색 데모(#tokens-chart). 칸 하나 = 토큰 하나. */
+  .chart-demo {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--ns-space-2) var(--ns-space-4);
+    align-items: center;
+    font-size: var(--ns-font-size-xs);
+  }
+  .chart-demo > span:nth-child(2n) { display: flex; gap: var(--ns-space-1); }
+  .chart-cell {
+    width: 2rem;
+    height: 1.5rem;
+    border-radius: var(--ns-radius-badge);
+  }
 </style>
 </head>
 <body>
@@ -567,11 +581,79 @@
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--ns-space-2)"></div>
   </div>
 
+  <h3 id="tokens-status-text">상태 글자색</h3>
+  <p>
+    <code>--ns-color-warn</code>·<code>--ns-color-success</code> 는 점·테두리·채움의
+    색이다. <strong>글자로 쓸 때는 <code>--ns-color-warn-text</code>·<code>--ns-color-success-text</code>
+    를 쓴다</strong> — 흰 표면과 자기 <code>*-surface</code> 위에서 4.5:1 을 넘도록 고른
+    짝이다(중립 7.13 · 5.37, 브랜드 5.87 · 7.68). 브랜드 팔레트의 warn·success 는
+    흰 배경 2.16 · 2.56 이라 글자로 쓰면 읽히지 않는다.
+  </p>
+  <p>
+    이름이 <code>-fg</code> 가 아닌 이유: 이 패키지에서 <code>-fg</code> 는
+    <strong>채움면 위의 글자</strong>다(<code>--ns-color-danger-fg</code> 는 빨간 버튼 위
+    흰 글자). 이 둘은 일반 표면 위의 글자라 뜻이 다르다.
+  </p>
+  <template class="ex">
+    <p style="margin:0;color:var(--ns-color-warn-text)">보류 3일째 — 외부 응답 대기</p>
+    <p style="margin:0;color:var(--ns-color-success-text)">배포 완료 · 오류 0</p>
+  </template>
+  <div class="demo block" id="status-text-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3 id="tokens-font">글꼴과 숫자 — .ns-num</h3>
+  <p>
+    <code>--ns-font-sans</code>·<code>--ns-font-mono</code> 는 시스템 글꼴 목록이다.
+    <strong>패키지는 글꼴을 강제하지 않는다</strong> — 컨트롤은 <code>font-family: inherit</code>
+    이고, 소비자가 <code>body { font-family: var(--ns-font-sans) }</code> 로 정한다.
+  </p>
+  <p>
+    <code>.ns-num</code> 은 숫자에 붙인다. 고정폭 글꼴 + 자릿수 폭 고정(<code>tabular-nums</code>)이라
+    열로 쌓인 숫자의 자리가 맞고, 값이 갱신돼도 옆 글자가 흔들리지 않는다. 크기는 부모를 따른다.
+  </p>
+  <template class="ex">
+    <div style="display:grid;grid-template-columns:auto auto;gap:var(--ns-space-1) var(--ns-space-6);justify-content:start">
+      <span>기본</span><span>111,111 · 908,070</span>
+      <span>.ns-num</span><span class="ns-num">111,111 · 908,070</span>
+    </div>
+  </template>
+  <div class="demo block" id="num-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3 id="tokens-chart">차트 색 — --ns-chart-*</h3>
+  <p>
+    <strong>값을 색으로 읽는 자리(히트맵 칸·막대·범례)는 차트 토큰만 쓴다.</strong>
+    테두리 토큰(<code>--ns-color-line*</code>)이나 강조색을 빌리면 테마가 바뀔 때 「값 없음」이
+    「값 있음」처럼 보이고 범주끼리 구별이 안 된다.
+  </p>
+  <table>
+    <tr><th>토큰</th><th>용도</th></tr>
+    <tr><td><code>--ns-chart-empty</code></td><td>0 · 값 없음 전용 중립면. 색조가 없다</td></tr>
+    <tr><td><code>--ns-chart-seq-1</code> … <code>-5</code></td><td>순서 있는 양(적음 → 많음). 다크에서도 1 이 표면에 가깝고 5 가 가장 눈에 띈다</td></tr>
+    <tr><td><code>--ns-chart-seq-alt-1</code> … <code>-5</code></td><td>같은 화면의 두 번째 양 척도(예: 토큰 vs commit)</td></tr>
+    <tr><td><code>--ns-chart-cat-1</code> … <code>-6</code></td><td>순서 없는 범주. 범주가 다섯 이하면 <code>cat-6</code> 을 쓰지 않는다</td></tr>
+  </table>
+  <p>
+    인접 단계 명도차(OKLab ΔL)는 중립 팔레트에서 seq 0.075 · seq-alt 0.060 이상,
+    <code>empty</code> 와 <code>seq-1</code> 의 색차(ΔE)는 0.103 이다. 브랜드 팔레트의
+    실측과 책에 없어 유도한 칸은 <code>src/tokens/brand.css</code> 주석에 있다.
+  </p>
+  <template class="ex">
+    <div class="chart-demo">
+      <span>empty</span><span><span class="chart-cell" style="background:var(--ns-chart-empty)" title="--ns-chart-empty"></span></span>
+      <span>seq</span><span><span class="chart-cell" style="background:var(--ns-chart-seq-1)" title="--ns-chart-seq-1"></span><span class="chart-cell" style="background:var(--ns-chart-seq-2)" title="--ns-chart-seq-2"></span><span class="chart-cell" style="background:var(--ns-chart-seq-3)" title="--ns-chart-seq-3"></span><span class="chart-cell" style="background:var(--ns-chart-seq-4)" title="--ns-chart-seq-4"></span><span class="chart-cell" style="background:var(--ns-chart-seq-5)" title="--ns-chart-seq-5"></span></span>
+      <span>seq-alt</span><span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-1)" title="--ns-chart-seq-alt-1"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-2)" title="--ns-chart-seq-alt-2"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-3)" title="--ns-chart-seq-alt-3"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-4)" title="--ns-chart-seq-alt-4"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-5)" title="--ns-chart-seq-alt-5"></span></span>
+      <span>cat</span><span><span class="chart-cell" style="background:var(--ns-chart-cat-1)" title="--ns-chart-cat-1"></span><span class="chart-cell" style="background:var(--ns-chart-cat-2)" title="--ns-chart-cat-2"></span><span class="chart-cell" style="background:var(--ns-chart-cat-3)" title="--ns-chart-cat-3"></span><span class="chart-cell" style="background:var(--ns-chart-cat-4)" title="--ns-chart-cat-4"></span><span class="chart-cell" style="background:var(--ns-chart-cat-5)" title="--ns-chart-cat-5"></span><span class="chart-cell" style="background:var(--ns-chart-cat-6)" title="--ns-chart-cat-6"></span></span>
+    </div>
+  </template>
+  <div class="demo block" id="chart-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
   <h3 id="tokens-brand">브랜드 테마 — brand.css (선택)</h3>
   <p>
     바로 위는 소비자가 자기 값을 직접 적는 방법이고, <strong>브랜드 팔레트는 파일로
     온다.</strong> <code>brand.css</code> 는 Dr. Reju-All 팔레트로
-    <strong>색 토큰 23 개를 덮는</strong> <code>:root</code> 블록 하나가 전부다.
+    <strong>색 토큰 42 개를 덮는</strong> <code>:root</code> 블록 하나가 전부다.
     치수·타이포·radius 는 건드리지 않는다 — 브랜드와 무관하고 컴포넌트가 자기 여백
     계산에 쓰는 값이라 바꾸면 레이아웃이 어긋난다.
   </p>
@@ -591,14 +673,15 @@
   <p>
     <strong>임포트하지 않으면 중립 팔레트 그대로다.</strong> 브랜드가 아닌
     화면(내부 도구·데모)은 부르지 않는다 — <strong>이 안내서가 그 경우다.</strong>
-    위 스와치가 보여주는 것은 중립 팔레트 값이고, 브랜드를 켜면 그중 색 23 개가
+    위 스와치가 보여주는 것은 중립 팔레트 값이고, 브랜드를 켜면 그중 색 42 개가
     바뀐다.
   </p>
   <p>
     <strong>쓰기 전에 알아야 할 것 둘.</strong> 먼저, <strong>라이트에서
     <code>--ns-color-warn</code>·<code>--ns-color-success</code> 는 글자색으로 쓸 수
-    없다</strong> — 흰 배경 대비가 2.16 · 2.56 이다. 배지처럼 테두리·점·배경 조합으로
-    의미를 주고 글자는 본문색으로 둔다. 다크에서는 한 단계 밝은 값이라 셋 다 통과한다.
+    없다</strong> — 흰 배경 대비가 2.16 · 2.56 이다. 글자에는 짝인
+    <code>--ns-color-warn-text</code>·<code>--ns-color-success-text</code> 를 쓴다
+    (<a href="#tokens-status-text">상태 글자색</a>). 다크에서는 한 단계 밝은 값이라 셋 다 통과한다.
     그리고 <strong>다크 절반은 브랜드북에 없던 값을 유도한 것</strong>이라, 승인 절차가
     있는 조직이면 확인이 필요하다. 값의 출처와 대비 실측치는
     <code>src/tokens/brand.css</code> 의 주석에 있다.
@@ -1472,9 +1555,26 @@
   <div class="demo block" id="card-header-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
 
+  <h3>데모 — 빽빽한 카드 (.ns-card--compact)</h3>
+  <template class="ex">
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ns-space-3)">
+      <div class="ns-card ns-card--compact">
+        <p style="margin:0;font-size:var(--ns-font-size-xs);color:var(--ns-color-fg-muted)">팀 대기열 (compact)</p>
+        <p class="ns-num" style="margin:0;font-size:var(--ns-font-size-xl);line-height:var(--ns-line-height-xl)">5</p>
+      </div>
+      <div class="ns-card">
+        <p style="margin:0;font-size:var(--ns-font-size-xs);color:var(--ns-color-fg-muted)">기본 카드</p>
+        <p class="ns-num" style="margin:0;font-size:var(--ns-font-size-xl);line-height:var(--ns-line-height-xl)">5</p>
+      </div>
+    </div>
+  </template>
+  <div class="demo block" id="card-compact-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
   <h3>클래스</h3>
   <table>
     <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-card--compact</code></td><td><code>.ns-card</code> 와 함께</td><td>안쪽 여백을 <code>--ns-card-padding-compact</code>(기본 1rem)로, 머리 아래·본문 간격도 줄인다. 숫자 타일·보드 칸처럼 카드가 여럿 놓이는 자리. <strong>붙이지 않은 카드는 그대로다</strong></td></tr>
     <tr><td><code>.ns-card</code></td><td><code>div</code></td><td>테두리·반경·표면색·<code>--ns-card-padding</code>·그림자</td></tr>
     <tr><td><code>.ns-card__header</code></td><td><code>div</code></td><td>제목 묶음이 왼쪽, 액션이 오른쪽. 아래에 구분선을 갖는다 — <strong>선은 내용 폭까지만 그어진다</strong></td></tr>
     <tr><td>(이름 없음)</td><td><code>div</code></td><td><code>__title</code> 과 <code>__description</code> 을 감싸는 묶음. <strong>클래스는 없지만 생략하면 안 된다</strong> — <code>__header</code> 가 <code>space-between</code> 이라 둘이 따로 놓이면 설명이 오른쪽 끝으로 밀린다</td></tr>
@@ -1508,6 +1608,7 @@
 
     <Card>내용</Card>
     <Card className="mt-8">유틸로 여백을 준다</Card>
+    <Card density="compact">빽빽한 카드 — .ns-card--compact</Card>
 
     <Card heading="최근 주문" description="최근 30일"
           actions={<ButtonLink href="/orders" variant="ghost" size="sm">전체 보기</ButtonLink>}>
@@ -4206,6 +4307,7 @@
     "--ns-color-disabled", "--ns-color-disabled-fg",
     "--ns-color-danger", "--ns-color-danger-surface", "--ns-color-warn", "--ns-color-warn-surface",
     "--ns-color-success", "--ns-color-success-surface",
+    "--ns-color-warn-text", "--ns-color-success-text",
   ];
   const swatches = document.getElementById("token-swatches");
   if (swatches) {

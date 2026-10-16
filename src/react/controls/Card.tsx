@@ -5,6 +5,12 @@ import { cx } from "../cx.js";
 type CardBase = {
   className?: string;
   children: ReactNode;
+  /**
+   * 안쪽 여백. 기본 `"default"` 는 예전과 같은 `--ns-card-padding` 이고,
+   * `"compact"` 는 `.ns-card--compact` 를 붙여 `--ns-card-padding-compact` 를 쓴다.
+   * 숫자 타일·보드 칸처럼 카드가 한 화면에 여럿 놓일 때 쓴다.
+   */
+  density?: "default" | "compact";
 };
 
 /**
@@ -34,19 +40,22 @@ export type CardProps = CardBase &
 export function Card({
   className,
   children,
+  density = "default",
   heading,
   description,
   actions,
   headingLevel = 2,
 }: CardProps) {
+  const cardClass = cx("ns-card", density === "compact" && "ns-card--compact", className);
+
   if (heading === undefined) {
-    return <div className={cx("ns-card", className)}>{children}</div>;
+    return <div className={cardClass}>{children}</div>;
   }
 
   const Heading = headingLevel === 3 ? "h3" : "h2";
 
   return (
-    <div className={cx("ns-card", className)}>
+    <div className={cardClass}>
       <div className="ns-card__header">
         <div>
           <Heading className="ns-card__title">{heading}</Heading>

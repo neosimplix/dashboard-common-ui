@@ -451,6 +451,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               <p>본문</p>
             </Card>
+            {/* density 는 머리 유무와 무관하게 받는다. 값 오타("compat")는 여기서 컴파일이 실패한다. */}
+            <Card density="compact">
+              <p className="ns-num">1,284</p>
+            </Card>
+            <Card density="compact" heading="대기열">
+              <p>본문</p>
+            </Card>
           </Card>
         </main>
       </div>

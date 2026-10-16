@@ -857,6 +857,35 @@
   }
 
   /*
+    빽빽한 카드. 숫자 타일·보드 칸처럼 카드가 한 화면에 여럿 놓이는 자리다.
+    기본 카드는 그대로다 — 이 클래스를 붙인 카드만 여백이 준다.
+    머리 아래 간격도 함께 줄인다. 패딩만 줄이면 머리 구분선 아래의 1.5rem 이
+    카드 안에서 가장 큰 여백이 되어 머리와 본문이 떨어져 보인다.
+  */
+  .ns-card--compact {
+    padding: var(--ns-card-padding-compact);
+  }
+
+  .ns-card--compact .ns-card__header {
+    padding-bottom: var(--ns-space-2);
+    margin-bottom: var(--ns-space-3);
+  }
+
+  .ns-card--compact .ns-card__body {
+    gap: var(--ns-space-2);
+  }
+
+  /*
+    숫자. 자릿수 폭을 고정하고(tabular-nums) 고정폭 글꼴로 그린다 — 열로 쌓인
+    숫자·카운터·시각이 갱신될 때 옆 글자가 흔들리지 않는다. 크기는 바꾸지
+    않는다(부모를 따른다).
+  */
+  .ns-num {
+    font-family: var(--ns-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
     접히는 섹션. 네이티브 <details>/<summary> 라 열림 상태·키보드·삼각형 표식을
     브라우저가 갖는다 — 우리 JS 가 한 줄도 실행되지 않으므로 태그가 아니라
     클래스다. .ns-checkbox 가 눌리면 체크되는데도 클래스인 것과 같다.
