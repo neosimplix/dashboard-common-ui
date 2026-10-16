@@ -52,15 +52,23 @@
   --ns-color-surface-hover:  light-dark(#F1ECE2, #533C32);
 
   /*
-    경계 — **beige 선이 브랜드 시그니처다.**
+    경계 — 장식선은 중립, 조작선은 읽힐 만큼.
 
-    라이트 1.47:1(#E9D2AE on #FFFFFF), 다크 1.42:1(#533C32 on #3B2411).
-    두 모드가 거의 같은 대비로 떨어져 선의 무게가 테마를 타지 않는다.
-    비텍스트 3:1 기준은 경계선에 적용되지 않는다 — 정보를 지는 선이 아니라
-    면을 가르는 선이다.
+    v0.6.1 까지 선은 nature-beige(#E9D2AE)였다. 브랜드 시그니처지만 채도가 있는
+    색이라, 카드·표·입력칸 할 것 없이 모든 면이 베이지 테두리를 두르면 테두리가
+    화면의 주인공이 된다(tech-ops 이식 실측: 카드 1.47:1 의 황토선, 원본은 1.29:1
+    중립 회색). 그래서 장식선은 브랜드북 grayish-100(#DDDCD3, 1.38:1)으로 두고
+    beige 는 강조면에만 쓴다.
+
+    line-strong 은 입력칸·선택 컨트롤의 테두리다 — 정보를 지는 선이므로 WCAG 1.4.11
+    비텍스트 3:1 이 적용된다. v0.6.1 의 earth-brown(#533C32)은 10.19:1 로 거의 검정
+    이었고, 브랜드북 border.control(earth-brown 25 %)은 1.56:1 로 미달이다. 그 사이에서
+    3:1 을 넘는 가장 옅은 값 = earth-brown 60 % on white(#988A84, 3.33:1).
+
+    다크는 그대로 둔다 — #533C32 on #3B2411 1.42:1(장식선), #A3A19E 5.63:1(조작선).
   */
-  --ns-color-line:        light-dark(#E9D2AE, #533C32);
-  --ns-color-line-strong: light-dark(#533C32, #A3A19E);
+  --ns-color-line:        light-dark(#DDDCD3, #533C32);
+  --ns-color-line-strong: light-dark(#988A84, #A3A19E);
 
   /* 딤 — 브랜드북의 --color-overlay 값. 다크는 같은 색을 더 진하게. */
   --ns-color-overlay: light-dark(rgb(25 14 5 / .5), rgb(25 14 5 / .7));
