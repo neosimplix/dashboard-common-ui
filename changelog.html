@@ -118,7 +118,8 @@
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
     <ns-nav-group collapsible heading="0.6.x">
-      <ns-nav-item href="#v0-6-1" label="v0.6.1" active></ns-nav-item>
+      <ns-nav-item href="#v0-6-2" label="v0.6.2" active></ns-nav-item>
+      <ns-nav-item href="#v0-6-1" label="v0.6.1"></ns-nav-item>
       <ns-nav-item href="#v0-6-0" label="v0.6.0"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group collapsible heading="0.5.x">
@@ -159,6 +160,49 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-6-2">v0.6.2</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 없음</strong></p>
+  <p>
+    <strong><code>brand.css</code> 를 부르는 화면만 바뀐다.</strong> 색 토큰 다섯 개의
+    값이 옮겨졌고 이름·개수는 그대로다. <code>brand.css</code> 를 부르지 않는 화면은
+    한 픽셀도 안 바뀐다.
+  </p>
+  <p>
+    첫 소비자(tech-ops)를 원본 화면과 나란히 놓고 보니 세 가지가 눈에 걸렸다 —
+    <strong>카드 테두리가 황토색</strong>, <strong>입력칸 테두리가 검정에 가까움</strong>,
+    <strong>주 버튼이 본문 글자에 묻힘</strong>. 셋 다 <code>brand.css</code> 의 값
+    고르기에서 왔다.
+  </p>
+
+  <h3>무엇이 바뀌었나</h3>
+  <table>
+    <thead><tr><th>토큰</th><th>v0.6.1</th><th>v0.6.2</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td><code>--ns-color-line</code></td><td>#E9D2AE</td><td>#DDDCD3</td><td>장식선은 중립 회색(브랜드북 grayish-100). 카드 대비 1.47 → 1.38:1</td></tr>
+      <tr><td><code>--ns-color-line-strong</code></td><td>#533C32</td><td>#988A84</td><td>입력 테두리 10.19 → 3.33:1 — WCAG 1.4.11 의 3:1 을 넘는 가장 옅은 값</td></tr>
+      <tr><td><code>--ns-color-accent-fill</code></td><td>#3B2411 / #E9D2AE</td><td>#533C32 / #A3A19E</td><td>주 버튼과 본문 글자의 명도차(OKLab ΔL) 0.109 → 0.203, 다크 0.057 → 0.221</td></tr>
+      <tr><td><code>--ns-color-accent-fill-hover</code></td><td>#190E05 / #F1E6DA</td><td>#3B2411 / #C7C3BC</td><td>채움보다 한 단계 짙게(라이트)·밝게(다크)</td></tr>
+      <tr><td><code>--ns-color-accent-fill-fg</code></td><td>#F1E6DA / #3B2411</td><td>#F1E6DA / #190E05</td><td>글자 대비 8.29:1, 다크 7.37:1</td></tr>
+    </tbody>
+  </table>
+  <p>
+    값은 라이트 / 다크 순서다. 다크의 <code>line</code> 두 개는 그대로다.
+  </p>
+
+  <h3>고르지 않은 후보</h3>
+  <p>
+    주 버튼을 브랜드 블루 <code>#8394B8</code> 로 바꾸는 안도 쟀다. 명도차는 더
+    컸지만(0.490) <strong>페이지 배경과의 경계가 2.87:1 로 3:1 에 못 미치고</strong>,
+    블루가 브랜드북에서 <code>status.info</code>·차트 1번 색이라 의미가 겹쳐 버렸다.
+    실측 원자료와 캡처는 tech-ops 저장소 <code>docs/ui-kit-hardening/u1/</code> 에 있다.
+  </p>
+
+  <h3>소비자가 할 일</h3>
+  <p>
+    없다. <code>accent-fill</code> 을 아바타·강조 배지·히트맵 같은 <strong>버튼이 아닌
+    자리</strong>에 빌려 쓴 화면은 그 자리 색도 같이 옅어진다 — 캡처로 한 번 확인한다.
   </p>
 
   <h2 id="v0-6-1">v0.6.1</h2>

@@ -144,8 +144,14 @@
     #FAF8F4(bg-default)는 4.57:1 로 통과하면서 순백보다 따뜻하다 —
     브랜드를 지키면서 기준을 넘는 유일한 자리라 이것을 쓴다.
 
-    accent-fill-fg 는 espresso 위 ivory 로 11.80:1, 다크는 beige 위
-    espresso 로 9.88:1 이다.
+    accent-fill(주 버튼 채움)은 **본문 글자색과 떨어져야 한다.** v0.6.1 의
+    espresso #3B2411 은 본문 #190E05 와 OKLab 명도차 0.109 라 버튼이 본문
+    글자 덩어리처럼 묻혔다(다크 beige 도 본문 ivory 와 0.057). v0.6.2 는
+    라이트 earth-brown #533C32(브랜드 메인 5색), 다크 grayish-500 #A3A19E 로
+    옮겨 명도차를 0.203 / 0.221 로 벌린다. 글자는 ivory 위 8.29:1, 다크
+    black 위 7.37:1. 페이지 배경과의 경계는 9.61:1 로 3:1 을 넘는다.
+    브랜드 블루(#8394B8) 후보는 배경 경계 2.87:1 미달·info/차트 1번과 의미
+    중복으로 고르지 않았다.
 
     disabled-fg 의 대비가 낮은 것(라이트 1.30)은 의도다. 비활성 글자는
     읽히지 않는 것이 상태 표시이고, 원본 tokens.css 도 같은 성질이다.
@@ -153,7 +159,7 @@
   --ns-color-danger-fg:   light-dark(#FAF8F4, #190E05);
   --ns-color-disabled-fg: light-dark(#FAF8F4, #A3A19E);
 
-  --ns-color-accent-fill:       light-dark(#3B2411, #E9D2AE);
-  --ns-color-accent-fill-hover: light-dark(#190E05, #F1E6DA);
-  --ns-color-accent-fill-fg:    light-dark(#F1E6DA, #3B2411);
+  --ns-color-accent-fill:       light-dark(#533C32, #A3A19E);
+  --ns-color-accent-fill-hover: light-dark(#3B2411, #C7C3BC);
+  --ns-color-accent-fill-fg:    light-dark(#F1E6DA, #190E05);
 }
