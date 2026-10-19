@@ -1,0 +1,225 @@
+/*
+  Dr. Reju-All 브랜드 테마 — 옵트인.
+
+  tokens.css 의 색 토큰 44 개(v0.6.x 까지 23 개 + 상태 글자 3 + 강조 면 1 + 차트 17)를
+  브랜드 팔레트로 덮는다. **tokens.css 다음에
+  임포트한다.** 치수·타이포 토큰은 건드리지 않는다 — 브랜드와 무관하고
+  컴포넌트가 자기 여백 계산에 쓰는 값이라 바꾸면 레이아웃이 어긋난다.
+
+  ```css
+  @import "@neosimplix/common-ui/tokens.css";
+  @import "@neosimplix/common-ui/brand.css";     ← 이 한 줄
+  @import "@neosimplix/common-ui/controls.css";
+  ```
+
+  **기본 팔레트를 이 값으로 바꾸지 않고 별도 파일로 둔 이유가 있다.**
+  tokens.css 는 441 줄 중 340 줄이 주석이고, 그 안에 대비비 21 개와 밝기
+  참조 86 개가 값에 매여 있다("87.1% 는 --ns-color-fg-body 의 다크값이라 한
+  글자도 다르지 않다", "포커스 링이 surface 에 11.99:1"). 값만 갈아끼우면
+  그 백 개 넘는 사실 진술이 조용히 거짓이 된다 — 이 저장소가 값 옆에 근거를
+  적어 온 이유가 바로 그 조용함을 막으려는 것이었다.
+
+  그래서 검증된 중립 팔레트와 그 추론을 그대로 두고, 브랜드는 자기 근거를
+  자기 파일에 갖는다.
+
+  **소비자가 이 파일을 꼭 써야 하는 것은 아니다.** 브랜드가 아닌 화면
+  (내부 도구·데모)은 임포트하지 않으면 중립 팔레트 그대로다.
+
+  ─────────────────────────────────────────────────────────────────────
+  값의 출처
+
+  brand 5 색과 accent 24 색은 Dr. Reju-All 2026 Brand Principle Book 에서
+  왔다(ns_gl_mkt_cg/design-tokens-260514/tokens.json 이 정본).
+
+  **다크 절반은 브랜드북에 없던 것이다.** 브랜드 팔레트가 자기 어두운 색
+  (essential-black · night-brown · earth-brown)을 이미 갖고 있어, 그것을
+  바닥으로 쓰고 ivory·beige 를 글자로 뒤집어 유도했다. 아래 대비비는 전부
+  WCAG 2.1 상대휘도로 계산한 실측값이다.
+
+  **브랜드 승인 절차가 있다면 다크 팔레트로 한 번 확인받아야 한다.**
+  라이트 절반은 브랜드북 값 그대로이므로 그 대상이 아니다.
+  ─────────────────────────────────────────────────────────────────────
+*/
+:root {
+  /*
+    표면 — 라이트는 따뜻한 off-white 3 단, 다크는 espresso 3 단.
+
+    다크 바닥을 순흑이 아니라 night-brown(#3B2411)으로 두는 것이 이 팔레트의
+    성격이다. sunken 이 essential-black 이라 카드가 캔버스보다 밝게 뜬다 —
+    중립 팔레트와 같은 방향(sunken < surface)이다.
+  */
+  --ns-color-surface:        light-dark(#FFFFFF, #3B2411);
+  --ns-color-surface-sunken: light-dark(#FAF8F4, #190E05);
+  --ns-color-surface-hover:  light-dark(#F1ECE2, #533C32);
+
+  /*
+    경계 — 장식선은 중립, 조작선은 읽힐 만큼.
+
+    v0.6.1 까지 선은 nature-beige(#E9D2AE)였다. 브랜드 시그니처지만 채도가 있는
+    색이라, 카드·표·입력칸 할 것 없이 모든 면이 베이지 테두리를 두르면 테두리가
+    화면의 주인공이 된다(tech-ops 이식 실측: 카드 1.47:1 의 황토선, 원본은 1.29:1
+    중립 회색). 그래서 장식선은 브랜드북 grayish-100(#DDDCD3, 1.38:1)으로 두고
+    beige 는 강조면에만 쓴다.
+
+    line-strong 은 입력칸·선택 컨트롤의 테두리다 — 정보를 지는 선이므로 WCAG 1.4.11
+    비텍스트 3:1 이 적용된다. v0.6.1 의 earth-brown(#533C32)은 10.19:1 로 거의 검정
+    이었고, 브랜드북 border.control(earth-brown 25 %)은 1.56:1 로 미달이다. 그 사이에서
+    3:1 을 넘는 가장 옅은 값 = earth-brown 60 % on white(#988A84, 3.33:1).
+
+    다크는 그대로 둔다 — #533C32 on #3B2411 1.42:1(장식선), #A3A19E 5.63:1(조작선).
+  */
+  --ns-color-line:        light-dark(#DDDCD3, #533C32);
+  --ns-color-line-strong: light-dark(#988A84, #A3A19E);
+
+  /* 딤 — 브랜드북의 --color-overlay 값. 다크는 같은 색을 더 진하게. */
+  --ns-color-overlay: light-dark(rgb(25 14 5 / .5), rgb(25 14 5 / .7));
+
+  /*
+    전경 — 카드(#FFFFFF · #3B2411) 위 대비비
+
+      fg         18.98 / 11.80
+      fg-body    14.52 /  9.88
+      fg-muted    5.77 /  8.27
+      fg-subtle  10.19 /  5.63
+
+    넷 다 두 모드에서 본문 기준 4.5:1 을 넘는다. fg-subtle 이 라이트에서
+    fg-muted 보다 진한 것은 이름과 어긋나 보이지만 브랜드 팔레트의 갈색축과
+    회갈색축이 서로 다른 밝기 계열이기 때문이고, 화면에서 둘이 같은 자리에
+    놓이는 경우가 없다.
+  */
+  --ns-color-fg:        light-dark(#190E05, #F1E6DA);
+  --ns-color-fg-body:   light-dark(#3B2411, #E9D2AE);
+  --ns-color-fg-muted:  light-dark(#6B655C, #C7C3BC);
+  --ns-color-fg-subtle: light-dark(#533C32, #A3A19E);
+
+  /*
+    액센트 — **선과 링의 색이다.** 채움면은 아래 -fill 셋이 갖는다.
+    이 구분은 tokens.css 의 것을 그대로 따른다.
+
+    라이트는 night-brown, 다크는 nature-beige. 다크에서 밝은 쪽을 쓰는
+    이유도 원본과 같다 — 선은 밝아도 눈부시지 않고, 어두운 화면에서
+    어두운 선은 사라진다.
+  */
+  --ns-color-accent: light-dark(#3B2411, #E9D2AE);
+
+  /*
+    비활성 채움면. 라이트는 accent-grayish-100, 다크는 earth-brown.
+    보통 채움면(-fill)과 값이 겹치지 않아야 한다는 원본 제약을 지킨다 —
+    라이트 #DDDCD3 vs #3B2411, 다크 #533C32 vs #E9D2AE 로 둘 다 멀다.
+  */
+  --ns-color-disabled: light-dark(#DDDCD3, #533C32);
+
+  /*
+    상태 — 라이트는 브랜드북 accent-500, 다크는 accent-300 단계.
+
+    **라이트에서 셋 중 둘은 글자색으로 쓸 수 없다.** 흰 배경 대비
+      danger  4.85  통과
+      warn    2.16  미달
+      success 2.56  미달
+    배지처럼 테두리·점·배경 조합으로 의미를 주고 글자는 본문색으로 둔다.
+    이것은 브랜드 팔레트의 성질이지 이 파일의 결함이 아니다 — 원천이 마케팅
+    팔레트라 UI 전경 대비를 겨냥해 고른 색이 아니다.
+
+    **다크에서는 셋 다 통과한다**(night-brown 바닥 기준 6.91 · 9.95 · 8.76).
+    한 단계 밝은 accent-300 을 쓰기 때문이다.
+  */
+  --ns-color-danger:  light-dark(#C54644, #E0A4A1);
+  --ns-color-warn:    light-dark(#DAAA00, #EED484);
+  --ns-color-success: light-dark(#97A697, #CACCA2);
+
+  /*
+    상태 배경면 — 라이트는 브랜드북의 wash / accent-50, 다크는 accent-500 을
+    essential-black 에 18 % 섞어 유도했다.
+
+    다크 배경면 위에 같은 이름의 전경색을 올렸을 때 7.65 · 9.43 · 8.66 이다.
+  */
+  --ns-color-danger-surface:  light-dark(#FAF1EF, #381810);
+  --ns-color-warn-surface:    light-dark(#F7F3E7, #3C2A04);
+  --ns-color-success-surface: light-dark(#F2F6EF, #30291F);
+
+  /*
+    채움면 위의 글자.
+
+    **danger-fg 의 라이트가 recovery-ivory 가 아닌 이유가 있다.**
+    #F1E6DA 를 벽돌색(#C54644) 위에 올리면 3.94:1 로 본문 기준에 미달한다.
+    #FAF8F4(bg-default)는 4.57:1 로 통과하면서 순백보다 따뜻하다 —
+    브랜드를 지키면서 기준을 넘는 유일한 자리라 이것을 쓴다.
+
+    accent-fill(주 버튼 채움)은 **본문 글자색과 떨어져야 한다.** v0.6.1 의
+    espresso #3B2411 은 본문 #190E05 와 OKLab 명도차 0.109 라 버튼이 본문
+    글자 덩어리처럼 묻혔다(다크 beige 도 본문 ivory 와 0.057). v0.6.2 는
+    라이트 earth-brown #533C32(브랜드 메인 5색), 다크 grayish-500 #A3A19E 로
+    옮겨 명도차를 0.203 / 0.221 로 벌린다. 글자는 ivory 위 8.29:1, 다크
+    black 위 7.37:1. 페이지 배경과의 경계는 9.61:1 로 3:1 을 넘는다.
+    브랜드 블루(#8394B8) 후보는 배경 경계 2.87:1 미달·info/차트 1번과 의미
+    중복으로 고르지 않았다.
+
+    disabled-fg 의 대비가 낮은 것(라이트 1.30)은 의도다. 비활성 글자는
+    읽히지 않는 것이 상태 표시이고, 원본 tokens.css 도 같은 성질이다.
+  */
+  --ns-color-danger-fg:   light-dark(#FAF8F4, #190E05);
+  --ns-color-disabled-fg: light-dark(#FAF8F4, #A3A19E);
+
+  --ns-color-accent-fill:       light-dark(#533C32, #A3A19E);
+  --ns-color-accent-fill-hover: light-dark(#3B2411, #C7C3BC);
+  --ns-color-accent-fill-fg:    light-dark(#F1E6DA, #190E05);
+
+  /*
+    상태 글자색. 브랜드 warn(#DAAA00)·success(#97A697)는 흰 배경 2.16 · 2.56 이라
+    글자로 못 쓴다. 브랜드북 badge.warning.text · badge.success.text 를 그대로
+    쓴다 — 흰 배경 5.87 · 7.68. 다크는 같은 계열 yellow-300 · green-300 으로
+    surface(#3B2411) 위 9.95 · 8.76.
+  */
+  --ns-color-warn-text:    light-dark(#8A5B00, #EED484);
+  --ns-color-success-text: light-dark(#2F5D33, #CACCA2);
+  /* 브랜드북 badge.danger.text. danger-surface 위 7.28 · 흰 표면 8.09, 다크 #E0A4A1 은 7.65. */
+  --ns-color-danger-text:  light-dark(#8F2E2C, #E0A4A1);
+
+  /*
+    강조 면 — 라이트 recovery-ivory(흰 표면 1.23:1), 다크 earth-brown(night-brown
+    표면 1.42:1). 위 글자는 --ns-color-fg 로 15.43 · 8.29.
+  */
+  --ns-color-accent-surface: light-dark(#F1E6DA, #533C32);
+
+  /*
+    차트. 출처는 브랜드북 color.chart.* 이고, **책에 없는 칸은 유도했다**(아래 † 표시).
+
+    empty   라이트 grayish-50 · 다크 earth-brown(다크 장식선과 같은 값).
+    seq     책의 sequential 은 blue 50 · 100 · 300 · 500 네 단계다. 300 과 500 사이
+            명도 차가 커서(0.666 → 0.329) 가운데에 OKLab 50 % 혼합 #576181 † 을
+            넣어 다섯으로 만든다. 다크는 순서를 뒤집는다(가장 어두운 것이 seq-1).
+    seq-alt 책에 없다 †. 브랜드 갈색 축 — 라이트는 nature-beige → night-brown,
+            다크는 earth-brown → recovery-ivory 를 OKLab 으로 다섯 등분.
+            라이트 시작을 ivory 가 아니라 beige 로 둔 이유: ivory 는 empty 와
+            ΔE 0.021 로 구별되지 않는다.
+    cat     라이트는 책 categorical 1~6 그대로. 다크는 책 500 단계가 night-brown
+            표면 위에서 묻혀(blue-500 은 표면과 명도가 거의 같다) 같은 계열의
+            밝은 단계(100·300)로 옮겼다 †.
+
+    실측: 라이트 seq 인접 ΔL 최소 0.088 · seq-alt 0.146 · empty↔seq-1 ΔE 0.086 ·
+          empty↔seq-alt-1 0.086 / 다크 seq 0.088 · seq-alt 0.083 · empty↔seq-1 0.092.
+    **알려진 약점(책 값 그대로라 고치지 않음):** 라이트 cat-3(green-500) 과
+    cat-6(grayish-500) 이 ΔE 0.026 으로 거의 같다. 다크 cat 최소 ΔE 0.036
+    (cat-1~cat-4). 범주가 다섯 이하면 cat-6 을 쓰지 않는다.
+  */
+  --ns-chart-empty: light-dark(#F2EEE4, #533C32);
+
+  --ns-chart-seq-1: light-dark(#C8D8EB, #2E334E);
+  --ns-chart-seq-2: light-dark(#A7BCD6, #576181);
+  --ns-chart-seq-3: light-dark(#8394B8, #8394B8);
+  --ns-chart-seq-4: light-dark(#576181, #A7BCD6);
+  --ns-chart-seq-5: light-dark(#2E334E, #C8D8EB);
+
+  --ns-chart-seq-alt-1: light-dark(#E9D2AE, #786358);
+  --ns-chart-seq-alt-2: light-dark(#BAA283, #978479);
+  --ns-chart-seq-alt-3: light-dark(#8D755A, #B7A69B);
+  --ns-chart-seq-alt-4: light-dark(#634B34, #D8CABE);
+  --ns-chart-seq-alt-5: light-dark(#3B2411, #F1E6DA);
+
+  --ns-chart-cat-1: light-dark(#8394B8, #A7BCD6);
+  --ns-chart-cat-2: light-dark(#DAAA00, #EED484);
+  --ns-chart-cat-3: light-dark(#97A697, #CACCA2);
+  --ns-chart-cat-4: light-dark(#8D89A5, #B4B0C4);
+  --ns-chart-cat-5: light-dark(#C54644, #E0A4A1);
+  --ns-chart-cat-6: light-dark(#A3A19E, #C7C3BC);
+}
