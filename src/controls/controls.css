@@ -1138,4 +1138,309 @@
     background: var(--ns-color-surface-hover);
     color: var(--ns-color-fg-body);
   }
+
+  /*
+    ─── v0.7.0: 앱마다 손으로 만들던 조합 여섯 ───────────────────────────────
+    전부 네이티브 요소 + 클래스다. 행동(포커스·키보드·폼 참여)은 브라우저가 한다.
+  */
+
+  /*
+    선택 카드 — 라벨 하나가 입력 + 제목 + 설명을 감싼다. 히트 영역이 카드 전체이고
+    라벨이 입력의 접근성 이름이 된다. 라디오면 같은 name 으로 묶고, 묶음은 소비자가
+    <fieldset> + <legend> 로 감싼다(그래야 화면 읽기 프로그램이 질문을 읽는다).
+
+    선택은 세 신호가 함께 진다 — 체크된 입력, accent-fill 테두리(1px 를 inset
+    그림자로 2px 처럼), accent-surface 면. 면만으로는 흰 표면과 1.27:1 이라 모자란다.
+  */
+  .ns-choice-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--ns-space-1) var(--ns-space-3);
+    padding: var(--ns-space-3) var(--ns-space-4);
+    border: 1px solid var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-panel);
+    background: var(--ns-color-surface);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color var(--ns-transition-fast) var(--ns-transition-ease),
+      border-color var(--ns-transition-fast) var(--ns-transition-ease);
+  }
+
+  .ns-choice-card > input {
+    margin: var(--ns-space-1) 0 0;
+    accent-color: var(--ns-color-accent);
+  }
+
+  .ns-choice-card:hover {
+    background: var(--ns-color-surface-hover);
+  }
+
+  .ns-choice-card:has(> input:checked) {
+    border-color: var(--ns-color-accent-fill);
+    box-shadow: inset 0 0 0 1px var(--ns-color-accent-fill);
+    background: var(--ns-color-accent-surface);
+  }
+
+  .ns-choice-card:has(> input:disabled) {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+
+  .ns-choice-card__title {
+    color: var(--ns-color-fg);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    font-weight: var(--ns-weight-semibold);
+  }
+
+  .ns-choice-card__description {
+    grid-column: 2;
+    color: var(--ns-color-fg-muted);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+  }
+
+  /*
+    분할 선택 — 짧은 보기 전환(기간·표/카드). 라디오 묶음이라 방향키로 옮겨 다니고
+    선택이 곧 값이다. 컨테이너에 role="radiogroup" 과 aria-label 을 준다.
+    입력은 보이지 않게 덮어 두되 지우지 않는다 — 지우면 키보드가 닿지 않는다.
+    패널을 바꾸는 탭이면 ns-tabs 를 쓴다.
+  */
+  .ns-segmented {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-control);
+    background: var(--ns-color-surface);
+    box-sizing: border-box;
+  }
+
+  .ns-segmented > label {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .ns-segmented > label > input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .ns-segmented > label > span {
+    padding: var(--ns-space-1) var(--ns-space-3);
+    border-radius: var(--ns-radius-badge);
+    color: var(--ns-color-fg-body);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    white-space: nowrap;
+  }
+
+  .ns-segmented > label:hover > span {
+    background: var(--ns-color-surface-hover);
+  }
+
+  .ns-segmented > label:has(> input:checked) > span {
+    background: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
+    font-weight: var(--ns-weight-medium);
+  }
+
+  .ns-segmented > label:has(> input:disabled) {
+    opacity: .6;
+  }
+
+  /* 입력이 숨어 있으므로 링은 보이는 쪽에 그린다. 바깥 offset 은 버튼 링과 같은 이유다. */
+  .ns-choice-card:has(> input:focus-visible),
+  .ns-segmented > label:has(> input:focus-visible) > span {
+    outline: 2px solid var(--ns-color-accent);
+    outline-offset: 2px;
+  }
+
+  /*
+    숫자 타일 — 이름 한 줄, 큰 숫자, 보조 줄. 자기 표면을 가진 빽빽한 카드다
+    (.ns-card--compact 와 같은 여백). 숫자는 .ns-num 과 같은 고정폭 + 자릿수 고정.
+    한 줄에 여럿 놓을 때 격자 칸 수는 소비자가 고정한다(auto-fill 금지 — 빈 열이 남는다).
+  */
+  .ns-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ns-space-1);
+    min-width: 0;
+    padding: var(--ns-card-padding-compact);
+    border: 1px solid var(--ns-color-line);
+    border-radius: var(--ns-radius-card);
+    background: var(--ns-color-surface);
+    box-shadow: var(--ns-elevation-card);
+    box-sizing: border-box;
+  }
+
+  .ns-stat__label,
+  .ns-stat__value,
+  .ns-stat__note {
+    margin: 0;
+  }
+
+  .ns-stat__label {
+    color: var(--ns-color-fg-muted);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+  }
+
+  .ns-stat__value {
+    color: var(--ns-color-fg);
+    font-family: var(--ns-font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--ns-font-size-xl);
+    line-height: var(--ns-line-height-xl);
+    font-weight: var(--ns-weight-semibold);
+  }
+
+  .ns-stat__note {
+    color: var(--ns-color-fg-muted);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+  }
+
+  /*
+    단계 — 원형 번호가 붙는 순서 목록. <ol> 이라 번호의 뜻이 보조 기술에도 간다.
+    항목 안의 <strong> 이 제목, <p> 가 설명이다(요소로 특정되므로 클래스가 없다).
+  */
+  .ns-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ns-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: ns-step;
+  }
+
+  .ns-steps > li {
+    position: relative;
+    padding-left: var(--ns-space-8);
+    counter-increment: ns-step;
+    color: var(--ns-color-fg-body);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+  }
+
+  .ns-steps > li::before {
+    content: counter(ns-step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ns-space-6);
+    height: var(--ns-space-6);
+    border-radius: var(--ns-radius-pill);
+    background: var(--ns-color-accent-surface);
+    color: var(--ns-color-fg);
+    font-family: var(--ns-font-mono);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    font-weight: var(--ns-weight-semibold);
+  }
+
+  .ns-steps > li > strong {
+    display: block;
+    color: var(--ns-color-fg);
+    font-weight: var(--ns-weight-semibold);
+  }
+
+  .ns-steps > li > p {
+    margin: var(--ns-space-1) 0 0;
+    color: var(--ns-color-fg-muted);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+  }
+
+  /*
+    배지 — 짧은 상태 라벨. 톤은 의미축이다: 기본(중립) · ok · warn · risk · accent · strong.
+    글자색은 *-text 토큰이라 각자의 *-surface 위에서 4.5:1 을 넘는다
+    (중립 팔레트 ok 5.09 · warn 6.88 · risk 5.88, 브랜드 7.02 · 5.29 · 7.28).
+    색만으로 뜻을 전하지 않는다 — 라벨 글자가 뜻을 진다.
+  */
+  .ns-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ns-space-1);
+    padding: 0 var(--ns-space-1-5);
+    border-radius: var(--ns-radius-badge);
+    background: var(--ns-color-surface-hover);
+    color: var(--ns-color-fg-body);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+    font-weight: var(--ns-weight-medium);
+    white-space: nowrap;
+  }
+
+  .ns-badge--ok {
+    background: var(--ns-color-success-surface);
+    color: var(--ns-color-success-text);
+  }
+
+  .ns-badge--warn {
+    background: var(--ns-color-warn-surface);
+    color: var(--ns-color-warn-text);
+  }
+
+  .ns-badge--risk {
+    background: var(--ns-color-danger-surface);
+    color: var(--ns-color-danger-text);
+  }
+
+  .ns-badge--accent {
+    background: var(--ns-color-accent-surface);
+    color: var(--ns-color-fg);
+  }
+
+  .ns-badge--strong {
+    background: var(--ns-color-accent-fill);
+    color: var(--ns-color-accent-fill-fg);
+  }
+
+  /*
+    빈 상태 — 목록·칸이 비었을 때 무엇이 없고 무엇을 하면 되는지. .ns-message 는
+    남는 공간 가운데 한 줄 알림(로딩·실패 포함)이고, 이것은 제목·설명·행동을 갖는
+    자리다. "못 불러옴" 에는 쓰지 않는다 — 비어 있음과 실패를 같은 모양으로 그리면
+    사용자는 기다려야 할지 모른다. 같은 <p> 가 둘이라 __title · __description 이 있다.
+  */
+  .ns-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ns-space-1);
+    padding: var(--ns-space-6) var(--ns-space-4);
+    border: 1px dashed var(--ns-color-line-strong);
+    border-radius: var(--ns-radius-panel);
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .ns-empty-state__title {
+    margin: 0;
+    color: var(--ns-color-fg-body);
+    font-size: var(--ns-font-size-sm);
+    line-height: var(--ns-line-height-sm);
+    font-weight: var(--ns-weight-semibold);
+  }
+
+  .ns-empty-state__description {
+    margin: 0;
+    color: var(--ns-color-fg-muted);
+    font-size: var(--ns-font-size-xs);
+    line-height: var(--ns-line-height-xs);
+  }
+
+  .ns-empty-state__actions {
+    display: flex;
+    gap: var(--ns-space-2);
+    margin-top: var(--ns-space-2);
+  }
 }

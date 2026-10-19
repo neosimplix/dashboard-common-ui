@@ -25,12 +25,15 @@ import * as React from "react";
 import { useState } from "react";
 import {
   Accordion,
+  Badge,
   Button,
   ButtonLink,
   Card,
   Checkbox,
+  ChoiceCard,
   Chip,
   Dialog,
+  EmptyState,
   Field,
   Input,
   Message,
@@ -43,6 +46,9 @@ import {
   NsSkeleton,
   NsTable,
   NsTabs,
+  SegmentedControl,
+  StatTile,
+  Steps,
   PageHeading,
   Select,
   Sidebar,
@@ -129,6 +135,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const log = (msg: string) => console.log(msg);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [period, setPeriod] = useState("28");
 
   const [sort, setSort] = useState<NsSortDetail>({ key: "", direction: "none" });
 
@@ -458,6 +465,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Card density="compact" heading="대기열">
               <p>본문</p>
             </Card>
+            {/* v0.7.0 클래스 컴포넌트 여섯. 톤 오타("danger")·필수 aria-label 누락은 여기서 컴파일이 실패한다. */}
+            <fieldset>
+              <legend>하위 작업 만들기</legend>
+              <ChoiceCard type="radio" name="mode" value="draft" defaultChecked label="Claude 초안" description="코드를 읽고 WBS 를 만든다" />
+              <ChoiceCard type="radio" name="mode" value="manual" label="직접 입력" />
+            </fieldset>
+            <SegmentedControl name="period" aria-label="기간" value={period} onChange={setPeriod}
+              options={[{ value: "7", label: "7일" }, { value: "28", label: "4주" }]} />
+            <StatTile label="팀 대기열" value={5} note="바로 시작 4" data-testid="stat-queue" />
+            <Steps items={[{ title: "이슈 생성", description: "GitHub 에 상위 이슈" }, { title: "배정" }]} />
+            <Badge tone="warn">보류</Badge>
+            <Badge>진행</Badge>
+            <EmptyState title="대기 항목 없음" description="새 Task 를 발행하면 여기 쌓인다"
+              actions={<ButtonLink href="/tasks/new" size="sm">새 Task</ButtonLink>} />
           </Card>
         </main>
       </div>

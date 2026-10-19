@@ -362,9 +362,23 @@
     흰 표면 대비 warn 7.13:1 (amber-800), success 5.37:1 (emerald-700).
     각자의 *-surface 위에서도 6.88 · 5.09. 다크는 amber-300 · emerald-400 으로
     surface(21 %) 위 12.26 · 9.17.
+
+    danger-text 도 같은 이유로 있다 — --ns-color-danger 는 danger-surface 위에서
+    4.36:1 로 본문 기준에 모자란다(.ns-badge--risk 가 그 조합이다). red-700 은
+    danger-surface 위 5.88, 흰 표면 6.42. 다크 red-300 은 8.40 · 9.23.
   */
   --ns-color-warn-text:    light-dark(oklch(47.3% 0.137 46.201), oklch(87.9% 0.169 91.605));
   --ns-color-success-text: light-dark(oklch(50.8% 0.118 165.612), oklch(76.5% 0.177 163.223));
+  --ns-color-danger-text:  light-dark(oklch(50.5% 0.213 27.518), oklch(80.8% 0.114 19.571));
+
+  /*
+    강조 **면**. 선택된 .ns-choice-card 와 .ns-badge--accent 가 칠한다.
+    채움면(accent-fill)보다 훨씬 옅어 그 위에 본문색 글자를 올린다.
+    흰 표면과 1.27:1, 다크 1.70:1 — 면만으로 선택을 알리지 않는다(선택 카드는
+    accent-fill 테두리와 체크된 입력이 함께 진다). 값은 zinc-200 · zinc-700 으로
+    --ns-color-line(라이트)·--ns-color-line-strong(다크)과 같다.
+  */
+  --ns-color-accent-surface: light-dark(oklch(92% 0.004 286.32), oklch(37% 0.013 285.805));
 
   /*
     글꼴. **이 패키지는 글꼴을 강제하지 않는다** — 컨트롤은 font-family: inherit

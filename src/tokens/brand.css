@@ -1,7 +1,7 @@
 /*
   Dr. Reju-All 브랜드 테마 — 옵트인.
 
-  tokens.css 의 색 토큰 42 개(v0.6.x 까지 23 개 + 상태 글자 2 + 차트 17)를
+  tokens.css 의 색 토큰 44 개(v0.6.x 까지 23 개 + 상태 글자 3 + 강조 면 1 + 차트 17)를
   브랜드 팔레트로 덮는다. **tokens.css 다음에
   임포트한다.** 치수·타이포 토큰은 건드리지 않는다 — 브랜드와 무관하고
   컴포넌트가 자기 여백 계산에 쓰는 값이라 바꾸면 레이아웃이 어긋난다.
@@ -172,6 +172,14 @@
   */
   --ns-color-warn-text:    light-dark(#8A5B00, #EED484);
   --ns-color-success-text: light-dark(#2F5D33, #CACCA2);
+  /* 브랜드북 badge.danger.text. danger-surface 위 7.28 · 흰 표면 8.09, 다크 #E0A4A1 은 7.65. */
+  --ns-color-danger-text:  light-dark(#8F2E2C, #E0A4A1);
+
+  /*
+    강조 면 — 라이트 recovery-ivory(흰 표면 1.23:1), 다크 earth-brown(night-brown
+    표면 1.42:1). 위 글자는 --ns-color-fg 로 15.43 · 8.29.
+  */
+  --ns-color-accent-surface: light-dark(#F1E6DA, #533C32);
 
   /*
     차트. 출처는 브랜드북 color.chart.* 이고, **책에 없는 칸은 유도했다**(아래 † 표시).

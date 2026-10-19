@@ -89,3 +89,21 @@ export type {
   NsTabChangeDetail,
   NsMultiSelectChangeDetail,
 } from "../types.js";
+
+export { ChoiceCard } from "./controls/ChoiceCard.js";
+export type { ChoiceCardProps } from "./controls/ChoiceCard.js";
+
+export { SegmentedControl } from "./controls/SegmentedControl.js";
+export type { SegmentedControlProps, SegmentedOption } from "./controls/SegmentedControl.js";
+
+export { StatTile } from "./controls/StatTile.js";
+export type { StatTileProps } from "./controls/StatTile.js";
+
+export { Steps } from "./controls/Steps.js";
+export type { StepItem, StepsProps } from "./controls/Steps.js";
+
+export { Badge } from "./controls/Badge.js";
+export type { BadgeProps, BadgeTone } from "./controls/Badge.js";
+
+export { EmptyState } from "./controls/EmptyState.js";
+export type { EmptyStateProps } from "./controls/EmptyState.js";
