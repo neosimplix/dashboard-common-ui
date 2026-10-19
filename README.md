@@ -13,7 +13,7 @@ npm 레지스트리를 쓰지 않는다. git 태그로 설치한다.
 
 ```json
 "dependencies": {
-  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.6.2"
+  "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.7.0"
 }
 ```
 
@@ -115,6 +115,7 @@ delete document.documentElement.dataset.theme;     // OS 설정으로 되돌림
 
 | 태그 | `dist/` | 소비자가 할 일 |
 |---|---|---|
+| [`v0.7.0`](./changelog.html#v0-7-0) | 변경 | **breaking 없음. 새 이름만 늘었다.** 차트 토큰(`--ns-chart-*`) · 상태 글자 토큰(`--ns-color-*-text`) · 강조 면 · 글꼴 · 빽빽한 카드 여백, 클래스·React 여섯(ChoiceCard · SegmentedControl · StatTile · Steps · Badge · EmptyState)과 `.ns-card--compact` · `.ns-num`. 올려도 화면은 그대로이고 새 이름을 쓴 자리만 바뀐다. `brand.css` 는 44 개를 덮는다 |
 | [`v0.6.2`](./changelog.html#v0-6-2) | 변경 | **breaking 없음. `brand.css` 를 부르는 화면만 바뀐다.** 색 토큰 다섯 개 값 이동 — 카드 테두리는 중립 회색, 입력 테두리는 3:1 중간 톤, 주 버튼은 earth-brown(다크 grayish-500)으로 본문 글자와 명도차를 벌렸다. 이름·개수 그대로. `accent-fill` 을 버튼 아닌 자리에 빌려 쓴 화면은 캡처로 한 번 확인 |
 | [`v0.6.1`](./changelog.html#v0-6-1) | 그대로 | **breaking 없음. 문서만 바뀐다.** `guide.html` 에 `brand.css` 연결법이 네 자리에 생겼다 — `v0.6.0` 이 파일을 더했지만 안내서에는 그 이름이 한 번도 없어, 안내서만 보는 소비자는 존재를 알 방법이 없었다. 핵심은 `tokens.css` **다음에** 온다는 것이다(같은 `:root` 라 특정도가 무승부이고 순서가 곧 결과다). `src/` 는 한 줄도 안 바뀌었고 산출물을 `v0.6.0` 의 것과 `diff -rq` 해 동일함을 확인했다 — **설치해도 화면은 그대로이고, 받는 것은 `node_modules` 안의 안내서뿐이다.** 곁들여 `changelog.html` 사이드바에 빠져 있던 `v0.6.0` 항목을 채웠다 |
 | [`v0.6.0`](./changelog.html#v0-6-0) | 변경 | **breaking 없음.** 브랜드 테마 파일 `brand.css` 가 늘었다 — 임포트하지 않으면 화면이 그대로다. 임포트하면 색 토큰 23 개가 Dr. Reju-All 팔레트로 바뀌고 치수·타이포는 그대로다. `tokens.css` 다음에 둔다. 다크 절반은 브랜드북에 없던 값을 유도한 것이라 승인 절차가 있으면 확인이 필요하다 |

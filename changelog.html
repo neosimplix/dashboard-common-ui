@@ -117,8 +117,11 @@
     않게 한다. 둘 중 하나만 두면 그 구간에 폭이 튄다.
   -->
   <ns-sidebar default-open data-ns-open id="changelog-nav">
+    <ns-nav-group collapsible heading="0.7.x">
+      <ns-nav-item href="#v0-7-0" label="v0.7.0" active></ns-nav-item>
+    </ns-nav-group>
     <ns-nav-group collapsible heading="0.6.x">
-      <ns-nav-item href="#v0-6-2" label="v0.6.2" active></ns-nav-item>
+      <ns-nav-item href="#v0-6-2" label="v0.6.2"></ns-nav-item>
       <ns-nav-item href="#v0-6-1" label="v0.6.1"></ns-nav-item>
       <ns-nav-item href="#v0-6-0" label="v0.6.0"></ns-nav-item>
     </ns-nav-group>
@@ -160,6 +163,62 @@
     <strong><code>v0.4.0</code> 이하는 여기에 없다.</strong> 이 기록은 <code>README.md</code> 의
     릴리스 표와 같은 범위이고, 그 표는 <code>v0.5.0</code> 부터 담는다. 지운 절이 다루던
     태그는 git 에서 여전히 설치할 수 있다 — 문서에서만 뺐다.
+  </p>
+
+  <h2 id="v0-7-0">v0.7.0</h2>
+  <p class="dist"><code>dist/</code> 변경 · <strong>breaking 없음</strong></p>
+  <p>
+    <strong>새 이름만 늘었다.</strong> 기존 토큰·클래스·컴포넌트의 값과 모양은 그대로라 올려도 화면이
+    바뀌지 않는다. 바뀌는 것은 새 이름을 쓰기 시작한 자리뿐이다.
+  </p>
+  <p>
+    첫 소비자(tech-ops)가 손으로 만들던 조합 — 숫자 타일 · 상태 배지 · 저장소 선택 카드 · 기간 칩 ·
+    단계 목록 · 히트맵 색 — 을 키트로 올렸다. 앱마다 다시 만들면 위계와 밀도가 앱마다 갈린다.
+  </p>
+
+  <h3>토큰</h3>
+  <table>
+    <thead><tr><th>이름</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td><code>--ns-chart-empty</code> · <code>seq-1..5</code> · <code>seq-alt-1..5</code> · <code>cat-1..6</code></td><td>차트·데이터 색. 값을 색으로 읽는 자리는 이것만 쓴다</td></tr>
+      <tr><td><code>--ns-color-warn-text</code> · <code>success-text</code> · <code>danger-text</code></td><td>상태 <strong>글자</strong>색. 흰 표면과 자기 <code>*-surface</code> 위 4.5:1 이상</td></tr>
+      <tr><td><code>--ns-color-accent-surface</code></td><td>옅은 강조 면(선택 카드 · 강조 배지)</td></tr>
+      <tr><td><code>--ns-font-sans</code> · <code>--ns-font-mono</code></td><td>시스템 글꼴 목록. 패키지는 글꼴을 강제하지 않는다</td></tr>
+      <tr><td><code>--ns-card-padding-compact</code></td><td>빽빽한 카드 여백(1rem)</td></tr>
+    </tbody>
+  </table>
+  <p>
+    이름이 <code>-fg</code> 가 아니라 <code>-text</code> 인 이유: 이 패키지에서 <code>-fg</code> 는
+    채움면 위의 글자다(<code>danger-fg</code> 는 빨간 버튼 위 흰 글자). <code>brand.css</code> 는 새 색
+    토큰 21 개도 덮어 이제 44 개를 덮는다 — 책에 없어 유도한 차트 칸은 그 파일 주석에 † 로 표시했다.
+  </p>
+
+  <h3>클래스 · React</h3>
+  <table>
+    <thead><tr><th>클래스</th><th>React</th><th>자리</th></tr></thead>
+    <tbody>
+      <tr><td><code>.ns-choice-card</code></td><td><code>ChoiceCard</code></td><td>설명 달린 큰 선택지(radio·checkbox)</td></tr>
+      <tr><td><code>.ns-segmented</code></td><td><code>SegmentedControl</code></td><td>짧은 보기 전환(라디오 묶음)</td></tr>
+      <tr><td><code>.ns-stat</code></td><td><code>StatTile</code></td><td>이름 · 큰 숫자 · 보조 줄</td></tr>
+      <tr><td><code>.ns-steps</code></td><td><code>Steps</code></td><td>원형 번호 순서 목록</td></tr>
+      <tr><td><code>.ns-badge</code> (<code>--ok·warn·risk·accent·strong</code>)</td><td><code>Badge</code></td><td>상태 라벨</td></tr>
+      <tr><td><code>.ns-empty-state</code></td><td><code>EmptyState</code></td><td>비어 있음 + 할 일</td></tr>
+      <tr><td><code>.ns-card--compact</code></td><td><code>Card density="compact"</code></td><td>빽빽한 카드</td></tr>
+      <tr><td><code>.ns-num</code></td><td>—</td><td>숫자: 고정폭 + 자릿수 고정</td></tr>
+    </tbody>
+  </table>
+
+  <h3>검사</h3>
+  <p>
+    <code>check-tokens</code> 에 둘이 늘었다. ⑥ <code>brand.css</code> 는 <code>tokens.css</code> 에 있는 이름만
+    덮는다(오타가 조용히 무효가 되는 것을 막는다). ⑦ 차트 척도가 1 부터 빈 칸 없이 이어지고 seq 와 seq-alt 의
+    단계 수가 같으며, <code>brand.css</code> 는 차트 토큰을 덮으려면 전부 덮는다.
+  </p>
+
+  <h3>소비자가 할 일</h3>
+  <p>
+    없다. 쓰려면 <a href="./guide.html#tokens-chart">차트 색</a>, <a href="./guide.html#ns-choice-card">새 클래스 여섯</a>
+    절을 본다. 히트맵·막대에 <code>--ns-color-line*</code> 이나 강조색을 빌려 쓰던 앱은 차트 토큰으로 옮기는 것을 권한다.
   </p>
 
   <h2 id="v0-6-2">v0.6.2</h2>

@@ -12,6 +12,9 @@
     ③ data-ns-* 훅 이름은 세 곳에서 일치한다.
     ④ :host 블록에 border·margin·padding 을 두지 않는다.
     ⑤ 문서 페이지의 <style> 에 리터럴 색을 두지 않는다.
+    ⑥ brand.css 는 tokens.css 에 있는 이름만 덮는다.
+    ⑦ 차트 척도는 빈 칸 없이 1 부터 이어지고, seq 와 seq-alt 의 단계 수가 같으며,
+       brand.css 는 차트 토큰을 덮으려면 전부 덮는다.
 
   ②를 건너뛰는 경우가 하나 있다. ns-skeleton.ts 는 `var(--ns-radius-${this.radius})`
   로 이름을 조립하므로 정적으로 확인할 수 없다. 이름에 ${ 가 있으면 ①만 본다.
@@ -389,8 +392,71 @@ if (literals.length > 0) {
   process.exit(1);
 }
 
+/*
+  ⑥ brand.css 가 tokens.css 에 없는 이름을 정의하지 않는지 본다.
+
+  brand.css 는 덮어쓰기 전용 파일이다. 거기에만 있는 이름은 브랜드를 켠 소비자에게만
+  존재하므로, 컴포넌트가 그 이름을 읽으면 중립 팔레트에서 조용히 무효가 되고
+  (var() 폴백 금지), 소비자가 읽으면 brand.css 를 빼는 순간 조용히 무효가 된다.
+  오타(--ns-chart-seq-alt1)도 같은 모양으로 들어온다 — 덮었다고 믿은 값이 덮이지 않는다.
+*/
+const BRAND_CSS = "src/tokens/brand.css";
+const brandDefined = [
+  ...strip(readFileSync(BRAND_CSS, "utf8"), { line: false }).matchAll(/(?:^|;)\s*(--[a-z0-9-]+)\s*:/gm),
+].map((m) => m[1]);
+const brandOnly = brandDefined.filter((name) => !defined.has(name));
+if (brandOnly.length > 0) {
+  console.error(
+    "brand.css 에만 있는 토큰 이름입니다. tokens.css 에 먼저 정의하거나 이름을 고치세요:\n  " +
+      brandOnly.sort().join("\n  "),
+  );
+  process.exit(1);
+}
+
+/*
+  ⑦ 차트 척도의 모양.
+
+  - 각 척도(seq · seq-alt · cat)는 1 부터 빈 칸 없이 이어진다. 3 을 빼고 4 를 두면
+    소비자의 "단계 수만큼 돌리는" 코드가 빈 칸에서 무효 색을 받는다.
+  - seq 와 seq-alt 는 단계 수가 같다. 두 척도를 한 화면에서 같은 구간 나눔으로
+    쓰는 것이 seq-alt 의 존재 이유다.
+  - empty 가 있다. 0 을 seq-1 로 칠하면 "조금 있음" 과 "없음" 이 같아진다.
+  - brand.css 는 차트 토큰을 하나라도 덮으면 tokens.css 의 차트 토큰을 전부 덮는다.
+    일부만 덮으면 한 척도 안에 두 팔레트가 섞인다(중립 파랑 사이에 브랜드 갈색).
+*/
+const SCALES = ["seq", "seq-alt", "cat"];
+const chartNames = [...defined].filter((name) => name.startsWith("--ns-chart-"));
+const steps = (scale, names) =>
+  names
+    .map((name) => name.match(new RegExp(`^--ns-chart-${scale}-(\\d+)$`)))
+    .filter(Boolean)
+    .map((m) => Number(m[1]))
+    .sort((a, b) => a - b);
+const chartProblems = [];
+if (!defined.has("--ns-chart-empty")) chartProblems.push("--ns-chart-empty 가 없다");
+const counts = {};
+for (const scale of SCALES) {
+  const got = steps(scale, chartNames);
+  counts[scale] = got.length;
+  if (got.length === 0) chartProblems.push(`--ns-chart-${scale}-N 이 하나도 없다`);
+  const gap = got.findIndex((n, i) => n !== i + 1);
+  if (gap !== -1) chartProblems.push(`--ns-chart-${scale}-${gap + 1} 이 비었다 (있는 단계: ${got.join(", ")})`);
+}
+if (counts.seq !== counts["seq-alt"])
+  chartProblems.push(`seq ${counts.seq} 단계와 seq-alt ${counts["seq-alt"]} 단계의 수가 다르다`);
+const brandChart = new Set(brandDefined.filter((name) => name.startsWith("--ns-chart-")));
+if (brandChart.size > 0) {
+  const missing = chartNames.filter((name) => !brandChart.has(name));
+  if (missing.length > 0) chartProblems.push(`brand.css 가 차트 토큰 일부만 덮는다 — 빠진 것: ${missing.sort().join(", ")}`);
+}
+if (chartProblems.length > 0) {
+  console.error("차트 토큰 척도가 어긋났습니다:\n  " + chartProblems.join("\n  "));
+  process.exit(1);
+}
+
 console.log(
   `토큰 참조 확인 완료: ${defined.size} 개 정의, ${targets.length} 개 파일 검사, ` +
     `data-ns-* 훅 ${groups[0].found.size} 개 세 곳 일치, :host 박스 없음, ` +
-    `문서 페이지 ${DOC_PAGES.length} 개 리터럴 색 없음`,
+    `문서 페이지 ${DOC_PAGES.length} 개 리터럴 색 없음, brand.css ${brandDefined.length} 개 덮어쓰기 전부 tokens.css 에 있음, ` +
+    `차트 척도 seq ${counts.seq} · seq-alt ${counts["seq-alt"]} · cat ${counts.cat} 연속`,
 );

@@ -349,6 +349,93 @@
   --ns-color-accent-fill:       light-dark(oklch(21% 0.006 285.885), oklch(37% 0.013 285.805));
   --ns-color-accent-fill-hover: light-dark(oklch(27.4% 0.006 286.033), oklch(55.2% 0.016 285.938));
   --ns-color-accent-fill-fg:    light-dark(#fff, oklch(98.5% 0 0));
+
+  /*
+    상태 **글자**색. 별칭 제외 구간에 있는 이유는 위 두 토큰과 같다 — 0.1.5 에
+    원본이 없는 새 이름이다.
+
+    --ns-color-warn · --ns-color-success 는 점·테두리·채움의 색이라 글자로 쓰면
+    대비가 모자랄 수 있다(브랜드 팔레트에서 라이트 2.16 · 2.56). 글자에는 이
+    짝을 쓴다. 이름이 -fg 가 아닌 이유: 이 파일에서 -fg 는 **채움면 위의 글자**
+    (danger-fg · accent-fill-fg)다. 이 둘은 일반 표면 위의 글자라 뜻이 다르다.
+
+    흰 표면 대비 warn 7.13:1 (amber-800), success 5.37:1 (emerald-700).
+    각자의 *-surface 위에서도 6.88 · 5.09. 다크는 amber-300 · emerald-400 으로
+    surface(21 %) 위 12.26 · 9.17.
+
+    danger-text 도 같은 이유로 있다 — --ns-color-danger 는 danger-surface 위에서
+    4.36:1 로 본문 기준에 모자란다(.ns-badge--risk 가 그 조합이다). red-700 은
+    danger-surface 위 5.88, 흰 표면 6.42. 다크 red-300 은 8.40 · 9.23.
+  */
+  --ns-color-warn-text:    light-dark(oklch(47.3% 0.137 46.201), oklch(87.9% 0.169 91.605));
+  --ns-color-success-text: light-dark(oklch(50.8% 0.118 165.612), oklch(76.5% 0.177 163.223));
+  --ns-color-danger-text:  light-dark(oklch(50.5% 0.213 27.518), oklch(80.8% 0.114 19.571));
+
+  /*
+    강조 **면**. 선택된 .ns-choice-card 와 .ns-badge--accent 가 칠한다.
+    채움면(accent-fill)보다 훨씬 옅어 그 위에 본문색 글자를 올린다.
+    흰 표면과 1.27:1, 다크 1.70:1 — 면만으로 선택을 알리지 않는다(선택 카드는
+    accent-fill 테두리와 체크된 입력이 함께 진다). 값은 zinc-200 · zinc-700 으로
+    --ns-color-line(라이트)·--ns-color-line-strong(다크)과 같다.
+  */
+  --ns-color-accent-surface: light-dark(oklch(92% 0.004 286.32), oklch(37% 0.013 285.805));
+
+  /*
+    글꼴. **이 패키지는 글꼴을 강제하지 않는다** — 컨트롤은 font-family: inherit
+    이고 이 두 토큰을 읽는 곳은 .ns-num 하나와 소비자다. 소비자가
+    body { font-family: var(--ns-font-sans) } 로 쓴다. 값은 시스템 글꼴이라
+    네트워크 요청이 없다.
+  */
+  --ns-font-sans: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --ns-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /*
+    빽빽한 카드의 안쪽 여백. .ns-card--compact 와 Card density="compact" 가
+    읽는다. 기본 --ns-card-padding(2rem)은 그대로다 — 숫자 타일·보드 칸처럼
+    한 화면에 카드가 여럿 놓이는 자리에서 2rem 은 내용보다 여백이 크다.
+  */
+  --ns-card-padding-compact: var(--ns-space-4);
+
+  /*
+    차트 · 데이터 색. **값을 색으로 읽는 자리(히트맵 칸·막대·범례)는 이것만 쓴다.**
+    선 토큰(--ns-color-line*)을 빌리면 테마에 따라 "값 없음" 이 "값 있음" 처럼
+    보인다 — tech-ops 의 히트맵 0칸이 그랬다.
+
+    empty   — 0 · 값 없음 전용 중립면. 색조가 없다.
+    seq-N   — 순서 있는 양(적음 → 많음) 다섯 단계. 파랑.
+    seq-alt — 같은 화면에 두 번째 양 척도가 필요할 때(예: 토큰 vs commit). 초록.
+    cat-N   — 순서 없는 범주 여섯.
+
+    실측(OKLab, scripts 밖에서 계산 — 이 저장소에는 러너가 없다):
+      라이트  seq 인접 ΔL 최소 0.075 · seq-alt 0.060 · empty↔seq-1 ΔE 0.103 ·
+              empty↔surface ΔL 0.033 · cat 쌍 ΔE 최소 0.139(cat-1~cat-4)
+      다크    seq 0.109 · seq-alt 0.060 · empty↔seq-1 ΔE 0.175 · empty↔surface 0.064
+    다크는 단계 순서를 뒤집지 않는다 — seq-1 이 가장 어둡고(표면에 가깝고)
+    seq-5 가 가장 밝다. "많을수록 눈에 띈다" 가 두 모드에서 같다.
+
+    값은 전부 Tailwind v4 팔레트(blue · emerald · amber · violet · rose · zinc)다.
+    cat 은 두 모드에서 같은 500 단계라 light-dark() 의 두 절반이 같다.
+  */
+  --ns-chart-empty: light-dark(oklch(96.7% 0.001 286.375), oklch(27.4% 0.006 286.033));
+
+  --ns-chart-seq-1: light-dark(oklch(88.2% 0.059 254.128), oklch(37.9% 0.146 265.522));
+  --ns-chart-seq-2: light-dark(oklch(80.9% 0.105 251.813), oklch(48.8% 0.243 264.376));
+  --ns-chart-seq-3: light-dark(oklch(70.7% 0.165 254.624), oklch(62.3% 0.214 259.815));
+  --ns-chart-seq-4: light-dark(oklch(54.6% 0.245 262.881), oklch(80.9% 0.105 251.813));
+  --ns-chart-seq-5: light-dark(oklch(42.4% 0.199 265.638), oklch(93.2% 0.032 255.585));
+
+  --ns-chart-seq-alt-1: light-dark(oklch(90.5% 0.093 164.15), oklch(37.8% 0.077 168.94));
+  --ns-chart-seq-alt-2: light-dark(oklch(84.5% 0.143 164.978), oklch(50.8% 0.118 165.612));
+  --ns-chart-seq-alt-3: light-dark(oklch(76.5% 0.177 163.223), oklch(69.6% 0.17 162.48));
+  --ns-chart-seq-alt-4: light-dark(oklch(59.6% 0.145 163.225), oklch(84.5% 0.143 164.978));
+  --ns-chart-seq-alt-5: light-dark(oklch(43.2% 0.095 166.913), oklch(90.5% 0.093 164.15));
+
+  --ns-chart-cat-1: light-dark(oklch(62.3% 0.214 259.815), oklch(62.3% 0.214 259.815));
+  --ns-chart-cat-2: light-dark(oklch(76.9% 0.188 70.08), oklch(76.9% 0.188 70.08));
+  --ns-chart-cat-3: light-dark(oklch(69.6% 0.17 162.48), oklch(69.6% 0.17 162.48));
+  --ns-chart-cat-4: light-dark(oklch(60.6% 0.25 292.717), oklch(60.6% 0.25 292.717));
+  --ns-chart-cat-5: light-dark(oklch(64.5% 0.246 16.439), oklch(64.5% 0.246 16.439));
+  --ns-chart-cat-6: light-dark(oklch(70.5% 0.015 286.067), oklch(70.5% 0.015 286.067));
 }
 
 /*

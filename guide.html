@@ -134,6 +134,29 @@
   .shell { display: flex; flex: 1; min-height: 0; }
   main { flex: 1; overflow-y: auto; max-width: none; }
   main > * { max-width: 56rem; }
+  /* 차트 색 데모(#tokens-chart). 칸 하나 = 토큰 하나. */
+  .chart-demo {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--ns-space-2) var(--ns-space-4);
+    align-items: center;
+    font-size: var(--ns-font-size-xs);
+  }
+  .chart-demo > span:nth-child(2n) { display: flex; gap: var(--ns-space-1); }
+  .chart-cell {
+    width: 2rem;
+    height: 1.5rem;
+    border-radius: var(--ns-radius-badge);
+  }
+  /* .ns-stat 데모 — 그 절이 권하는 대로 칸 수 고정 + 좁은 화면 2칸. */
+  .stat-demo {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--ns-space-3);
+  }
+  @media (max-width: 720px) {
+    .stat-demo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 </style>
 </head>
 <body>
@@ -180,6 +203,12 @@
       <ns-nav-item href="#ns-accordion" label=".ns-accordion"></ns-nav-item>
       <ns-nav-item href="#ns-message" label=".ns-message"></ns-nav-item>
       <ns-nav-item href="#ns-chip" label=".ns-chip"></ns-nav-item>
+      <ns-nav-item href="#ns-choice-card" label=".ns-choice-card"></ns-nav-item>
+      <ns-nav-item href="#ns-segmented" label=".ns-segmented"></ns-nav-item>
+      <ns-nav-item href="#ns-stat" label=".ns-stat"></ns-nav-item>
+      <ns-nav-item href="#ns-steps" label=".ns-steps"></ns-nav-item>
+      <ns-nav-item href="#ns-badge" label=".ns-badge"></ns-nav-item>
+      <ns-nav-item href="#ns-empty-state" label=".ns-empty-state"></ns-nav-item>
     </ns-nav-group>
     <ns-nav-group collapsible heading="컴포넌트">
       <ns-nav-item href="#ns-icon" label="ns-icon"></ns-nav-item>
@@ -214,7 +243,7 @@
   <script type="text/plain">
     {
       "dependencies": {
-        "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.6.2"
+        "@neosimplix/common-ui": "git+https://github.com/neosimplix/dashboard-common-ui.git#v0.7.0"
       }
     }
   </script>
@@ -225,7 +254,7 @@
   </p>
   <p>
     업그레이드도 이 한 줄에서 시작한다 —
-    <code>dashboard-common-ui.git#v0.6.2</code> 의 태그 번호를 바꾸는 것이다.
+    <code>dashboard-common-ui.git#v0.7.0</code> 의 태그 번호를 바꾸는 것이다.
     태그 목록과 <code>dist/</code> 가 바뀌었는지는 <code>README.md</code> 의
     <strong>릴리스</strong> 표에 있고, <strong>무엇이 왜 바뀌었는지와 이주 코드는
     <a href="./changelog.html">changelog.html</a></strong> 에 있다 — 이 파일과 같은
@@ -567,11 +596,80 @@
     <div id="token-swatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:var(--ns-space-2)"></div>
   </div>
 
+  <h3 id="tokens-status-text">상태 글자색</h3>
+  <p>
+    <code>--ns-color-warn</code>·<code>--ns-color-success</code> 는 점·테두리·채움의
+    색이다. <strong>글자로 쓸 때는 <code>--ns-color-warn-text</code>·<code>--ns-color-success-text</code>
+    를 쓴다</strong> — 흰 표면과 자기 <code>*-surface</code> 위에서 4.5:1 을 넘도록 고른
+    짝이다(중립 7.13 · 5.37, 브랜드 5.87 · 7.68). <code>--ns-color-danger-text</code> 도 같다 —
+    <code>--ns-color-danger</code> 는 <code>danger-surface</code> 위 4.36:1 이라 배지 글자로 모자란다. 브랜드 팔레트의 warn·success 는
+    흰 배경 2.16 · 2.56 이라 글자로 쓰면 읽히지 않는다.
+  </p>
+  <p>
+    이름이 <code>-fg</code> 가 아닌 이유: 이 패키지에서 <code>-fg</code> 는
+    <strong>채움면 위의 글자</strong>다(<code>--ns-color-danger-fg</code> 는 빨간 버튼 위
+    흰 글자). 이 둘은 일반 표면 위의 글자라 뜻이 다르다.
+  </p>
+  <template class="ex">
+    <p style="margin:0;color:var(--ns-color-warn-text)">보류 3일째 — 외부 응답 대기</p>
+    <p style="margin:0;color:var(--ns-color-success-text)">배포 완료 · 오류 0</p>
+  </template>
+  <div class="demo block" id="status-text-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3 id="tokens-font">글꼴과 숫자 — .ns-num</h3>
+  <p>
+    <code>--ns-font-sans</code>·<code>--ns-font-mono</code> 는 시스템 글꼴 목록이다.
+    <strong>패키지는 글꼴을 강제하지 않는다</strong> — 컨트롤은 <code>font-family: inherit</code>
+    이고, 소비자가 <code>body { font-family: var(--ns-font-sans) }</code> 로 정한다.
+  </p>
+  <p>
+    <code>.ns-num</code> 은 숫자에 붙인다. 고정폭 글꼴 + 자릿수 폭 고정(<code>tabular-nums</code>)이라
+    열로 쌓인 숫자의 자리가 맞고, 값이 갱신돼도 옆 글자가 흔들리지 않는다. 크기는 부모를 따른다.
+  </p>
+  <template class="ex">
+    <div style="display:grid;grid-template-columns:auto auto;gap:var(--ns-space-1) var(--ns-space-6);justify-content:start">
+      <span>기본</span><span>111,111 · 908,070</span>
+      <span>.ns-num</span><span class="ns-num">111,111 · 908,070</span>
+    </div>
+  </template>
+  <div class="demo block" id="num-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
+  <h3 id="tokens-chart">차트 색 — --ns-chart-*</h3>
+  <p>
+    <strong>값을 색으로 읽는 자리(히트맵 칸·막대·범례)는 차트 토큰만 쓴다.</strong>
+    테두리 토큰(<code>--ns-color-line*</code>)이나 강조색을 빌리면 테마가 바뀔 때 「값 없음」이
+    「값 있음」처럼 보이고 범주끼리 구별이 안 된다.
+  </p>
+  <table>
+    <tr><th>토큰</th><th>용도</th></tr>
+    <tr><td><code>--ns-chart-empty</code></td><td>0 · 값 없음 전용 중립면. 색조가 없다</td></tr>
+    <tr><td><code>--ns-chart-seq-1</code> … <code>-5</code></td><td>순서 있는 양(적음 → 많음). 다크에서도 1 이 표면에 가깝고 5 가 가장 눈에 띈다</td></tr>
+    <tr><td><code>--ns-chart-seq-alt-1</code> … <code>-5</code></td><td>같은 화면의 두 번째 양 척도(예: 토큰 vs commit)</td></tr>
+    <tr><td><code>--ns-chart-cat-1</code> … <code>-6</code></td><td>순서 없는 범주. 범주가 다섯 이하면 <code>cat-6</code> 을 쓰지 않는다</td></tr>
+  </table>
+  <p>
+    인접 단계 명도차(OKLab ΔL)는 중립 팔레트에서 seq 0.075 · seq-alt 0.060 이상,
+    <code>empty</code> 와 <code>seq-1</code> 의 색차(ΔE)는 0.103 이다. 브랜드 팔레트의
+    실측과 책에 없어 유도한 칸은 <code>src/tokens/brand.css</code> 주석에 있다.
+  </p>
+  <template class="ex">
+    <div class="chart-demo">
+      <span>empty</span><span><span class="chart-cell" style="background:var(--ns-chart-empty)" title="--ns-chart-empty"></span></span>
+      <span>seq</span><span><span class="chart-cell" style="background:var(--ns-chart-seq-1)" title="--ns-chart-seq-1"></span><span class="chart-cell" style="background:var(--ns-chart-seq-2)" title="--ns-chart-seq-2"></span><span class="chart-cell" style="background:var(--ns-chart-seq-3)" title="--ns-chart-seq-3"></span><span class="chart-cell" style="background:var(--ns-chart-seq-4)" title="--ns-chart-seq-4"></span><span class="chart-cell" style="background:var(--ns-chart-seq-5)" title="--ns-chart-seq-5"></span></span>
+      <span>seq-alt</span><span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-1)" title="--ns-chart-seq-alt-1"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-2)" title="--ns-chart-seq-alt-2"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-3)" title="--ns-chart-seq-alt-3"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-4)" title="--ns-chart-seq-alt-4"></span><span class="chart-cell" style="background:var(--ns-chart-seq-alt-5)" title="--ns-chart-seq-alt-5"></span></span>
+      <span>cat</span><span><span class="chart-cell" style="background:var(--ns-chart-cat-1)" title="--ns-chart-cat-1"></span><span class="chart-cell" style="background:var(--ns-chart-cat-2)" title="--ns-chart-cat-2"></span><span class="chart-cell" style="background:var(--ns-chart-cat-3)" title="--ns-chart-cat-3"></span><span class="chart-cell" style="background:var(--ns-chart-cat-4)" title="--ns-chart-cat-4"></span><span class="chart-cell" style="background:var(--ns-chart-cat-5)" title="--ns-chart-cat-5"></span><span class="chart-cell" style="background:var(--ns-chart-cat-6)" title="--ns-chart-cat-6"></span></span>
+    </div>
+  </template>
+  <div class="demo block" id="chart-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
   <h3 id="tokens-brand">브랜드 테마 — brand.css (선택)</h3>
   <p>
     바로 위는 소비자가 자기 값을 직접 적는 방법이고, <strong>브랜드 팔레트는 파일로
     온다.</strong> <code>brand.css</code> 는 Dr. Reju-All 팔레트로
-    <strong>색 토큰 23 개를 덮는</strong> <code>:root</code> 블록 하나가 전부다.
+    <strong>색 토큰 44 개를 덮는</strong> <code>:root</code> 블록 하나가 전부다.
     치수·타이포·radius 는 건드리지 않는다 — 브랜드와 무관하고 컴포넌트가 자기 여백
     계산에 쓰는 값이라 바꾸면 레이아웃이 어긋난다.
   </p>
@@ -591,14 +689,15 @@
   <p>
     <strong>임포트하지 않으면 중립 팔레트 그대로다.</strong> 브랜드가 아닌
     화면(내부 도구·데모)은 부르지 않는다 — <strong>이 안내서가 그 경우다.</strong>
-    위 스와치가 보여주는 것은 중립 팔레트 값이고, 브랜드를 켜면 그중 색 23 개가
+    위 스와치가 보여주는 것은 중립 팔레트 값이고, 브랜드를 켜면 그중 색 44 개가
     바뀐다.
   </p>
   <p>
     <strong>쓰기 전에 알아야 할 것 둘.</strong> 먼저, <strong>라이트에서
     <code>--ns-color-warn</code>·<code>--ns-color-success</code> 는 글자색으로 쓸 수
-    없다</strong> — 흰 배경 대비가 2.16 · 2.56 이다. 배지처럼 테두리·점·배경 조합으로
-    의미를 주고 글자는 본문색으로 둔다. 다크에서는 한 단계 밝은 값이라 셋 다 통과한다.
+    없다</strong> — 흰 배경 대비가 2.16 · 2.56 이다. 글자에는 짝인
+    <code>--ns-color-warn-text</code>·<code>--ns-color-success-text</code> 를 쓴다
+    (<a href="#tokens-status-text">상태 글자색</a>). 다크에서는 한 단계 밝은 값이라 셋 다 통과한다.
     그리고 <strong>다크 절반은 브랜드북에 없던 값을 유도한 것</strong>이라, 승인 절차가
     있는 조직이면 확인이 필요하다. 값의 출처와 대비 실측치는
     <code>src/tokens/brand.css</code> 의 주석에 있다.
@@ -1472,9 +1571,26 @@
   <div class="demo block" id="card-header-demo" style="padding: var(--ns-space-4)"></div>
   <pre></pre>
 
+  <h3>데모 — 빽빽한 카드 (.ns-card--compact)</h3>
+  <template class="ex">
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ns-space-3)">
+      <div class="ns-card ns-card--compact">
+        <p style="margin:0;font-size:var(--ns-font-size-xs);color:var(--ns-color-fg-muted)">팀 대기열 (compact)</p>
+        <p class="ns-num" style="margin:0;font-size:var(--ns-font-size-xl);line-height:var(--ns-line-height-xl)">5</p>
+      </div>
+      <div class="ns-card">
+        <p style="margin:0;font-size:var(--ns-font-size-xs);color:var(--ns-color-fg-muted)">기본 카드</p>
+        <p class="ns-num" style="margin:0;font-size:var(--ns-font-size-xl);line-height:var(--ns-line-height-xl)">5</p>
+      </div>
+    </div>
+  </template>
+  <div class="demo block" id="card-compact-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+
   <h3>클래스</h3>
   <table>
     <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-card--compact</code></td><td><code>.ns-card</code> 와 함께</td><td>안쪽 여백을 <code>--ns-card-padding-compact</code>(기본 1rem)로, 머리 아래·본문 간격도 줄인다. 숫자 타일·보드 칸처럼 카드가 여럿 놓이는 자리. <strong>붙이지 않은 카드는 그대로다</strong></td></tr>
     <tr><td><code>.ns-card</code></td><td><code>div</code></td><td>테두리·반경·표면색·<code>--ns-card-padding</code>·그림자</td></tr>
     <tr><td><code>.ns-card__header</code></td><td><code>div</code></td><td>제목 묶음이 왼쪽, 액션이 오른쪽. 아래에 구분선을 갖는다 — <strong>선은 내용 폭까지만 그어진다</strong></td></tr>
     <tr><td>(이름 없음)</td><td><code>div</code></td><td><code>__title</code> 과 <code>__description</code> 을 감싸는 묶음. <strong>클래스는 없지만 생략하면 안 된다</strong> — <code>__header</code> 가 <code>space-between</code> 이라 둘이 따로 놓이면 설명이 오른쪽 끝으로 밀린다</td></tr>
@@ -1508,6 +1624,7 @@
 
     <Card>내용</Card>
     <Card className="mt-8">유틸로 여백을 준다</Card>
+    <Card density="compact">빽빽한 카드 — .ns-card--compact</Card>
 
     <Card heading="최근 주문" description="최근 30일"
           actions={<ButtonLink href="/orders" variant="ghost" size="sm">전체 보기</ButtonLink>}>
@@ -1782,6 +1899,211 @@
     <li><code>removeLabel</code> 기본값(<code>"제거"</code>)을 그대로 두지 않는다. 칩이 여러 개일 때 이름이 전부 같아져 어느 칩인지 구별되지 않는다.</li>
     <li>토글 갈래에 <code>role="checkbox"</code> 를 빠뜨리면 <code>aria-checked</code> 가 무시된다 — 배경은 칠해지지만 화면낭독기는 선택 상태를 모르고, <strong>체크 표시도 그 자리도 없다</strong>(선택자가 <code>role</code> 에 걸려 있다).</li>
   </ul>
+
+  <h2 id="ns-choice-card">.ns-choice-card</h2>
+  <p>
+    설명이 붙은 큰 선택지. 라벨 하나가 입력 · 제목 · 설명을 감싸 <strong>카드 전체가 누르는 자리</strong>이고
+    라벨이 입력의 접근성 이름이 된다. 선택은 체크된 입력 · <code>accent-fill</code> 테두리 · 옅은 강조 면 셋이 함께 보여준다.
+  </p>
+  <h3>데모</h3>
+  <template class="ex">
+    <fieldset style="border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ns-space-3)">
+      <legend style="font-size:var(--ns-font-size-xs);color:var(--ns-color-fg-muted);margin-bottom:var(--ns-space-2)">하위 작업 만들기</legend>
+      <label class="ns-choice-card">
+        <input type="radio" name="demo-mode" value="draft" checked>
+        <span class="ns-choice-card__title">Claude 초안</span>
+        <span class="ns-choice-card__description">저장소 코드를 읽고 WBS 를 만든다</span>
+      </label>
+      <label class="ns-choice-card">
+        <input type="radio" name="demo-mode" value="manual">
+        <span class="ns-choice-card__title">직접 입력</span>
+        <span class="ns-choice-card__description">하위 작업을 손으로 적는다</span>
+      </label>
+    </fieldset>
+  </template>
+  <div class="demo block" id="choice-card-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-choice-card</code></td><td><code>label</code></td><td>첫 자식이 <code>input</code>(radio·checkbox). 선택·비활성·포커스는 <code>:has()</code> 로 잡으므로 상태 클래스가 없다</td></tr>
+    <tr><td><code>.ns-choice-card__title</code></td><td><code>span</code></td><td>제목</td></tr>
+    <tr><td><code>.ns-choice-card__description</code></td><td><code>span</code></td><td>제목 아래 한 줄 설명. 없으면 쓰지 않는다</td></tr>
+  </table>
+  <h3>React</h3>
+  <script type="text/plain">
+    import { ChoiceCard } from "@neosimplix/common-ui/react";
+
+    <fieldset>
+      <legend>하위 작업 만들기</legend>
+      <ChoiceCard type="radio" name="mode" value="draft" checked={mode === "draft"}
+                  onChange={() => setMode("draft")} label="Claude 초안" description="코드를 읽고 WBS 를 만든다" />
+      <ChoiceCard type="radio" name="mode" value="manual" checked={mode === "manual"}
+                  onChange={() => setMode("manual")} label="직접 입력" />
+    </fieldset>
+  </script>
+  <h3>접근성</h3>
+  <ul>
+    <li>묶음은 <code>&lt;fieldset&gt;</code> + <code>&lt;legend&gt;</code> 로 감싼다. 그래야 화면 읽기 프로그램이 질문을 함께 읽는다</li>
+    <li>라디오는 같은 <code>name</code> 으로 묶는다 — 방향키 이동과 단일 선택은 브라우저가 한다</li>
+    <li>강조 면만으로는 흰 표면과 1.27:1 이라 선택 신호가 모자라다. 테두리와 체크 표시가 함께 진다</li>
+  </ul>
+
+  <h2 id="ns-segmented">.ns-segmented</h2>
+  <p>
+    짧은 보기 전환(기간 · 표/카드)의 단일 선택. 네이티브 라디오 묶음이라 <strong>방향키로 옮기고 선택이 곧 값</strong>이다.
+    패널을 바꾸는 탭이면 <a href="#ns-tabs">ns-tabs</a> 를 쓴다.
+  </p>
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="ns-segmented" role="radiogroup" aria-label="기간">
+      <label><input type="radio" name="demo-period" value="7"><span>최근 7일</span></label>
+      <label><input type="radio" name="demo-period" value="28" checked><span>최근 4주</span></label>
+      <label><input type="radio" name="demo-period" value="90"><span>분기</span></label>
+    </div>
+  </template>
+  <div class="demo block" id="segmented-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-segmented</code></td><td><code>div[role=radiogroup]</code></td><td>자식은 <code>label &gt; input[type=radio] + span</code>. 입력은 투명하게 덮여 있고 지우지 않는다 — 지우면 키보드가 닿지 않는다</td></tr>
+  </table>
+  <h3>React</h3>
+  <script type="text/plain">
+    import { SegmentedControl } from "@neosimplix/common-ui/react";
+
+    <SegmentedControl name="period" aria-label="기간" value={days} onChange={setDays}
+      options={[{ value: "7", label: "최근 7일" }, { value: "28", label: "최근 4주" }, { value: "90", label: "분기" }]} />
+  </script>
+  <h3>접근성</h3>
+  <ul>
+    <li>보이는 라벨이 없으므로 <code>aria-label</code> 이 필수다(React 타입이 강제한다)</li>
+    <li>한 페이지에 둘 이상이면 <code>name</code> 이 달라야 한다. 같으면 두 묶음이 하나로 합쳐진다</li>
+  </ul>
+
+  <h2 id="ns-stat">.ns-stat</h2>
+  <p>숫자 타일 — 이름 한 줄, 큰 숫자(고정폭 · 자릿수 고정), 보조 줄. 자기 표면을 가진 빽빽한 카드다.</p>
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="stat-demo">
+      <div class="ns-stat"><p class="ns-stat__label">팀 대기열</p><p class="ns-stat__value">5</p><p class="ns-stat__note">바로 시작 4 · 선행 대기 1</p></div>
+      <div class="ns-stat"><p class="ns-stat__label">WIP 사용</p><p class="ns-stat__value">4/11</p><p class="ns-stat__note">빈 칸 7</p></div>
+      <div class="ns-stat"><p class="ns-stat__label">보류 중</p><p class="ns-stat__value">1</p></div>
+      <div class="ns-stat"><p class="ns-stat__label">토큰 합계</p><p class="ns-stat__value">1.4M</p><p class="ns-stat__note">추정 $5.12</p></div>
+    </div>
+  </template>
+  <div class="demo block" id="stat-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-stat</code></td><td><code>div</code></td><td>표면 · 테두리 · <code>--ns-card-padding-compact</code></td></tr>
+    <tr><td><code>.ns-stat__label</code></td><td><code>p</code></td><td>이름</td></tr>
+    <tr><td><code>.ns-stat__value</code></td><td><code>p</code></td><td>큰 숫자. <code>--ns-font-mono</code> + <code>tabular-nums</code></td></tr>
+    <tr><td><code>.ns-stat__note</code></td><td><code>p</code></td><td>보조 줄. 없으면 쓰지 않는다</td></tr>
+  </table>
+  <h3>React</h3>
+  <script type="text/plain">
+    import { StatTile } from "@neosimplix/common-ui/react";
+
+    <StatTile label="팀 대기열" value={5} note="바로 시작 4" data-testid="stat-queue" />
+  </script>
+  <h3>주의</h3>
+  <ul>
+    <li>여럿을 한 줄에 놓을 때 격자 칸 수를 고정한다(<code>repeat(4, minmax(0, 1fr))</code> + 좁은 화면 2칸·1칸). <code>auto-fill</code> 은 타일이 적을 때 오른쪽에 빈 열을 남긴다</li>
+  </ul>
+
+  <h2 id="ns-steps">.ns-steps</h2>
+  <p>원형 번호가 붙는 순서 목록. <code>&lt;ol&gt;</code> 이라 순서의 뜻이 보조 기술에도 간다. 항목 안의 <code>strong</code> 이 제목, <code>p</code> 가 설명이다.</p>
+  <h3>데모</h3>
+  <template class="ex">
+    <ol class="ns-steps">
+      <li><strong>GitHub 상위 이슈 생성</strong><p>이 화면 입력이 이슈 본문이 된다.</p></li>
+      <li><strong>Claude 가 WBS 초안 생성</strong><p>하위 작업 · 공수 · 선후관계를 초안으로 만든다.</p></li>
+      <li><strong>하위 이슈 일괄 발행</strong></li>
+    </ol>
+  </template>
+  <div class="demo block" id="steps-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-steps</code></td><td><code>ol</code></td><td>번호는 CSS 카운터. 항목의 <code>strong</code>·<code>p</code> 는 자손 선택자로 잡히므로 클래스가 없다</td></tr>
+  </table>
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Steps } from "@neosimplix/common-ui/react";
+
+    <Steps items={[{ title: "GitHub 상위 이슈 생성", description: "입력이 이슈 본문이 된다" }, { title: "하위 이슈 발행" }]} />
+  </script>
+
+  <h2 id="ns-badge">.ns-badge</h2>
+  <p>
+    짧은 상태 라벨. 톤은 의미축이고 화면마다 바꾸지 않는다. 글자색은 <a href="#tokens-status-text">상태 글자 토큰</a>이라
+    각자의 면 위에서 4.5:1 을 넘는다. <strong>색만으로 뜻을 전하지 않는다</strong> — 라벨 글자가 뜻을 진다.
+  </p>
+  <h3>데모</h3>
+  <template class="ex">
+    <div style="display:flex;flex-wrap:wrap;gap:var(--ns-space-2)">
+      <span class="ns-badge">진행</span>
+      <span class="ns-badge ns-badge--ok">완료</span>
+      <span class="ns-badge ns-badge--warn">보류</span>
+      <span class="ns-badge ns-badge--risk">실패</span>
+      <span class="ns-badge ns-badge--accent">리뷰</span>
+      <span class="ns-badge ns-badge--strong">긴급</span>
+    </div>
+  </template>
+  <div class="demo block" id="badge-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-badge</code></td><td><code>span</code></td><td>중립 톤</td></tr>
+    <tr><td><code>.ns-badge--ok</code></td><td><code>.ns-badge</code> 와 함께</td><td>완료 · 정상. <code>success-surface</code> + <code>success-text</code></td></tr>
+    <tr><td><code>.ns-badge--warn</code></td><td><code>.ns-badge</code> 와 함께</td><td>주의 · 대기. <code>warn-surface</code> + <code>warn-text</code></td></tr>
+    <tr><td><code>.ns-badge--risk</code></td><td><code>.ns-badge</code> 와 함께</td><td>실패 · 위험. <code>danger-surface</code> + <code>danger-text</code></td></tr>
+    <tr><td><code>.ns-badge--accent</code></td><td><code>.ns-badge</code> 와 함께</td><td>눈길을 끄는 일반 상태. <code>accent-surface</code></td></tr>
+    <tr><td><code>.ns-badge--strong</code></td><td><code>.ns-badge</code> 와 함께</td><td>가장 강한 표시(긴급). <code>accent-fill</code> 채움 — 한 화면에 드물게</td></tr>
+  </table>
+  <h3>React</h3>
+  <script type="text/plain">
+    import { Badge } from "@neosimplix/common-ui/react";
+
+    <Badge tone="warn">보류</Badge>
+    <Badge>진행</Badge>
+  </script>
+
+  <h2 id="ns-empty-state">.ns-empty-state</h2>
+  <p>
+    목록 · 칸이 비었을 때 무엇이 없고 무엇을 하면 되는지. <a href="#ns-message">.ns-message</a> 는 한 줄 알림(로딩 · 실패 포함)이고
+    이것은 제목 · 설명 · 행동을 갖는 자리다. <strong>불러오기 실패에는 쓰지 않는다.</strong>
+  </p>
+  <h3>데모</h3>
+  <template class="ex">
+    <div class="ns-empty-state">
+      <p class="ns-empty-state__title">대기 항목 없음</p>
+      <p class="ns-empty-state__description">새 Task 를 발행하면 하위 작업이 여기 쌓인다.</p>
+      <div class="ns-empty-state__actions"><a class="ns-button ns-button--outline ns-button--sm" href="#ns-empty-state">새 Task 발행</a></div>
+    </div>
+  </template>
+  <div class="demo block" id="empty-state-demo" style="padding: var(--ns-space-4)"></div>
+  <pre></pre>
+  <h3>클래스</h3>
+  <table>
+    <tr><th>클래스</th><th>붙이는 요소</th><th>설명</th></tr>
+    <tr><td><code>.ns-empty-state</code></td><td><code>div</code></td><td>점선 테두리 · 가운데 정렬</td></tr>
+    <tr><td><code>.ns-empty-state__title</code></td><td><code>p</code></td><td>무엇이 없는지</td></tr>
+    <tr><td><code>.ns-empty-state__description</code></td><td><code>p</code></td><td>어떻게 하면 생기는지. 없으면 쓰지 않는다</td></tr>
+    <tr><td><code>.ns-empty-state__actions</code></td><td><code>div</code></td><td>버튼 · 링크 묶음. 없으면 쓰지 않는다</td></tr>
+  </table>
+  <h3>React</h3>
+  <script type="text/plain">
+    import { ButtonLink, EmptyState } from "@neosimplix/common-ui/react";
+
+    <EmptyState title="대기 항목 없음" description="새 Task 를 발행하면 여기 쌓인다"
+                actions={<ButtonLink href="#/tasks/new" variant="outline" size="sm">새 Task 발행</ButtonLink>} />
+  </script>
 
   <h2 id="ns-icon">ns-icon</h2>
   <p>
@@ -4206,6 +4528,8 @@
     "--ns-color-disabled", "--ns-color-disabled-fg",
     "--ns-color-danger", "--ns-color-danger-surface", "--ns-color-warn", "--ns-color-warn-surface",
     "--ns-color-success", "--ns-color-success-surface",
+    "--ns-color-warn-text", "--ns-color-success-text", "--ns-color-danger-text",
+    "--ns-color-accent-surface",
   ];
   const swatches = document.getElementById("token-swatches");
   if (swatches) {
